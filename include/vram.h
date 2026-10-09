@@ -7,8 +7,9 @@
 #ifdef PC
 // The PC port has far more sprite VRAM than the GBA (see PORT_VRAM_SIZE), so the
 // larger view, which keeps more entities active, never runs out of slots.
+// An entity keeps its slot index in a u8 (spriteAnimation[0]): at most 255.
 #define GBA_GFX_SLOTS 44
-#define MAX_GFX_SLOTS 1068
+#define MAX_GFX_SLOTS 255
 #else
 #define MAX_GFX_SLOTS 44
 #endif

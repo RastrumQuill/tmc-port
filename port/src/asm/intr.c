@@ -482,12 +482,16 @@ static void EmitObjList(DrawState* s) {
             u32 attr2, tile;
             PortOamExt* ext;
             attr01 ^= (attr & 0x3C) << 26;
-            attr2 = list[-2] + attr2Base;
+            /* The full tile number; OAM keeps its low 10 bits. On the GBA the tile
+             * sum never passes 0x3FF, but sprites in the extra graphics slots can:
+             * keep the carry out of the priority and palette bits. */
+            tile = (attr2Base & 0x3FF) + list[-2] + ((list[-1] & 3) << 8);
+            attr2 = attr2Base & ~0x3FF;
             if (attr & 1)
                 attr2 &= ~0xF000;
-            attr2 += list[-1] << 8;
-            /* the full tile number; OAM keeps its low 10 bits */
-            tile = s->tileHi + (attr2 & 0x3FF);
+            attr2 += (list[-1] & ~3) << 8;
+            tile += s->tileHi;
+            attr2 = (attr2 & 0xFC00) | (tile & 0x3FF);
 
             if (index < 0x80) {
                 struct OamData* oam = &gOAMControls.oam[index];
@@ -593,7 +597,9 @@ static void DrawEntityBody(DrawState* s, Entity* e) {
                 p.x -= (s8)part[6];
             p.y += (s8)part[7];
             p.attr2 |= part[5] << 12;
-            p.attr2 += part[8];
+            /* PC: as in EmitObjList, a tile sum past 0x3FF goes to tileHi */
+            p.tileHi += ((p.attr2 & 0x3FF) + part[8]) & ~0x3FF;
+            p.attr2 = (p.attr2 & ~0x3FF) | (((p.attr2 & 0x3FF) + part[8]) & 0x3FF);
             DrawSpriteFrame(&p, part[1], *(u16*)(part + 2));
         }
     }
