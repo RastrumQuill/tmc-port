@@ -182,8 +182,12 @@ void BgAffineSet(struct BgAffineSrcData* src, struct BgAffineDstData* dest, s32 
 }
 
 void ObjAffineSet(struct ObjAffineSrcData* src, void* dest, s32 count, s32 offset) {
+    /* the BIOS reads 8 byte source entries (scale x, scale y, angle, padding);
+     * the C struct has no padding, so step through the bytes */
+    const u8* s8 = (const u8*)src;
     u8* d = dest;
-    for (; count > 0; count--, src++) {
+    for (; count > 0; count--, s8 += 8) {
+        src = (struct ObjAffineSrcData*)s8;
         u8 angle = src->rotation >> 8;
         s32 s = BiosSin(angle);
         s32 c = BiosCos(angle);

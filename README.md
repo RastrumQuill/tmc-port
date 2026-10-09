@@ -71,6 +71,32 @@ Classic 240×160:
 
 ![](docs/pc_port/field_960x540.png)
 
+### Boss fight: Big Octo (Temple of Droplets)
+
+In the classic view only the top of the boss fits on screen. At 426×240 you
+see most of the fight, and from 640×360 up the whole arena, so you can watch
+its rocks and its spinning attack coming.
+
+Classic 240×160:
+
+![](docs/pc_port/bigocto_classic_240x160.png)
+
+1280×720 window at scale 3 → 426×240:
+
+![](docs/pc_port/bigocto_426x240.png)
+
+1280×720 window at scale 2 → 640×360 (the arena is smaller than the view, so
+it is centred with borders):
+
+![](docs/pc_port/bigocto_640x360.png)
+
+1920×1080 window at scale 2 → 960×540:
+
+![](docs/pc_port/bigocto_960x540.png)
+
+To see it yourself, use the debug console: `` ` `` then `warp 0x60 14` (`items`
+and `god` help).
+
 ### Hyrule Town
 
 The town is narrower than the larger views, so it is centred with borders.

@@ -423,6 +423,9 @@ void Port_FrameBoundary(void) {
     sQueueCount = 0;
     if (gDebugGodMode && InGame())
         gSave.stats.health = gSave.stats.maxHealth;
+    /* messages stay up for a fixed number of game frames */
+    if (sMessageTimer > 0)
+        sMessageTimer--;
 }
 
 /* ---- hotkeys ---- */
@@ -528,7 +531,6 @@ void Debug_DrawOverlay(uint32_t* frame, int pitch, int w, int h, uint64_t frameC
         snprintf(buf, sizeof(buf), "> %s_", sConsoleLine);
         DrawText(frame, pitch, w, h, 2, h - 7, buf, 0x80FF80);
     } else if (sMessageTimer > 0) {
-        sMessageTimer--;
         FillRect(frame, pitch, w, h, 0, h - 9, (int)strlen(sMessage) * 4 + 4, 9);
         DrawText(frame, pitch, w, h, 2, h - 7, sMessage, 0xFFFFFF);
     }
