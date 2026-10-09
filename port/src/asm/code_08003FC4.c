@@ -231,9 +231,17 @@ static void FrameZero(Entity* this) {
     this->animPtr = frame;
 }
 
+/* An invisible, endlessly looping animation. Used where the GBA would read
+ * the animation table through a NULL pointer (which reads BIOS memory there). */
+static const u8 sNullAnimation[] = { 0xFF, 0xFF, 0x00, 0x80, 0x01, 0x00, 0x00, 0x00 };
+
 void InitializeAnimation(Entity* this, u32 animIndex) {
+    void** animations = gSpritePtrs[(u16)this->spriteIndex].animations;
     this->animIndex = animIndex;
-    this->animPtr = ((void**)gSpritePtrs[(u16)this->spriteIndex].animations)[animIndex];
+    if (animations == NULL || animations[animIndex] == NULL)
+        this->animPtr = (void*)sNullAnimation;
+    else
+        this->animPtr = animations[animIndex];
     FrameZero(this);
 }
 

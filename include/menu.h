@@ -27,7 +27,11 @@ typedef struct {
     u8 rButtonX;
     u8 rButtonY;
     u8 rButtonText;
+#ifdef PC
+    u8 settingDict[]; // modern compilers drop initializers of zero-length arrays
+#else
     u8 settingDict[0];
+#endif
 } PACKED KeyButtonLayout;
 
 extern void sub_080A70AC(const KeyButtonLayout*);

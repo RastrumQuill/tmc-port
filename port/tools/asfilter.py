@@ -11,7 +11,11 @@ The translation is purely syntactic:
   * ARM/Thumb mode directives are dropped
   * '.include' directives are expanded inline (recursively) so that the
     included macro files get the same treatment
-Usage: asfilter.py [-I dir]... < in.s > out.s
+  * with --mark TAG every '.incbin' gets a label __ib_TAG_N in front of it
+    (used to locate blobs in the GBA build, see find_rom_pointers.py)
+  * with --relocs FILE, blobs that contain absolute ROM pointers are split
+    and the pointers are emitted as symbolic '.4byte' expressions
+Usage: asfilter.py [-I dir]... [--mark] [--relocs FILE] < in.s > out.s
 """
 import os
 import re
@@ -57,6 +61,7 @@ OPS = re.compile(r'\s*(<<|>>|[*/+|&^])\s*')
 # Thumb function pointers carry the +1 interworking bit; native code must not.
 THUMB_CALL = re.compile(r'^(\s*Call(?:WithArg)?\s+\w+)\+1\b')
 MINUS = re.compile(r'\s+-\s+')
+INCBIN = re.compile(r'^(\s*)\.incbin\s+"([^"]+)"\s*$')
 INCLUDE = re.compile(r'^\s*\.include\s+"([^"]+)"')
 
 
@@ -66,6 +71,33 @@ def find_include(name, dirs):
         if os.path.isfile(path):
             return path
     sys.exit('asfilter: cannot find include "%s"' % name)
+
+
+class State:
+    keep_directives = False
+    mark = False
+    relocs = {}
+
+
+def blob_label(path):
+    return '__ib_' + re.sub(r'[^A-Za-z0-9_]', '_', path)
+
+
+def emit_incbin(indent, path, w):
+    if State.mark:
+        label = blob_label(path)
+        w('%s.global %s\n%s:\n' % (indent, label, label))
+    relocs = State.relocs.get(path)
+    if not relocs:
+        w('%s.incbin "%s"\n' % (indent, path))
+        return
+    pos = 0
+    for off, expr in relocs:
+        if off > pos:
+            w('%s.incbin "%s", %d, %d\n' % (indent, path, pos, off - pos))
+        w('%s.4byte %s\n' % (indent, expr))
+        pos = off + 4
+    w('%s.incbin "%s", %d\n' % (indent, path, pos))
 
 
 def process(data, dirs, w, depth=0):
@@ -81,7 +113,11 @@ def process(data, dirs, w, depth=0):
                 process(f.read(), dirs, w, depth + 1)
             continue
         line = strip_comment(line)
-        if DROP.match(line):
+        ib = INCBIN.match(line)
+        if ib:
+            emit_incbin(ib.group(1), ib.group(2), w)
+            continue
+        if not State.keep_directives and DROP.match(line):
             w('\n')
             continue
         line = ALIGN.sub(r'\1.p2align', line)
@@ -98,6 +134,20 @@ def process(data, dirs, w, depth=0):
         w(line + '\n')
 
 
+def load_relocs(path):
+    """lines: INCBIN_PATH OFFSET EXPR"""
+    if not os.path.isfile(path):
+        return
+    for line in open(path):
+        line = line.split('#', 1)[0].strip()
+        if not line:
+            continue
+        label, off, expr = line.split(None, 2)
+        State.relocs.setdefault(label, []).append((int(off, 0), expr))
+    for v in State.relocs.values():
+        v.sort()
+
+
 def main():
     dirs = ['.']
     args = sys.argv[1:]
@@ -107,6 +157,12 @@ def main():
             dirs.append(args.pop(0))
         elif a.startswith('-I'):
             dirs.append(a[2:])
+        elif a == '--mark':
+            State.mark = True
+        elif a == '--keep-directives':
+            State.keep_directives = True
+        elif a == '--relocs':
+            load_relocs(args.pop(0))
     out = []
     process(sys.stdin.read(), dirs, out.append)
     sys.stdout.write(''.join(out))
