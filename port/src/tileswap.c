@@ -48,6 +48,10 @@ typedef struct {
 extern const PortPaletteGroup* gPaletteGroups[];
 extern const u8 gGlobalGfxAndPalettes[];
 
+/* the group whose graphics each 4 KB block of BG VRAM holds right now (0xff: none / unknown) */
+#define VRAM_BLOCKS 16
+static uint8_t sBlockGroup[VRAM_BLOCKS];
+
 static Slot sSlots[MAX_SLOTS];
 static bool sUsed[MAX_SLOTS];
 static int sArea = -1, sRoom = -1;
@@ -110,11 +114,44 @@ static void BuildPalette(uint16_t* out, int paletteGroup) {
     }
 }
 
+/*
+ * Which group's graphics are in VRAM. The game marks a group as loaded when it
+ * requests the copy, but the copy happens after the frame is drawn (and Minish
+ * Village spreads it over 8 frames), so VRAM is compared with the sources.
+ * A block that matches no group (still loading, or changed by tile animation)
+ * is taken to hold the group the game has selected.
+ */
+static void FindVramGroups(void) {
+    const uint8_t* vram = (const uint8_t*)(uintptr_t)PORT_VRAM_ADDR;
+    bool matched[VRAM_BLOCKS] = { false };
+    int i, g, c;
+    memset(sBlockGroup, 0xff, sizeof(sBlockGroup));
+    for (i = 0; i < MAX_SLOTS; i++) {
+        if (!sUsed[i])
+            continue;
+        for (g = 0; g < MAX_GROUPS; g++) {
+            for (c = 0; c < sSlots[i].chunkCount[g]; c++) {
+                const Chunk* ch = &sSlots[i].chunks[g][c];
+                uint32_t b = ch->dest >> 12;
+                if (b >= VRAM_BLOCKS)
+                    continue;
+                if (!matched[b] && memcmp(vram + ch->dest, ch->src, ch->size) == 0) {
+                    sBlockGroup[b] = (uint8_t)g;
+                    matched[b] = true;
+                } else if (!matched[b] && g == gRoomVars.graphicsGroups[i]) {
+                    sBlockGroup[b] = (uint8_t)g;
+                }
+            }
+        }
+    }
+}
+
 void Port_TileSwapPrepareFrame(void) {
     int i, g;
     sActive = sArea == gRoomControls.area && sRoom == gRoomControls.room;
     if (!sActive)
         return;
+    FindVramGroups();
     for (i = 0; i < MAX_SLOTS; i++) {
         if (!sUsed[i])
             continue;
@@ -148,11 +185,14 @@ const uint8_t* Port_TileSwapCharData(uint32_t charBase, uint16_t entry, bool bpp
         if (!sUsed[i])
             continue;
         group = RegionGroup(s->regions, mx - GBA_WIDTH / 2, my - GBA_HEIGHT / 2);
-        if (group >= MAX_GROUPS || group == gRoomVars.graphicsGroups[i])
+        if (group >= MAX_GROUPS)
             continue;
         for (c = 0; c < s->chunkCount[group]; c++) {
             const Chunk* ch = &s->chunks[group][c];
             if (addr >= ch->dest && addr < ch->dest + ch->size) {
+                if ((ch->dest >> 12) < VRAM_BLOCKS && sBlockGroup[ch->dest >> 12] == group &&
+                    (s->paletteGroup[group] < 0 || group == gRoomVars.graphicsGroups[i]))
+                    return NULL; /* VRAM already holds it */
                 if (s->paletteGroup[group] >= 0)
                     *palette = s->palette[group];
                 /* a base that the VRAM offset indexes */

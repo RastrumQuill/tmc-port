@@ -13,6 +13,10 @@
  * temporarily redirected to a buffer filled with the open bus pattern, the
  * faulting instruction is single stepped, and the register is restored
  * afterwards. Real crashes (any other address) are not affected.
+ *
+ * Pointers just below NULL (the top 64 KB of the address space, e.g. an
+ * animation that steps back from a NULL frame pointer) read the same open bus
+ * pattern; on the GBA that area is unmapped and also reads as open bus.
  */
 #define _GNU_SOURCE
 #include "port.h"
@@ -22,11 +26,22 @@
 #include <string.h>
 
 #define LOW_LIMIT 0x10000u
+#define HIGH_START 0xFFFF0000u
 #define OPEN_BUS 0xE3A02004u
 
 /* fake low memory, padded so that negative-free offsets up to LOW_LIMIT + 64K stay inside */
 static uint32_t sFakeLow[(LOW_LIMIT * 2) / 4];
 static int sGuardCount;
+
+static bool IsGuarded(uint32_t addr) {
+    return addr < LOW_LIMIT || addr >= HIGH_START;
+}
+
+/* what to add to a guarded base register: low addresses map to sFakeLow, high ones to sFakeLow (wrapping) */
+static uint32_t Redirect(uint32_t value) {
+    uint32_t fake = (uint32_t)(uintptr_t)sFakeLow;
+    return value + (value < LOW_LIMIT ? fake : fake + LOW_LIMIT);
+}
 
 static void FillFakeLow(void) {
     size_t i;
@@ -68,7 +83,7 @@ static int FindAddressRegister(const uint8_t* p, const uint32_t* regs, uint32_t 
     } else if ((op >= 0xA0 && op <= 0xA7) || op == 0xAC || op == 0xAD || op == 0xAA || op == 0xAB) {
         /* moffs or string instructions: esi/edi based */
         if (op == 0xA4 || op == 0xA5 || op == 0xAC || op == 0xAD || op == 0xA6 || op == 0xA7)
-            return (regs[6] < LOW_LIMIT) ? 6 : 7;
+            return IsGuarded(regs[6]) ? 6 : 7;
         if (op == 0xAA || op == 0xAB)
             return 7;
         return -1;
@@ -89,9 +104,9 @@ static int FindAddressRegister(const uint8_t* p, const uint32_t* regs, uint32_t 
     } else if (!(rm == 5 && mod == 0)) {
         base = rm;
     }
-    if (base >= 0 && regs[base] < LOW_LIMIT)
+    if (base >= 0 && IsGuarded(regs[base]))
         return base;
-    if (index >= 0 && regs[index] < LOW_LIMIT)
+    if (index >= 0 && IsGuarded(regs[index]))
         return index;
     (void)faultAddr;
     return -1;
@@ -116,17 +131,17 @@ static void OnSegv(int sig, siginfo_t* info, void* ctx) {
     (void)sig;
     for (i = 0; i < 8; i++)
         regs[i] = (uint32_t)g[sGregIndex[i]];
-    if (addr < LOW_LIMIT && !sGuard.pending) {
+    if (IsGuarded(addr) && !sGuard.pending) {
         r = FindAddressRegister((const uint8_t*)(uintptr_t)g[REG_EIP], regs, addr);
         if (r >= 0 && r != 4) {
             sGuard.reg = r;
             sGuard.orig = regs[r];
-            sGuard.moved = regs[r] + (uint32_t)(uintptr_t)sFakeLow;
+            sGuard.moved = Redirect(regs[r]);
             sGuard.pending = true;
             g[sGregIndex[r]] = (greg_t)sGuard.moved;
             g[REG_EFL] |= 0x100; /* single step */
             if (sGuardCount++ < 8 || getenv("TMC_NULL_LOG"))
-                Port_Log("emulated BIOS area access at 0x%04X (eip 0x%08X)", addr, (uint32_t)g[REG_EIP]);
+                Port_Log("emulated open bus access at 0x%08X (eip 0x%08X)", addr, (uint32_t)g[REG_EIP]);
             return;
         }
     }
@@ -192,12 +207,12 @@ static LONG CALLBACK OnException(EXCEPTION_POINTERS* ep) {
         int i, r;
         for (i = 0; i < 8; i++)
             regs[i] = *RegPtr(c, i);
-        if (addr < LOW_LIMIT && !sGuard.pending) {
+        if (IsGuarded(addr) && !sGuard.pending) {
             r = FindAddressRegister((const uint8_t*)(uintptr_t)c->Eip, regs, addr);
             if (r >= 0 && r != 4) {
                 sGuard.reg = r;
                 sGuard.orig = regs[r];
-                sGuard.moved = regs[r] + (uint32_t)(uintptr_t)sFakeLow;
+                sGuard.moved = Redirect(regs[r]);
                 sGuard.pending = true;
                 *RegPtr(c, r) = sGuard.moved;
                 c->EFlags |= 0x100;
