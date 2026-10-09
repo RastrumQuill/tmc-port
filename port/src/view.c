@@ -1,0 +1,173 @@
+/**
+ * @file view.c
+ * @brief Extended view: shows more of the world than the GBA's 240x160.
+ *
+ * The game logic still runs with its original 240x160 camera; the PC view is
+ * a larger window centered on it:
+ *
+ *  +------------------------------------------------+  view (gPortViewWidth x gPortViewHeight)
+ *  |                                                |
+ *  |         +-------------------+                  |
+ *  |         |  classic 240x160  |  <- camera of    |
+ *  |         |  (the game's own  |     the game     |
+ *  |         |   picture)        |                  |
+ *  |         +-------------------+                  |
+ *  |                                                |
+ *  +------------------------------------------------+
+ *
+ * - The two map layers are drawn from the pre-rendered tile map of the whole
+ *   room (gMapDataBottomSpecial / gMapDataTopSpecial), so there is real level
+ *   geometry everywhere, not just inside the 240x160 window.
+ * - The view is kept inside the room when the room is big enough and centered
+ *   (with black borders) when it is smaller.
+ * - Sprites are culled against the whole view (gPortScreen*), so entities and
+ *   on-screen checks work in the extra area too.
+ * - The UI layer (BG0) stays in the classic area.
+ * - Outside of normal gameplay (title, menus, map, cutscene subtasks) the
+ *   classic 240x160 picture is shown.
+ *
+ * Everything is latched at vblank, matching when the hardware latches the
+ * registers, VRAM and OAM the next frame is displayed with.
+ */
+#include "port.h"
+
+#include "global.h"
+#include "game.h"
+#include "main.h"
+#include "map.h"
+#include "room.h"
+#include "screen.h"
+
+extern u16 gMapDataTopSpecial[];
+extern u16 gMapDataBottomSpecial[];
+
+/* full room tile map: 128x128 8x8 tiles */
+#define SPECIAL_MAP_STRIDE 128
+
+int gPortScreenLeft = 0;
+int gPortScreenTop = 0;
+int gPortScreenWidth = GBA_WIDTH;
+int gPortScreenHeight = GBA_HEIGHT;
+
+static bool sActive;
+
+bool View_IsExtendedActive(void) {
+    return sActive;
+}
+
+static int BgIndex(const BgSettings* bg) {
+    if (bg == &gScreen.bg0)
+        return 0;
+    if (bg == &gScreen.bg1)
+        return 1;
+    if (bg == (const BgSettings*)&gScreen.bg2)
+        return 2;
+    if (bg == (const BgSettings*)&gScreen.bg3)
+        return 3;
+    return -1;
+}
+
+static bool GameplayState(void) {
+    if (gMain.task != TASK_GAME || gMain.state != GAMETASK_MAIN)
+        return false;
+    switch (gMain.substate) {
+        case GAMEMAIN_CHANGEROOM:
+        case GAMEMAIN_UPDATE:
+        case GAMEMAIN_BARRELUPDATE:
+            break;
+        default:
+            return false;
+    }
+    if ((gScreen.lcd.displayControl & 7) != 0)
+        return false;
+    if (gMapBottom.bgSettings == NULL && gMapTop.bgSettings == NULL)
+        return false;
+    if (gRoomControls.width == 0 || gRoomControls.height == 0)
+        return false;
+    return true;
+}
+
+static int Clamp(int v, int lo, int hi) {
+    if (v < lo)
+        return lo;
+    if (v > hi)
+        return hi;
+    return v;
+}
+
+/* left edge of the view in world pixels for one axis */
+static int ViewStart(int scroll, int origin, int roomSize, int classicSize, int viewSize) {
+    int start;
+    if (roomSize >= viewSize) {
+        start = Clamp(scroll + classicSize / 2 - viewSize / 2, origin, origin + roomSize - viewSize);
+    } else {
+        start = origin - (viewSize - roomSize) / 2;
+    }
+    /* the game's own 240x160 picture must stay fully visible */
+    return Clamp(start, scroll - (viewSize - classicSize), scroll);
+}
+
+static void SetupOverride(MapLayer* layer, const u16* specialMap) {
+    int bg;
+    PpuBgOverride* o;
+    BgSettings* settings = layer->bgSettings;
+    int dx, dy;
+    if (settings == NULL)
+        return;
+    bg = BgIndex(settings);
+    if (bg < 0 || bg > 3)
+        return;
+    o = &gPpuBgOverride[bg];
+    dx = (u16)gRoomControls.scroll_x - gRoomControls.origin_x;
+    dy = (u16)gRoomControls.scroll_y - gRoomControls.origin_y;
+    o->enabled = true;
+    o->map = specialMap;
+    o->strideTiles = SPECIAL_MAP_STRIDE;
+    o->widthTiles = Clamp((gRoomControls.width + 7) / 8, 0, SPECIAL_MAP_STRIDE);
+    o->heightTiles = Clamp((gRoomControls.height + 7) / 8, 0, SPECIAL_MAP_STRIDE);
+    /* the BG buffer holds whole 16x16 tiles starting one 8 pixel row above the camera,
+     * the BG offset (including screen shake) selects the pixel inside */
+    o->scrollX = (dx & ~0xF) + (s16)settings->xOffset;
+    o->scrollY = (dy & ~0xF) - 8 + (s16)settings->yOffset;
+    gPpuBgMode[bg] = PPU_BG_OVERRIDE;
+}
+
+void View_PrepareFrame(void) {
+    int i;
+    for (i = 0; i < 4; i++) {
+        gPpuBgOverride[i].enabled = false;
+        gPpuBgMode[i] = PPU_BG_CLASSIC_ONLY;
+    }
+
+    sActive = gPortConfig.extendedView && GameplayState();
+    Port_UpdateViewSize();
+
+    if (!sActive || (gPortViewWidth == GBA_WIDTH && gPortViewHeight == GBA_HEIGHT)) {
+        gPortViewOffsetX = (gPortViewWidth - GBA_WIDTH) / 2;
+        gPortViewOffsetY = (gPortViewHeight - GBA_HEIGHT) / 2;
+        gPortScreenLeft = 0;
+        gPortScreenTop = 0;
+        gPortScreenWidth = GBA_WIDTH;
+        gPortScreenHeight = GBA_HEIGHT;
+        return;
+    }
+
+    {
+        int scrollX = gRoomControls.scroll_x;
+        int scrollY = gRoomControls.scroll_y;
+        int viewX = ViewStart(scrollX, gRoomControls.origin_x, gRoomControls.width, GBA_WIDTH, gPortViewWidth);
+        int viewY = ViewStart(scrollY, gRoomControls.origin_y, gRoomControls.height, GBA_HEIGHT, gPortViewHeight);
+        gPortViewOffsetX = scrollX - viewX;
+        gPortViewOffsetY = scrollY - viewY;
+    }
+    gPortScreenLeft = -gPortViewOffsetX;
+    gPortScreenTop = -gPortViewOffsetY;
+    gPortScreenWidth = gPortViewWidth;
+    gPortScreenHeight = gPortViewHeight;
+
+    SetupOverride(&gMapBottom, gMapDataBottomSpecial);
+    SetupOverride(&gMapTop, gMapDataTopSpecial);
+    /* BG3 is used for (repeating) backgrounds like clouds or the sky */
+    if (gPpuBgMode[3] == PPU_BG_CLASSIC_ONLY)
+        gPpuBgMode[3] = PPU_BG_WRAP;
+}

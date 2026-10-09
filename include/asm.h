@@ -13,7 +13,13 @@ extern void UpdateScrollVram(void);
 extern u32 sub_080B1BA4(u32, u32, u32);
 extern void LoadResourceAsync(const void* src, void* dest, u32 size);
 extern u32 GetFuserId(struct Entity_*);
+#ifdef PC
+// GetFuserId returns the fuser id in r0 and its name text id in r1 on the GBA.
+extern s64 PortGetFuserIdAndTextId(struct Entity_*);
+#define GetFuserIdAndFuserTextId(ent) ((union SplitDWord)PortGetFuserIdAndTextId(ent))
+#else
 #define GetFuserIdAndFuserTextId(ent) ((union SplitDWord)(*(MultiReturnTypeSingleEntityArg)(&GetFuserId))(ent))
+#endif
 extern u32 CheckPlayerInRegion(u32 centerX, u32 centerY, u32 radiusX, u32 radiusY);
 extern u32 GravityUpdate(struct Entity_* entity, u32 gravity);
 enum {

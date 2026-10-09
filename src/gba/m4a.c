@@ -553,7 +553,9 @@ void MPlayExtender(CgbChannel* cgbChans) {
 }
 
 void MusicPlayerJumpTableCopy(void) {
+#ifndef PC
     asm("swi 0x2A");
+#endif
 }
 
 void ClearChain(void* x) {
@@ -1290,7 +1292,9 @@ void CgbSound(void) {
         if (channels->modify & CGB_CHANNEL_MO_PIT) {
             if (ch < 4 && (channels->type & TONEDATA_TYPE_FIX)) {
                 int dac_pwm_rate = REG_SOUNDBIAS_H;
+#ifndef PC
                 asm("" ::: "r0");
+#endif
                 if (dac_pwm_rate < 0x40) // if PWM rate = 32768 Hz
                     channels->frequency = (channels->frequency + 2) & 0x7fc;
                 else if (dac_pwm_rate < 0x80) // if PWM rate = 65536 Hz

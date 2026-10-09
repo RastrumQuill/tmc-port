@@ -28,6 +28,13 @@
 
 #define CpuFastCopy(src, dest, size) CpuFastSet(src, dest, ((size) / (32 / 8) & 0x1FFFFF))
 
+#ifdef PC
+// DMA registers have side effects that plain memory cannot emulate; the PC port
+// performs the transfer in software (port/src/dma.c).
+void PortDmaSet(u32 dmaNum, const void* src, void* dest, u32 control);
+void PortDmaStop(u32 dmaNum);
+#define DmaSet(dmaNum, src, dest, control) PortDmaSet(dmaNum, (const void*)(src), (void*)(dest), (u32)(control))
+#else
 #define DmaSet(dmaNum, src, dest, control)           \
     {                                                \
         vu32* dmaRegs = (vu32*)REG_ADDR_DMA##dmaNum; \
@@ -36,6 +43,7 @@
         dmaRegs[2] = (vu32)(control);                \
         dmaRegs[2];                                  \
     }
+#endif
 
 #define DMA_FILL(dmaNum, value, dest, size, bit)                                                    \
     {                                                                                               \
@@ -70,6 +78,9 @@
 #define DmaCopy16(dmaNum, src, dest, size) DMA_COPY(dmaNum, src, dest, size, 16)
 #define DmaCopy32(dmaNum, src, dest, size) DMA_COPY(dmaNum, src, dest, size, 32)
 
+#ifdef PC
+#define DmaStop(dmaNum) PortDmaStop(dmaNum)
+#else
 #define DmaStop(dmaNum)                                             \
     {                                                               \
         vu16* dmaRegs = (vu16*)REG_ADDR_DMA##dmaNum;                \
@@ -77,6 +88,7 @@
         dmaRegs[5] &= ~DMA_ENABLE;                                  \
         dmaRegs[5];                                                 \
     }
+#endif
 
 #define DmaCopyLarge(dmaNum, src, dest, size, block, bit) \
     {                                                     \

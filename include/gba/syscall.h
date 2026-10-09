@@ -13,8 +13,14 @@
 #define RESET_REGS 0x80
 #define RESET_ALL 0xFF
 
+#ifdef PC
+// The PC port implements the BIOS in C (port/src/bios.c).
+void PortSystemCall(u32 num);
+#define SystemCall(x) PortSystemCall(x)
+#else
 #define SystemCall(x) \
     { asm("svc " #x); }
+#endif
 
 extern void SoundBiasReset();
 extern void SoundBiasSet();
@@ -62,6 +68,12 @@ int MultiBoot(struct MultiBootParam* mp);
 
 s32 Div(s32 num, s32 denom);
 
+#ifdef PC
+// BIOS Div returns the quotient in r0 and the remainder in r1; emulate that 64-bit return.
+s64 PortDivAndMod(s32 num, s32 denom);
+#define DivAndMod(num, denom) ((union SplitDWord)PortDivAndMod(num, denom))
+#else
 #define DivAndMod(num, denom) ((union SplitDWord)(*(MultiReturnTypeTwoS32Arg)(&Div))(num, denom))
+#endif
 
 #endif // SYSCALL_H

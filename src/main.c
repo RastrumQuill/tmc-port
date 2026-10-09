@@ -92,8 +92,10 @@ void AgbMain(void) {
 
 extern u8 gUnk_02000030[];
 // Interrupt handlers that are loaded into RAM.
+#ifndef PC
 extern u8 sub_080B197C[];
 extern u8 ram_sub_080B197C[];
+#endif
 extern u8 RAMFUNCS_END[];
 
 extern u8 gCopyToEndOfEwram_Start[];
@@ -109,10 +111,21 @@ static void InitOverlays(void) {
     REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
     size = 0x3FFD0;
     MemClear(gUnk_02000030, size);
+#ifdef PC
+    {
+        // The PC port implements the IWRAM routines in C; only the data tables
+        // that follow them need to be copied (they contain IWRAM pointers).
+        extern u8 gUnk_080B2A70[];
+        extern u8 ram_gUnk_080B2A70[];
+        size = (u32)RAMFUNCS_END - (u32)gUnk_080B2A70;
+        MemCopy(gUnk_080B2A70, ram_gUnk_080B2A70, size);
+    }
+#else
     size = (u32)RAMFUNCS_END - (u32)sub_080B197C;
     if (size != 0) {
         MemCopy(sub_080B197C, ram_sub_080B197C, size);
     }
+#endif
 
     size = (u32)gCopyToEndOfEwram_End - (u32)gCopyToEndOfEwram_Start;
     if (size != 0) {

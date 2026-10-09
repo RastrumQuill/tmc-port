@@ -39,7 +39,11 @@ void CopyOAM(void) {
         d = (u16*)&gOAMControls.oam[gOAMControls.updated];
         for (; rem != 0; rem--) {
             *d = 0x2A0;
+#ifdef PC
+            d = (u16*)((u8*)d + 8);
+#else
             (u8*)d += 8;
+#endif
         }
     }
     if (gOAMControls.unk[0].unk7) {

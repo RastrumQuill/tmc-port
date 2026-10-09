@@ -89,3 +89,15 @@ __pycache__
 Info.plist
 ctx.c
 !doxygen_config.py
+
+# PC port
+!port/tools/*.py
+/tmc_pc
+/tmc_pc.exe
+*.sav
+tmc_pc.ini
+
+# host tool install artifacts
+/tools/include/
+/tools/lib/
+/tools/share/

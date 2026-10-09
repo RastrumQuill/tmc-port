@@ -251,14 +251,14 @@ static const s8 sOffsets3[] = {
     -9, -9, 1, -9, 9, -9, -9, 1, 9, 1, -9, 9, 1, 9, 9, 9, 0, 0,
 };
 
-static const s8* const sOffsets[] = {
+STATIC_AFTER_EXTERN const s8* const sOffsets[] = {
     sOffsets0,
     sOffsets1And2,
     sOffsets1And2,
     sOffsets3,
 };
 
-static const s8 gUnk_0812AABC[] = {
+STATIC_AFTER_EXTERN const s8 gUnk_0812AABC[] = {
     120,
     80,
     40,
@@ -277,14 +277,14 @@ static const Hitbox sHitbox3 = {
     0, 0, 8, 7, 7, 8, 14, 14,
 };
 
-static const Hitbox* const sHitboxes[] = {
+STATIC_AFTER_EXTERN const Hitbox* const sHitboxes[] = {
     &sHitbox0,
     &sHitbox1And2,
     &sHitbox1And2,
     &sHitbox3,
 };
 
-static const u8 gUnk_0812AAE8[] = {
+STATIC_AFTER_EXTERN const u8 gUnk_0812AAE8[] = {
     0,
     12,
     16,

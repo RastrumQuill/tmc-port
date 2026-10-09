@@ -235,7 +235,7 @@ static const DiggingCaveEntrance diggingCaveEntrancesHyliaDigCaves[] = {
 };
 
 /** Holds the lists of DiggingCaveEntrances indexed by area id. */
-static const DiggingCaveEntrance* const diggingCaveEntrances[] = {
+STATIC_AFTER_EXTERN const DiggingCaveEntrance* const diggingCaveEntrances[] = {
     diggingCaveEntrancesMinishWoods,
     diggingCaveEntrancesEmpty,
     diggingCaveEntrancesHyruleTown,

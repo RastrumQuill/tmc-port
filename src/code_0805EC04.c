@@ -86,7 +86,11 @@ void UpdatePlayerInput(void) {
             do {
                 flags = playerMacro->flags >> 0xe;
                 if (flags == 1) // PLAYER_MACRO_JUMPTO
+#ifdef PC
+                    playerMacro = (PlayerMacroEntry*)((u8*)playerMacro + (s16)playerMacro->keys);
+#else
                     (u8*)playerMacro += ((s16)playerMacro->keys);
+#endif
                 else {
                     if (flags == 3) { // PLAYER_MACRO_END
                         playerInput->playerMacroWaiting = 0;

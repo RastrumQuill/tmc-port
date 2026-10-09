@@ -279,7 +279,11 @@ u32 sub_0806F048(Entity* ent, u16* a2) {
 }
 
 u32 sub_0806F050(Entity* ent, u16* a2) {
+#ifdef PC
+    ent->child = (Entity*)(a2 + 1);
+#else
     (u16*)ent->child = a2 + 1;
+#endif
     ent->hitType = 0;
     return sub_0806EF88(ent);
 }

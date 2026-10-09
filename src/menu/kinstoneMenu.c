@@ -357,7 +357,11 @@ void KinstoneMenu_Type5_Overlay2(void) {
 
 void KinstoneMenu_Type5_Overlay3(void) {
     // TODO figure out why in some place s16 is needed and u16 in others
+#ifdef PC
+    if ((s16)--gMenu.transitionTimer < 0) {
+#else
     if (--(s16)gMenu.transitionTimer < 0) {
+#endif
         SetMenuType(2);
     }
 }
@@ -617,10 +621,15 @@ u32 sub_080A4418(u32 param_1, u32 param_2) {
     if (t2) {
         LZ77UnCompVram(src, dest);
     } else {
+#ifdef PC
+        DmaSet(3, src, dest, ((DMA_ENABLE | DMA_START_NOW | DMA_32BIT | DMA_SRC_INC | DMA_DEST_INC) << 16) + 0x80);
+        return DMA3->control.word;
+#else
         DMA3->sourceAddress = src;
         DMA3->destinationAddress = dest;
         DMA3->control.word = ((DMA_ENABLE | DMA_START_NOW | DMA_32BIT | DMA_SRC_INC | DMA_DEST_INC) << 16) + 0x80;
         return DMA3->control.word;
+#endif
     }
 }
 

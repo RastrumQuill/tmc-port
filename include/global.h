@@ -75,6 +75,14 @@
 
 #define super (&this->base)
 
+// The GBA compiler accepts "static" on a definition that was previously declared "extern".
+// Modern compilers reject this, so the PC build drops the "static".
+#ifdef PC
+#define STATIC_AFTER_EXTERN
+#else
+#define STATIC_AFTER_EXTERN static
+#endif
+
 #if NON_MATCHING
 #define ASM_FUNC(path, decl)
 #else
