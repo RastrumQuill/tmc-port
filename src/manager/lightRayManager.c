@@ -36,12 +36,32 @@ typedef struct {
 
 #define ZS(this) ((u8*)&this->speed)
 
+#ifdef PC
+// The PC port's larger view: the ray maps don't repeat seamlessly, so the
+// port scales this picture up instead (the parallax part keeps its speed).
+// The request is repeated while the rays fade out (their update stops then).
+enum { PORT_BG_STRETCH = 3 };
+void Port_ViewBgHint(int bg, int mode, int parallaxX, int parallaxY);
+static bool8 sPortRays;
+static int sPortRayParallax[2];
+
+static void PortRayHint(int parallaxX, int parallaxY) {
+    sPortRays = TRUE;
+    sPortRayParallax[0] = parallaxX;
+    sPortRayParallax[1] = parallaxY;
+}
+#endif
+
 void LightRayManager_Main(LightRayManager* this) {
     u8 gfxGroup;
     u8* pbVar2;
 
     LightRayManager_Actions[super->action](this);
     gUnk_08107C48[this->unk_21](this);
+#ifdef PC
+    if (sPortRays && (gScreen.lcd.displayControl & DISPCNT_BG3_ON))
+        Port_ViewBgHint(3, PORT_BG_STRETCH, sPortRayParallax[0], sPortRayParallax[1]);
+#endif
     gfxGroup = gLightRayManagerGfxGroups[this->unk_21];
     if ((gfxGroup != 0) && (this->gfxGroup != gfxGroup)) {
         this->gfxGroup = gfxGroup;
@@ -63,12 +83,18 @@ static void LightRayManager_OnEnterRoom(LightRayManager* this) {
 }
 
 static void LightRayManager_OnExitRoom(void) {
+#ifdef PC
+    sPortRays = FALSE;
+#endif
     gScreen.lcd.displayControl &= ~DISPCNT_BG3_ON;
     gScreen.controls.layerFXControl = 0;
     DisableVBlankDMA();
 }
 
 void LightRayManager_Init(LightRayManager* this) {
+#ifdef PC
+    sPortRays = FALSE;
+#endif
     super->timer = 0;
     this->gfxGroup = 0;
     this->unk_21 = 0;
@@ -193,13 +219,6 @@ void sub_0805732C(u32 param_1, u32 param_2) {
 void nullsub_494() {
 }
 
-#ifdef PC
-// The PC port's larger view: the ray maps don't repeat seamlessly, so the
-// port scales this picture up instead (the parallax part keeps its speed).
-enum { PORT_BG_STRETCH = 3 };
-void Port_ViewBgHint(int bg, int mode, int parallaxX, int parallaxY);
-#endif
-
 void sub_080573AC(LightRayManager* this) {
     s32 sin, frameCount;
     gRoomControls.bg3OffsetX.WORD -= 0x2000;
@@ -209,8 +228,8 @@ void sub_080573AC(LightRayManager* this) {
     sin = gSineTable[(gRoomTransition.frameCount & 0xff) + 0x40];
     sub_0805732C((sin >> 5) + 0x10, gRoomTransition.frameCount);
 #ifdef PC
-    Port_ViewBgHint(3, PORT_BG_STRETCH, (gRoomControls.scroll_x - gRoomControls.origin_x) >> 1,
-                    (gRoomControls.scroll_y - gRoomControls.origin_y) >> 1);
+    PortRayHint((gRoomControls.scroll_x - gRoomControls.origin_x) >> 1,
+                (gRoomControls.scroll_y - gRoomControls.origin_y) >> 1);
 #endif
     if (this->unk_22 == 0) {
         if ((gRoomTransition.frameCount & 0x1f) == 0) {
@@ -231,7 +250,7 @@ void sub_08057450(LightRayManager* this) {
     gScreen.bg3.subTileMap = &gBG3Buffer[(y / 0x40) << 8];
 #ifdef PC
     // (VRAM holds a window of a taller map: the vertical parallax can't be kept)
-    Port_ViewBgHint(3, PORT_BG_STRETCH, 0, 0);
+    PortRayHint(0, 0);
 #endif
     if (this->unk_34 != gScreen.bg3.subTileMap) {
         this->unk_34 = gScreen.bg3.subTileMap;
