@@ -46,6 +46,8 @@ extern u16 gMapDataBottomSpecial[];
 /* full room tile map: 128x128 8x8 tiles */
 #define SPECIAL_MAP_STRIDE 128
 
+int gPortClipLeft, gPortClipTop, gPortClipRight = GBA_WIDTH, gPortClipBottom = GBA_HEIGHT;
+bool gPortSpriteEdgeFade;
 int gPortScreenLeft = 0;
 int gPortScreenTop = 0;
 int gPortScreenWidth = GBA_WIDTH;
@@ -144,6 +146,11 @@ void View_PrepareFrame(void) {
     sActive = gPortConfig.extendedView && GameplayState();
     Port_UpdateViewSize();
     gPpuHudAnchor = false;
+    gPortClipLeft = 0;
+    gPortClipTop = 0;
+    gPortClipRight = gPortViewWidth;
+    gPortClipBottom = gPortViewHeight;
+    gPortSpriteEdgeFade = false;
 
     if (!sActive || (gPortViewWidth == GBA_WIDTH && gPortViewHeight == GBA_HEIGHT)) {
         gPortViewOffsetX = (gPortViewWidth - GBA_WIDTH) / 2;
@@ -162,6 +169,14 @@ void View_PrepareFrame(void) {
         int viewY = ViewStart(scrollY, gRoomControls.origin_y, gRoomControls.height, GBA_HEIGHT, gPortViewHeight);
         gPortViewOffsetX = scrollX - viewX;
         gPortViewOffsetY = scrollY - viewY;
+        /* the room, and always the classic screen */
+        gPortClipLeft = Clamp(gRoomControls.origin_x - viewX, 0, gPortViewOffsetX);
+        gPortClipTop = Clamp(gRoomControls.origin_y - viewY, 0, gPortViewOffsetY);
+        gPortClipRight = Clamp(gRoomControls.origin_x + gRoomControls.width - viewX, gPortViewOffsetX + GBA_WIDTH,
+                               gPortViewWidth);
+        gPortClipBottom = Clamp(gRoomControls.origin_y + gRoomControls.height - viewY,
+                                gPortViewOffsetY + GBA_HEIGHT, gPortViewHeight);
+        gPortSpriteEdgeFade = true;
     }
     gPortScreenLeft = -gPortViewOffsetX;
     gPortScreenTop = -gPortViewOffsetY;

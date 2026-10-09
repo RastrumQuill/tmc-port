@@ -382,6 +382,37 @@ PortOamExt gPortOamExtWork[128];
 bool gPortHudSprites;
 PortOamExt gPortOamExtLive[128];
 
+#define OAMC ((u8*)&gOAMControls)
+/* sprites beyond the 128 OAM entries, in the extended view */
+static PortOamExtra sOamExtraWork[PORT_OAM_EXTRA];
+static int sOamExtraCount;
+PortOamExtra gPortOamExtraLive[PORT_OAM_EXTRA];
+int gPortOamExtraLiveCount;
+
+/* called with FlushSprites (src/affine.c), when the game starts a new sprite list */
+void Port_OamFlush(void) {
+    sOamExtraCount = 0;
+}
+
+/* sub_080AE218 (src/vram.c) moved the sprite tiles [start, end) to dest */
+void Port_OamMoveTiles(u32 start, u32 end, u32 dest) {
+    int i;
+    for (i = 0; i < sOamExtraCount; i++) {
+        u32 tile = sOamExtraWork[i].attr2 & 0x3FF;
+        if (tile >= start && tile < end)
+            sOamExtraWork[i].attr2 = (sOamExtraWork[i].attr2 & ~0x3FF) | ((tile - start + dest) & 0x3FF);
+    }
+}
+
+static bool OamExtraAllowed(void) {
+    return gPortScreenWidth > GBA_WIDTH || gPortScreenHeight > GBA_HEIGHT;
+}
+
+/* OAM (and the extra entries) can't take more sprites */
+static bool OamFull(void) {
+    return OAMC[3] >= 0x80 && (!OamExtraAllowed() || sOamExtraCount >= PORT_OAM_EXTRA);
+}
+
 extern u8* const gUnk_081326EC[];
 extern u32 gFrameObjLists[];
 extern u8 gUnk_020000C0[];
@@ -399,11 +430,11 @@ typedef struct {
     u32 attr2;       /* sb */
     const u8* list;  /* sl */
     u8 shadowOffset; /* fp[0x12] */
+    u32 tileHi;      /* PC: sprite tiles above the 10 bits of OAM (extra graphics slots) */
 } DrawState;
 
 static jmp_buf* sOamFullJump;
 
-#define OAMC ((u8*)&gOAMControls)
 
 /* sub_080B2874: emits the OAM entries of a frame object list. */
 static void EmitObjList(DrawState* s) {
@@ -448,30 +479,43 @@ static void EmitObjList(DrawState* s) {
             continue;
         {
             u32 attr01 = (y & 0xFF) | (((u32)x << 23) >> 7) | s->attr01 | ((attr & 0xC0) << 8);
-            u32 attr2;
-            struct OamData* oam = &gOAMControls.oam[index];
+            u32 attr2, tile;
+            PortOamExt* ext;
             attr01 ^= (attr & 0x3C) << 26;
-            *(u32*)oam = attr01;
             attr2 = list[-2] + attr2Base;
             if (attr & 1)
                 attr2 &= ~0xF000;
             attr2 += list[-1] << 8;
-            ((u16*)oam)[2] = (u16)attr2;
+            /* the full tile number; OAM keeps its low 10 bits */
+            tile = s->tileHi + (attr2 & 0x3FF);
 
-            gPortOamExtWork[index].x = (s16)x;
-            gPortOamExtWork[index].y = (s16)y;
-            gPortOamExtWork[index].attr0 = (u16)attr01;
-            gPortOamExtWork[index].attr1 = (u16)(attr01 >> 16);
-            gPortOamExtWork[index].valid = 1;
-            gPortOamExtWork[index].anchor = 0;
-            if (gPortHudSprites) {
-                gPortOamExtWork[index].anchor = PORT_ANCHOR_HUD | (s->x >= GBA_WIDTH / 2 ? PORT_ANCHOR_RIGHT : 0) |
-                                                (s->y >= GBA_HEIGHT / 2 ? PORT_ANCHOR_BOTTOM : 0);
+            if (index < 0x80) {
+                struct OamData* oam = &gOAMControls.oam[index];
+                *(u32*)oam = attr01;
+                ((u16*)oam)[2] = (u16)attr2;
+                ext = &gPortOamExtWork[index];
+            } else {
+                /* OAM is full: the extended view continues in the extra list */
+                sOamExtraWork[sOamExtraCount].attr2 = (u16)attr2;
+                ext = &sOamExtraWork[sOamExtraCount++].ext;
             }
-            index++;
+            ext->x = (s16)x;
+            ext->y = (s16)y;
+            ext->attr0 = (u16)attr01;
+            ext->attr1 = (u16)(attr01 >> 16);
+            ext->tile = (u16)tile;
+            ext->valid = 1;
+            ext->anchor = 0;
+            if (gPortHudSprites) {
+                ext->anchor = PORT_ANCHOR_HUD | (s->x >= GBA_WIDTH / 2 ? PORT_ANCHOR_RIGHT : 0) |
+                              (s->y >= GBA_HEIGHT / 2 ? PORT_ANCHOR_BOTTOM : 0);
+            }
+            if (index < 0x80)
+                index++;
             if (index >= 0x80) {
                 OAMC[3] = 0x80;
-                longjmp(*sOamFullJump, 1);
+                if (OamFull())
+                    longjmp(*sOamFullJump, 1);
             }
         }
     } while (count != 0);
@@ -482,7 +526,8 @@ static void EmitObjList(DrawState* s) {
 static void LoadEntityState(DrawState* s, Entity* e) {
     u32 flash = (e->iframes > 0) ? OAMC[0xe] : 0;
     u32 settings = *(u32*)((u8*)e + 0x18);
-    s->attr2 = e->spriteVramOffset | (((e->palette.raw | flash) & 0xF) << 12) | ((U8AT(e, 0x1b) & 0xC0) << 4);
+    s->attr2 = (e->spriteVramOffset & 0x3FF) | (((e->palette.raw | flash) & 0xF) << 12) | ((U8AT(e, 0x1b) & 0xC0) << 4);
+    s->tileHi = e->spriteVramOffset & ~0x3FF;
     s->x = e->x.HALF.HI + e->spriteOffsetX;
     s->y = e->y.HALF.HI + e->z.HALF.HI + e->spriteOffsetY;
     if ((settings & 3) != 2) {
@@ -562,7 +607,27 @@ typedef struct {
     u8 priority;
 } Shadow;
 
-static Shadow sShadows[0x40];
+static Shadow sShadows[0xFF];
+
+/*
+ * PC: the larger view can have more than the GBA's 64 entities per priority
+ * layer and 64 shadows; the extra ones are kept here instead of being dropped.
+ */
+#define DRAW_EXTRA 1024
+static Entity* sDrawExtra[4][DRAW_EXTRA];
+static u32 sDrawExtraCount[4];
+static Entity* sDrawMerged[0x40 + DRAW_EXTRA];
+
+/* with the reset of the draw lists in CopyOAM (src/affine.c) */
+void Port_DrawListsReset(void) {
+    memset(sDrawExtraCount, 0, sizeof(sDrawExtraCount));
+}
+
+/* DrawEntity (code_08003FC4.c) when draw list `which` is full */
+void Port_DrawListOverflow(u32 which, Entity* e) {
+    if (OamExtraAllowed() && sDrawExtraCount[which] < DRAW_EXTRA)
+        sDrawExtra[which][sDrawExtraCount[which]++] = e;
+}
 
 /* sub_080B255C */
 static void DrawEntitySprite(Entity* e) {
@@ -602,6 +667,7 @@ static void DrawEntitySprite(Entity* e) {
             o.list = *(const u8* const*)((const u8*)ram_0x80b2b58 + shadowSize + overlay * 2);
             o.attr01 = 0;
             o.attr2 &= 0xC00;
+            o.tileHi = 0;
             EmitObjList(&o);
             DrawEntityBody(&s, e);
             return;
@@ -616,7 +682,7 @@ static void DrawEntitySprite(Entity* e) {
     if ((prio & 0x20) && (OAMC[1] & 1))
         return;
     shadowList = gUnk_081326EC[4];
-    if (shadowList[0] >= 0x40)
+    if (shadowList[0] >= (OamExtraAllowed() ? 0xFF : 0x40))
         return;
     {
         Shadow* sh = &sShadows[shadowList[0]];
@@ -633,9 +699,7 @@ static u32 DrawKey(Entity* e) {
 }
 
 /* Gapped insertion sort of the draw list (same algorithm as the original, keeps the exact order). */
-static void ResolveOamDrawPriority(u8* list) {
-    Entity** first = (Entity**)(list + 4);
-    u32 count = list[0];
+static void ResolveOamDrawPriority(Entity** first, u32 count) {
     s32 gap = count - 1;
     Entity** last = first + gap;
     if (gap == 0)
@@ -674,33 +738,42 @@ static void DrawShadows(void) {
         s.attr2 = sShadows[i].priority << 10;
         s.attr01 = 0;
         s.shadowOffset = 0;
+        s.tileHi = 0;
         EmitObjList(&s);
     }
 }
 
-static void DrawList(u8* list) {
-    u32 i, n;
-    if (list[0] == 0)
+static void DrawList(u32 which) {
+    u8* list = gUnk_081326EC[which];
+    u32 i, n = list[0], extra = sDrawExtraCount[which];
+    Entity** ents = (Entity**)(list + 4);
+    if (n == 0)
         return;
     gUnk_081326EC[4][0] = 0;
-    ResolveOamDrawPriority(list);
-    n = list[0];
+    if (extra != 0) {
+        /* the list as if it were longer */
+        memcpy(sDrawMerged, ents, n * sizeof(Entity*));
+        memcpy(sDrawMerged + n, sDrawExtra[which], extra * sizeof(Entity*));
+        ents = sDrawMerged;
+        n += extra;
+    }
+    ResolveOamDrawPriority(ents, n);
     for (i = 0; i < n; i++)
-        DrawEntitySprite(((Entity**)list)[i + 1]);
+        DrawEntitySprite(ents[i]);
     DrawShadows();
 }
 
 void ram_DrawEntities(void) {
     jmp_buf jump;
     jmp_buf* outer = sOamFullJump;
-    if (OAMC[3] >= 0x80)
+    if (OamFull())
         return;
     sOamFullJump = &jump;
     if (setjmp(jump) == 0) {
-        DrawList(gUnk_081326EC[0]);
-        DrawList(gUnk_081326EC[1]);
-        DrawList(gUnk_081326EC[2]);
-        DrawList(gUnk_081326EC[3]);
+        DrawList(0);
+        DrawList(1);
+        DrawList(2);
+        DrawList(3);
     }
     sOamFullJump = outer;
 }
@@ -711,7 +784,7 @@ void ram_sub_080ADA04(OAMCommand* cmd, void* objList) {
     DrawState s;
     if (((u8*)objList)[0] == 0)
         return;
-    if (OAMC[3] >= 0x80)
+    if (OamFull())
         return;
     s.list = objList;
     s.x = cmd->x;
@@ -719,6 +792,7 @@ void ram_sub_080ADA04(OAMCommand* cmd, void* objList) {
     s.attr01 = *(u32*)&cmd->_4;
     s.attr2 = cmd->_8;
     s.shadowOffset = 0;
+    s.tileHi = 0;
     outer = sOamFullJump;
     sOamFullJump = &jump;
     if (setjmp(jump) == 0)
@@ -736,8 +810,11 @@ void ram_DrawDirect(OAMCommand* cmd, u32 spriteIndex, u32 frameIndex) {
 }
 
 void Port_OnOamCopy(const void* src, void* dest, uint32_t bytes) {
-    if ((uintptr_t)dest == PORT_OAM_ADDR && src == (const void*)gOAMControls.oam && bytes >= PORT_OAM_SIZE)
+    if ((uintptr_t)dest == PORT_OAM_ADDR && src == (const void*)gOAMControls.oam && bytes >= PORT_OAM_SIZE) {
         memcpy(gPortOamExtLive, gPortOamExtWork, sizeof(gPortOamExtLive));
+        memcpy(gPortOamExtraLive, sOamExtraWork, sOamExtraCount * sizeof(PortOamExtra));
+        gPortOamExtraLiveCount = sOamExtraCount;
+    }
 }
 
 /* savestates (port/src/debug.c) */

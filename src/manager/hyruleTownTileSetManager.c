@@ -81,6 +81,35 @@ static const HyruleTownTileSetManagerGfxInfo gHyruleTownTileSetManagerGfxInfosFe
 };
 extern const u8 gGlobalGfxAndPalettes[];
 
+#ifdef PC
+// Tells the PC port which graphics each region uses, so its larger view can
+// draw far away parts of the town correctly.
+void Port_TileSwapRegister(int slot, const u16* regions);
+void Port_TileSwapAddChunk(int slot, int group, const void* src, const void* dest, u32 size);
+
+static void HyruleTownTileSetManager_RegisterPort(void) {
+    static const u16* const sRegions[] = { gHyruleTownTileSetManager_regions0, gHyruleTownTileSetManager_regions1,
+                                          gHyruleTownTileSetManager_regions2 };
+    static const u16* const sFestivalRegions[] = { gHyruleTownTileSetManager_festivalRegions0,
+                                                  gHyruleTownTileSetManager_festivalRegions1,
+                                                  gHyruleTownTileSetManager_festivalRegions2 };
+    bool32 festival = gRoomControls.area == AREA_FESTIVAL_TOWN;
+    const HyruleTownTileSetManagerGfxInfo* infos =
+        festival ? gHyruleTownTileSetManagerGfxInfosFestival : gHyruleTownTileSetManagerGfxInfos;
+    u32 slot, group;
+    for (slot = 0; slot < 3; slot++) {
+        Port_TileSwapRegister(slot, festival ? sFestivalRegions[slot] : sRegions[slot]);
+        // slot n loads groups 2n and 2n + 1
+        for (group = slot * 2; group < slot * 2 + 2; group++) {
+            Port_TileSwapAddChunk(slot, group, &gGlobalGfxAndPalettes[infos[group].gfx1], infos[group].dest1,
+                                  BG_SCREEN_SIZE * 2);
+            Port_TileSwapAddChunk(slot, group, &gGlobalGfxAndPalettes[infos[group].gfx2], infos[group].dest2,
+                                  BG_SCREEN_SIZE * 2);
+        }
+    }
+}
+#endif
+
 void HyruleTownTileSetManager_Main(HyruleTownTileSetManager* this) {
     if (super->action == 0) {
         super->action = 1;
@@ -89,6 +118,9 @@ void HyruleTownTileSetManager_Main(HyruleTownTileSetManager* this) {
         this->gfxGroup0 = 0xff;
         RegisterTransitionHandler(this, HyruleTownTileSetManager_OnEnterRoom, NULL);
         SetEntityPriority((Entity*)this, PRIO_PLAYER_EVENT);
+#ifdef PC
+        HyruleTownTileSetManager_RegisterPort();
+#endif
     }
     HyruleTownTileSetManager_UpdateLoadGfxGroups(this);
 }
@@ -100,6 +132,9 @@ void HyruleTownTileSetManager_OnEnterRoom(HyruleTownTileSetManager* this) {
     this->gfxGroup2 = 0xff;
     this->gfxGroup1 = 0xff;
     this->gfxGroup0 = 0xff;
+#ifdef PC
+    HyruleTownTileSetManager_RegisterPort();
+#endif
     HyruleTownTileSetManager_UpdateLoadGfxGroups(this);
 }
 

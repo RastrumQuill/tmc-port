@@ -96,6 +96,26 @@ const MinishVillageTileSetManagerGfxInfo gMinishVillageTileSetManagerGfxInfos[][
 
 const u8 gMinishVillateTileSetManagerPaletteGroups[] = { 0x16, 0x17, 0x17, 0x18, 0x18 };
 
+#ifdef PC
+// Tells the PC port which graphics each region uses, so its larger view can
+// draw far away parts of the village correctly.
+void Port_TileSwapRegister(int slot, const u16* regions);
+void Port_TileSwapAddChunk(int slot, int group, const void* src, const void* dest, u32 size);
+void Port_TileSwapSetPaletteGroup(int slot, int group, int paletteGroup);
+
+static void MinishVillageTileSetManager_RegisterPort(void) {
+    u32 group, i;
+    Port_TileSwapRegister(0, gMinishVillageTileSetManagerRegions);
+    for (group = 0; group < ARRAY_COUNT(gMinishVillageTileSetManagerGfxInfos); group++) {
+        for (i = 0; i < ARRAY_COUNT(gMinishVillageTileSetManagerGfxInfos[0]); i++) {
+            const MinishVillageTileSetManagerGfxInfo* info = &gMinishVillageTileSetManagerGfxInfos[group][i];
+            Port_TileSwapAddChunk(0, group, &gGlobalGfxAndPalettes[info->gfx], info->dest, BG_SCREEN_SIZE * 2);
+        }
+        Port_TileSwapSetPaletteGroup(0, group, gMinishVillateTileSetManagerPaletteGroups[group]);
+    }
+}
+#endif
+
 void MinishVillageTileSetManager_Main(MinishVillageTileSetManager* this) {
     u32 gfxGroup;
     const MinishVillageTileSetManagerGfxInfo* gfxInfo;
@@ -109,6 +129,9 @@ void MinishVillageTileSetManager_Main(MinishVillageTileSetManager* this) {
         SetEntityPriority((Entity*)this, PRIO_PLAYER_EVENT);
 #endif
         RegisterTransitionHandler(this, MinishVillageTileSetManager_OnEnterRoom, NULL);
+#ifdef PC
+        MinishVillageTileSetManager_RegisterPort();
+#endif
     }
 #ifdef EU
     if (gRoomControls.reload_flags)
@@ -178,6 +201,9 @@ void MinishVillageTileSetManager_Main(MinishVillageTileSetManager* this) {
 }
 
 void MinishVillageTileSetManager_OnEnterRoom(void* this) {
+#ifdef PC
+    MinishVillageTileSetManager_RegisterPort();
+#endif
     MinishVillageTileSetManager_LoadGfxGroup(gRoomVars.graphicsGroups[0]);
 }
 

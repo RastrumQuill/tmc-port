@@ -48,6 +48,7 @@ typedef struct {
     uint16_t color;   /* with OPAQUE */
     uint8_t priority; /* 0-3 */
     uint8_t semiTransparent;
+    uint8_t fade; /* 16 = opaque; less near the edge of the extended view */
 } ObjPixel;
 
 /* the video registers 0x00-0x57 and the affine reference points, as one line sees them */
@@ -110,8 +111,8 @@ static inline int32_t Sext28(uint32_t v) {
  * palette). charData is the memory the tile numbers refer to: VRAM, or the
  * graphics a region of the room would have loaded (tileswap.c).
  */
-static void DecodeTileRow(uint16_t entry, int py, const uint8_t* charData, uint32_t charBase, bool bpp8,
-                          uint16_t row[8]) {
+static void DecodeTileRow(uint16_t entry, int py, const uint8_t* charData, const uint16_t* bgPal, uint32_t charBase,
+                          bool bpp8, uint16_t row[8]) {
     uint32_t tile = entry & 0x3FF;
     int i;
     if (entry & 0x800)
@@ -125,11 +126,11 @@ static void DecodeTileRow(uint16_t entry, int py, const uint8_t* charData, uint3
         for (i = 0; i < 8; i++) {
             int px = (entry & 0x400) ? 7 - i : i;
             uint8_t idx = charData[addr + px];
-            row[i] = idx ? (PLTT16[idx] | OPAQUE) : 0;
+            row[i] = idx ? (bgPal[idx] | OPAQUE) : 0;
         }
     } else {
         uint32_t addr = charBase + tile * 32 + py * 4;
-        const uint16_t* pal = PLTT16 + ((entry >> 12) << 4);
+        const uint16_t* pal = bgPal + ((entry >> 12) << 4);
         if (addr >= 0x10000) {
             memset(row, 0, 8 * sizeof(uint16_t));
             return;
@@ -279,8 +280,8 @@ static void TextSpanHw(uint16_t* out, int a, int b, int bx, int by, uint32_t scr
         int n = 8 - px;
         if (n > b - a)
             n = b - a;
-        DecodeTileRow(*(const uint16_t*)(VRAM8 + TextMapAddr(screenBase, size, bx, by)), by & 7, VRAM8, charBase, bpp8,
-                      row);
+        DecodeTileRow(*(const uint16_t*)(VRAM8 + TextMapAddr(screenBase, size, bx, by)), by & 7, VRAM8, PLTT16, charBase,
+                      bpp8, row);
         memcpy(out + a, row + px, n * sizeof(uint16_t));
         a += n;
         bx += n;
@@ -308,6 +309,7 @@ static void TextSpanRoom(uint16_t* out, int a, int b, int mx, int my, const PpuB
         int n = 8 - px;
         uint16_t entry;
         const uint8_t* charData;
+        const uint16_t* pal;
         if (tx >= ovr->widthTiles) {
             memset(out + a, 0, (b - a) * sizeof(uint16_t));
             return;
@@ -315,8 +317,9 @@ static void TextSpanRoom(uint16_t* out, int a, int b, int mx, int my, const PpuB
         if (n > b - a)
             n = b - a;
         entry = ovr->map[ty * ovr->strideTiles + tx];
-        charData = Port_TileSwapCharData(charBase, entry, bpp8, mx, my);
-        DecodeTileRow(entry, my & 7, charData ? charData : VRAM8, charBase, bpp8, row);
+        pal = PLTT16;
+        charData = Port_TileSwapCharData(charBase, entry, bpp8, mx, my, &pal);
+        DecodeTileRow(entry, my & 7, charData ? charData : VRAM8, pal, charBase, bpp8, row);
         memcpy(out + a, row + px, n * sizeof(uint16_t));
         a += n;
         mx += n;
@@ -440,28 +443,31 @@ typedef struct {
     int x, y;           /* top left of the drawn box, before the shift */
     int shiftX, shiftY; /* view offset (or HUD corner offset) */
     int w, h, bw, bh;
-    bool affine, bpp8, mosaic;
+    bool affine, bpp8, mosaic, hud;
     int objMode, prio, palBank;
-    uint32_t tileBase;
+    uint32_t tileBase, tileMask; /* tileMask: 0x3FF for OAM, wider for the port's extra sprite VRAM */
     int16_t pa, pb, pc, pd;
 } ObjDesc;
 
-static ObjDesc sObjs[128];
+static ObjDesc sObjs[128 + PORT_OAM_EXTRA];
 static int sObjCount;
 
 static void PrepareObjects(void) {
     int i;
     sObjCount = 0;
-    for (i = 0; i < 128; i++) {
-        uint16_t a0 = OAM16[i * 4 + 0];
-        uint16_t a1 = OAM16[i * 4 + 1];
-        uint16_t a2 = OAM16[i * 4 + 2];
+    for (i = 0; i < 128 + gPortOamExtraLiveCount; i++) {
+        /* the 128 OAM entries, then the extra sprites of the extended view */
+        bool extra = i >= 128;
+        const PortOamExtra* x = extra ? &gPortOamExtraLive[i - 128] : NULL;
+        uint16_t a0 = extra ? x->ext.attr0 : OAM16[i * 4 + 0];
+        uint16_t a1 = extra ? x->ext.attr1 : OAM16[i * 4 + 1];
+        uint16_t a2 = extra ? x->attr2 : OAM16[i * 4 + 2];
         bool affine = (a0 >> 8) & 1;
         bool doubleSize = affine && ((a0 >> 9) & 1);
         int shape = (a0 >> 14) & 3;
         int sizeIdx = (a1 >> 14) & 3;
         int objMode = (a0 >> 10) & 3;
-        const PortOamExt* ext = &gPortOamExtLive[i];
+        const PortOamExt* ext = extra ? &x->ext : &gPortOamExtLive[i];
         ObjDesc* o;
 
         if (!affine && ((a0 >> 9) & 1))
@@ -479,13 +485,20 @@ static void PrepareObjects(void) {
         o->bw = doubleSize ? o->w * 2 : o->w;
         o->bh = doubleSize ? o->h * 2 : o->h;
         o->tileBase = a2 & 0x3FF;
+        o->tileMask = 0x3FF;
         o->palBank = (a2 >> 12) & 0xF;
         o->prio = (a2 >> 10) & 3;
         o->shiftX = gPortViewOffsetX;
         o->shiftY = gPortViewOffsetY;
+        o->hud = false;
         if (ext->valid && ext->attr0 == a0 && ext->attr1 == a1) {
+            if ((ext->tile & 0x3FF) == (a2 & 0x3FF)) {
+                o->tileBase = ext->tile;
+                o->tileMask = 0xFFFF;
+            }
             o->x = ext->x;
             o->y = ext->y;
+            o->hud = (ext->anchor & PORT_ANCHOR_HUD) != 0;
             if ((ext->anchor & PORT_ANCHOR_HUD) && gPpuHudAnchor) {
                 o->shiftX = (ext->anchor & PORT_ANCHOR_RIGHT) ? sViewW - GBA_WIDTH : 0;
                 o->shiftY = (ext->anchor & PORT_ANCHOR_BOTTOM) ? sViewH - GBA_HEIGHT : 0;
@@ -523,10 +536,15 @@ static void RenderObjects(RenderCtx* ctx, int line /* classic line */, bool mode
     mosaicH++;
     mosaicV++;
 
+    int vy = line + gPortViewOffsetY;
+    /* edge fade of this line (vertical part) */
+    int fadeY = gPortSpriteEdgeFade ? (vy < sViewH - 1 - vy ? vy : sViewH - 1 - vy) : PORT_EDGE_FADE;
+    bool inRoomY = vy >= gPortClipTop && vy < gPortClipBottom;
     for (i = 0; i < sViewW; i++) {
         objLine[i].color = 0;
         objLine[i].priority = 4;
         objLine[i].semiTransparent = 0;
+        objLine[i].fade = 16;
     }
     memset(objWindow, 0, sViewW);
     if (!(dispcnt & DISPCNT_OBJ_ON))
@@ -537,7 +555,10 @@ static void RenderObjects(RenderCtx* ctx, int line /* classic line */, bool mode
         int w = o->w, h = o->h, bw = o->bw, x = o->x;
         int ly = line + gPortViewOffsetY - o->shiftY - o->y;
         int vx, start, end;
+        bool hud = o->hud;
         if (ly < 0 || ly >= o->bh)
+            continue;
+        if (!hud && !inRoomY)
             continue;
         if (mode345 && o->tileBase < 512)
             continue;
@@ -550,6 +571,13 @@ static void RenderObjects(RenderCtx* ctx, int line /* classic line */, bool mode
         end = sViewW - (x + o->shiftX);
         if (end > bw)
             end = bw;
+        if (!hud) {
+            /* not outside the room */
+            if (start < gPortClipLeft - (x + o->shiftX))
+                start = gPortClipLeft - (x + o->shiftX);
+            if (end > gPortClipRight - (x + o->shiftX))
+                end = gPortClipRight - (x + o->shiftX);
+        }
 
         for (vx = start; vx < end; vx++) {
             int sx = x + vx + o->shiftX;
@@ -575,7 +603,9 @@ static void RenderObjects(RenderCtx* ctx, int line /* classic line */, bool mode
                     tileNum = o->tileBase + ((ty >> 3) * (w >> 3) + (tx >> 3)) * 2;
                 else
                     tileNum = o->tileBase + (ty >> 3) * 32 + (tx >> 3) * 2;
-                addr = 0x10000 + (tileNum & 0x3FF) * 32 + (ty & 7) * 8 + (tx & 7);
+                addr = 0x10000 + (tileNum & o->tileMask) * 32 + (ty & 7) * 8 + (tx & 7);
+                if (addr >= PORT_VRAM_SIZE)
+                    continue;
                 idx = VRAM8[addr];
                 if (idx == 0)
                     continue;
@@ -585,7 +615,9 @@ static void RenderObjects(RenderCtx* ctx, int line /* classic line */, bool mode
                     tileNum = o->tileBase + (ty >> 3) * (w >> 3) + (tx >> 3);
                 else
                     tileNum = o->tileBase + (ty >> 3) * 32 + (tx >> 3);
-                addr = 0x10000 + (tileNum & 0x3FF) * 32 + (ty & 7) * 4 + ((tx & 7) >> 1);
+                addr = 0x10000 + (tileNum & o->tileMask) * 32 + (ty & 7) * 4 + ((tx & 7) >> 1);
+                if (addr >= PORT_VRAM_SIZE)
+                    continue;
                 idx = (VRAM8[addr] >> ((tx & 1) * 4)) & 0xF;
                 if (idx == 0)
                     continue;
@@ -600,6 +632,14 @@ static void RenderObjects(RenderCtx* ctx, int line /* classic line */, bool mode
                 objLine[sx].color = color | OPAQUE;
                 objLine[sx].priority = o->prio;
                 objLine[sx].semiTransparent = o->objMode == 1;
+                objLine[sx].fade = 16;
+                if (!hud && gPortSpriteEdgeFade) {
+                    int d = sx < sViewW - 1 - sx ? sx : sViewW - 1 - sx;
+                    if (fadeY < d)
+                        d = fadeY;
+                    if (d < PORT_EDGE_FADE)
+                        objLine[sx].fade = (uint8_t)(d * 16 / PORT_EDGE_FADE);
+                }
             }
         }
     }
@@ -765,7 +805,11 @@ static void ComposeLine(RenderCtx* ctx, uint32_t* out, const bool bgOn[4], bool 
         uint8_t mask = ctx->winMask[x];
         int topLayer = ctx->topLayer[x], secondLayer = ctx->secondLayer[x];
         uint16_t c = ctx->top[x] & 0x7FFF;
-        if (topLayer == LAYER_OBJ && ctx->objLine[x].semiTransparent && (bldcnt & (1 << (8 + secondLayer)))) {
+        if (topLayer == LAYER_OBJ && ctx->objLine[x].fade < 16) {
+            /* entering at the edge of the view */
+            int f = ctx->objLine[x].fade;
+            c = Blend(c, ctx->second[x] & 0x7FFF, f, 16 - f);
+        } else if (topLayer == LAYER_OBJ && ctx->objLine[x].semiTransparent && (bldcnt & (1 << (8 + secondLayer)))) {
             c = Blend(c, ctx->second[x] & 0x7FFF, eva, evb);
         } else if ((mask & 0x20) && (bldcnt & (1 << topLayer))) {
             switch (effect) {
@@ -925,6 +969,7 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
     if (gPortViewOffsetY < 0 || gPortViewOffsetY > h - GBA_HEIGHT)
         gPortViewOffsetY = (h - GBA_HEIGHT) / 2;
     PrepareObjects();
+    Port_TileSwapPrepareFrame();
 
     /* latch the affine reference points; lines above the classic screen extrapolate */
     for (i = 0; i < 2; i++) {

@@ -77,6 +77,17 @@ damaged one (a CRC mismatch), is recreated from the ROM.
   room, so real level geometry is shown everywhere.
 * Entities are updated and drawn in the extra area too: the game's on-screen
   checks and sprite culling use the larger view.
+* The GBA's limits that the larger view would hit are raised for the PC:
+  sprites beyond the 128 OAM entries, more than 64 entities per draw layer
+  and 64 shadows, and the sprite graphics slots (44 on the GBA, over 1000
+  here, with extra sprite VRAM mapped after the GBA's 96 KB). On the GBA the
+  game reuses slots when they run out, which showed other graphics on
+  objects such as the Hyrule Town bell.
+* Hyrule Town and Minish Village swap tile graphics (and palettes) by camera
+  region. Tiles in the extra area are drawn with the graphics the game would
+  load for them (`port/src/tileswap.c`).
+* Sprites are only drawn inside the room, and fade in at the edges of the view
+  instead of popping in.
 * The HUD (hearts, buttons, rupees) is moved to the corners of the view.
 * Menus, the title screen, the map and other non-gameplay screens use the
   classic 240x160 picture.

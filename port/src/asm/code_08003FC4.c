@@ -77,6 +77,8 @@ u32 sub_080040A2(Entity* this) {
     return CheckOnScreen(this);
 }
 
+void Port_DrawListOverflow(u32 which, Entity* e); /* intr.c */
+
 void DrawEntity(Entity* this) {
     u32 draw = U8AT(this, 0x18) & 3;
     u8 count;
@@ -91,6 +93,8 @@ void DrawEntity(Entity* this) {
             n++;
             list[0] = n;
             ((Entity**)list)[n] = this;
+        } else {
+            Port_DrawListOverflow((U8AT(this, 0x19) & 0xC0) >> 6, this);
         }
     }
     count = gUnk_02024048;

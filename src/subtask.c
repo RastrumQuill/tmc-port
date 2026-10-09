@@ -208,11 +208,20 @@ void GameMain_Subtask(void) {
     gUnk_0812901C[gUI.nextToLoad]();
 }
 
+#ifdef PC
+// gUI.gfxSlotList has room for the GBA's slots only
+static PortGfxSlotList sPortGfxSlotBackup;
+#endif
+
 void Subtask_FadeIn(void) {
     if (!gFadeControl.active) {
         MemCopy(&gScreen, &gUnk_03001020, sizeof(Screen));
         MemCopy(gPaletteBuffer, gPaletteBufferBackup, 0x400);
+#ifdef PC
+        MemCopy(&gGFXSlots, &sPortGfxSlotBackup, sizeof(gGFXSlots));
+#else
         MemCopy(&gGFXSlots, &gUI.gfxSlotList, sizeof(GfxSlotList));
+#endif
         MemCopy(gPaletteList, gUI.palettes, sizeof(gUI.palettes));
         MemCopy(&gRoomControls, &gUI.roomControls, sizeof(RoomControls));
         MemCopy(gUnk_03000420, gUI.unk_2a8, sizeof(gUI.unk_2a8));
@@ -256,7 +265,11 @@ void Subtask_FadeOut(void) {
         MemCopy(&gUI.activeScriptInfo, &gActiveScriptInfo, sizeof(ActiveScriptInfo));
         MemCopy(gUI.unk_2a8, gUnk_03000420, sizeof(gUI.unk_2a8));
         MemCopy(gUI.palettes, gPaletteList, sizeof(gUI.palettes));
+#ifdef PC
+        MemCopy(&sPortGfxSlotBackup, &gGFXSlots, sizeof(gGFXSlots));
+#else
         MemCopy(&gUI.gfxSlotList, &gGFXSlots, sizeof(gGFXSlots));
+#endif
         MemCopy(&gUI.roomControls, &gRoomControls, sizeof(RoomControls));
         MemCopy(&gUnk_03001020, &gScreen, sizeof(Screen));
         gArea.localFlagOffset = GetFlagBankOffset(gRoomControls.area);

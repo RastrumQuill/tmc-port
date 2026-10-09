@@ -4,7 +4,14 @@
 #include "global.h"
 #include "entity.h"
 
+#ifdef PC
+// The PC port has far more sprite VRAM than the GBA (see PORT_VRAM_SIZE), so the
+// larger view, which keeps more entities active, never runs out of slots.
+#define GBA_GFX_SLOTS 44
+#define MAX_GFX_SLOTS 1068
+#else
 #define MAX_GFX_SLOTS 44
+#endif
 
 typedef enum {
     GFX_SLOT_FREE,
@@ -34,6 +41,25 @@ typedef struct {
     /*0x08*/ const void* palettePointer;
 } GfxSlot;
 
+#ifdef PC
+// the GBA layout (kept for gUI.gfxSlotList) and the port's larger list
+typedef struct {
+    /*0x00*/ u8 unk0;
+    /*0x01*/ u8 unk_1;
+    /*0x02*/ u8 unk_2;
+    /*0x03*/ u8 unk_3;
+    /*0x04*/ GfxSlot slots[GBA_GFX_SLOTS];
+} GfxSlotList;
+typedef struct {
+    u8 unk0;
+    u8 unk_1;
+    u8 unk_2;
+    u8 unk_3;
+    GfxSlot slots[MAX_GFX_SLOTS];
+} PortGfxSlotList;
+extern PortGfxSlotList gPortGFXSlots;
+#define gGFXSlots gPortGFXSlots
+#else
 typedef struct {
     /*0x00*/ u8 unk0;
     /*0x01*/ u8 unk_1;
@@ -42,6 +68,7 @@ typedef struct {
     /*0x04*/ GfxSlot slots[MAX_GFX_SLOTS];
 } GfxSlotList;
 extern GfxSlotList gGFXSlots;
+#endif
 
 static_assert(sizeof(GfxSlotList) == 0x214);
 

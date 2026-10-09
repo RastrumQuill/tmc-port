@@ -18,6 +18,19 @@ u32 FindNextOccupiedGFXSlot(u32);
 u32 FindFirstFreeGFXSlot(void);
 void sub_080AE218(u32, u32);
 void MoveGFXSlots(u32, u32);
+#ifdef PC
+void Port_OamMoveTiles(u32 start, u32 end, u32 dest);
+#endif
+
+#ifdef PC
+PortGfxSlotList gPortGFXSlots;
+
+// for savestates (port/src/debug.c)
+void* Port_GfxSlotState(u32* size) {
+    *size = sizeof(gPortGFXSlots);
+    return &gPortGFXSlots;
+}
+#endif
 
 void ResetPalettes(void) {
     GfxSlot* slots;
@@ -400,6 +413,9 @@ void sub_080AE218(u32 param1, u32 param2) {
             gOAMControls.field_0x0 = 1;
         }
     }
+#ifdef PC
+    Port_OamMoveTiles(r3, r7, r12); // the PC port's sprites beyond the 128 OAM entries
+#endif
 }
 
 void MoveGFXSlots(u32 srcIndex, u32 targetIndex) {

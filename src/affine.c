@@ -17,8 +17,16 @@ void* sub_080AD8F0(u32 sprite, u32 frame) {
     return temp;
 }
 
+#ifdef PC
+void Port_OamFlush(void);
+void Port_DrawListsReset(void);
+#endif
+
 void FlushSprites(void) {
     gOAMControls.updated = 0;
+#ifdef PC
+    Port_OamFlush(); // the PC port's sprites beyond the 128 OAM entries
+#endif
 }
 
 void CopyOAM(void) {
@@ -30,6 +38,9 @@ void CopyOAM(void) {
         gOAMControls.unk[0x48].unk4 = 0;
         gOAMControls.unk[0x71].unk0 = 0;
         gOAMControls.unk[0x99].unk4 = 0;
+#ifdef PC
+        Port_DrawListsReset(); // the PC port's entities beyond the 64 per draw list
+#endif
     } else {
         gMain.pad--;
     }

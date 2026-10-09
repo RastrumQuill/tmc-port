@@ -24,7 +24,8 @@
 #define PORT_PLTT_ADDR 0x05000000u
 #define PORT_PLTT_SIZE 0x400u
 #define PORT_VRAM_ADDR 0x06000000u
-#define PORT_VRAM_SIZE 0x18000u
+/* 96 KB on the GBA; the port maps more after it for extra sprite graphics slots (include/vram.h) */
+#define PORT_VRAM_SIZE 0x100000u
 #define PORT_OAM_ADDR 0x07000000u
 #define PORT_OAM_SIZE 0x400u
 
@@ -113,7 +114,22 @@ void Port_DmaOnVBlank(void);
 void Ppu_RenderFrame(uint32_t* out, int pitchPixels, int w, int h);
 /** a frame that is not displayed: runs only the per-line side effects (HBlank DMA) */
 void Ppu_SkipFrame(void);
-const uint8_t* Port_TileSwapCharData(uint32_t charBase, uint16_t entry, bool bpp8, int mx, int my);
+
+/* ---- tile set swapping (tileswap.c) ---- */
+/** a VRAM slot of a room that swaps tile sets by camera region (regions: {group, x, y, w, h}..., 0xff) */
+void Port_TileSwapRegister(int slot, const uint16_t* regions);
+/** graphics copied to VRAM dest when the slot loads group */
+void Port_TileSwapAddChunk(int slot, int group, const void* src, const void* dest, uint32_t size);
+/** palette group loaded with group */
+void Port_TileSwapSetPaletteGroup(int slot, int group, int paletteGroup);
+void Port_TileSwapPrepareFrame(void);
+/**
+ * Tile graphics for a tile at room pixel (mx, my) when its region would load other
+ * graphics than VRAM holds: a base indexed by the VRAM offset, or NULL for VRAM.
+ * *palette is set when the region also uses other background palettes.
+ */
+const uint8_t* Port_TileSwapCharData(uint32_t charBase, uint16_t entry, bool bpp8, int mx, int my,
+                                     const uint16_t** palette);
 
 /**
  * Extended background source.
@@ -149,6 +165,15 @@ typedef struct {
 
 extern PpuBgOverride gPpuBgOverride[4];
 
+/**
+ * Extended view, in view pixels: sprites are only drawn inside the room
+ * (gPortClip*, which always includes the classic screen), and fade in over the
+ * last PORT_EDGE_FADE pixels at the edges of the view instead of popping in.
+ */
+extern int gPortClipLeft, gPortClipTop, gPortClipRight, gPortClipBottom;
+extern bool gPortSpriteEdgeFade;
+#define PORT_EDGE_FADE 24
+
 /** Position of the classic 240x160 area inside the (extended) view, in view pixels. */
 extern int gPortViewOffsetX;
 extern int gPortViewOffsetY;
@@ -167,6 +192,8 @@ typedef struct {
     int16_t y;
     uint16_t attr0;
     uint16_t attr1;
+    /** full tile number (sprite VRAM beyond the GBA's 1024 tiles) */
+    uint16_t tile;
     uint8_t valid;
     /** HUD sprite: PORT_ANCHOR_* flags, anchored to the corners of the view */
     uint8_t anchor;
@@ -185,6 +212,20 @@ extern bool gPpuHudAnchor;
 extern PortOamExt gPortOamExtWork[128];
 /** copied from gPortOamExtWork whenever gOAMControls.oam is copied to OAM */
 extern PortOamExt gPortOamExtLive[128];
+
+/**
+ * Sprites beyond the 128 OAM entries. The larger view shows more sprites than
+ * the GBA screen, so in the extended view the sprite builder continues here
+ * when OAM is full (the classic view keeps the hardware limit). They are drawn
+ * after (behind) the OAM entries, as if OAM were longer.
+ */
+#define PORT_OAM_EXTRA 4096 /* no practical limit; the GBA's 128 is a hardware limit, not a game rule */
+typedef struct {
+    PortOamExt ext;
+    uint16_t attr2;
+} PortOamExtra;
+extern PortOamExtra gPortOamExtraLive[PORT_OAM_EXTRA];
+extern int gPortOamExtraLiveCount;
 void Port_OnOamCopy(const void* src, void* dest, uint32_t bytes);
 
 /* ---- audio ---- */

@@ -209,6 +209,8 @@ typedef struct {
     size_t size;
 } StateBlob;
 
+void* Port_GfxSlotState(uint32_t* size); /* src/vram.c */
+
 static int GetBlobs(StateBlob* b) {
     int n = 0;
     b[n].ptr = (void*)(uintptr_t)PORT_EWRAM_ADDR, b[n++].size = PORT_EWRAM_SIZE;
@@ -221,6 +223,10 @@ static int GetBlobs(StateBlob* b) {
     b[n].ptr = Intr_StateData(&b[n].size), n++;
     b[n].ptr = gPortOamExtWork, b[n++].size = sizeof(PortOamExt) * 128;
     b[n].ptr = gPortOamExtLive, b[n++].size = sizeof(PortOamExt) * 128;
+    {
+        uint32_t size;
+        b[n].ptr = Port_GfxSlotState(&size), b[n++].size = size;
+    }
     return n;
 }
 
