@@ -26,7 +26,12 @@ static void sub_08037D54(Entity* this);
 
 void OctorokGolden(Entity* this) {
     u32 index;
+#ifdef PC
+    /* the original indexes with an uninitialized register (the caller's r4); use the result instead */
+    if ((index = sub_080012DC(this)) != 0) {
+#else
     if (sub_080012DC(this)) {
+#endif
         //! @bug index (r4) is uninitialized
         gUnk_080012C8[index](this);
     } else {

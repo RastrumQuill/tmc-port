@@ -99,6 +99,24 @@ typedef struct {
     u8 y;
 } PACKED DungeonMapObject;
 
+#ifdef PC
+/* the original relies on Div leaving the remainder in r1 */
+u32 EncodeBCD(u32 value) {
+    u32 result = 0;
+    u32 div = 10000000;
+    u32 shift = 28;
+    if (value >= 100000000) {
+        return 0x99999999;
+    }
+    while (div != 0) {
+        result += (value / div) << shift;
+        value %= div;
+        div /= 10;
+        shift -= 4;
+    }
+    return result;
+}
+#else
 u32 EncodeBCD(u32 value) {
     u32 result;
     FORCE_REGISTER(u32 r1, r1);
@@ -116,6 +134,7 @@ u32 EncodeBCD(u32 value) {
     result += Div(r1, 10) * 0x10;
     return result + r1;
 }
+#endif
 
 u32 ReadBit(void* src, u32 bit) {
     return (*((u8*)src + bit / 8) >> (bit % 8)) & 1;

@@ -60,7 +60,7 @@ CPPFLAGS := $(DEFINES) -I include -I port/include -I $(BUILD_DIR) $(SDL2_CFLAGS)
 #  - unsigned plain char, wrapping signed overflow, no strict aliasing
 #  - data emitted in source order (code indexes across adjacent tables)
 OPT ?= -O2
-CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -fno-toplevel-reorder \
+CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -ftrivial-auto-var-init=zero -fno-toplevel-reorder \
           -fno-pie -malign-data=abi \
           -w -Wno-error
 PORT_CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -fno-pie -Wall -Wno-unused-function
