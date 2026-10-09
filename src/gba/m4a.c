@@ -740,8 +740,10 @@ void m4aSoundVSyncOn(void) {
     soundInfo->pcmDmaCounter = 0;
     soundInfo->ident = ident - 10;
 
+#ifndef PC // synchronizes with the display; there is no scanline counter on PC
     while (REG_VCOUNT_8 == 0x9f) {}
     while (REG_VCOUNT_8 != 0x9f) {}
+#endif
 
     REG_TM0CNT_L = -(0x44940 / soundInfo->pcmSamplesPerVBlank);
     REG_TM0CNT_H = 0x80;

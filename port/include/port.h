@@ -169,6 +169,8 @@ void Port_OnOamCopy(const void* src, void* dest, uint32_t bytes);
 /* ---- audio ---- */
 void Audio_Init(void);
 void Audio_Shutdown(void);
+/** Called once per frame after the sound driver ran (PSG update + output). */
+void Audio_Frame(void);
 /** Hand one frame worth of mixed PCM (signed 8 bit stereo from the m4a mixer) to the audio device. */
 void Audio_SubmitFrame(const int8_t* left, const int8_t* right, int samples, int sampleRate);
 

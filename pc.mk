@@ -62,7 +62,7 @@ CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -fno-top
           -fno-pie -malign-data=abi \
           -w -Wno-error
 PORT_CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -fno-pie -Wall -Wno-unused-function
-ASFLAGS := $(ASM32) --defsym $(GAME_VERSION)=1 --defsym REVISION=$(REVISION) --defsym $(GAME_LANGUAGE)=1 --defsym PC=1 \
+ASFLAGS := $(ASM32) --divide --defsym $(GAME_VERSION)=1 --defsym REVISION=$(REVISION) --defsym $(GAME_LANGUAGE)=1 --defsym PC=1 \
            -I . -I $(ASSETS_DIR) -I $(ENUM_DIR)
 LDFLAGS := $(M32) -no-pie
 LIBS := $(SDL2_LIBS) -lm
@@ -104,6 +104,10 @@ clean:
 $(BUILD_DIR)/extracted_assets: assets/assets.json assets/gfx.json assets/map.json assets/samples.json assets/sounds.json $(TRANSLATIONS)
 	@mkdir -p $(BUILD_DIR)
 	$(ASSET_PROCESSOR) extract $(GAME_VERSION) $(ASSETS_DIR)
+	@# The raw extracted assets contain absolute ROM pointers (songs, ...). Converting
+	@# them to sources and rebuilding (the decomp's "custom" build) makes them relocatable.
+	$(ASSET_PROCESSOR) convert $(GAME_VERSION) $(ASSETS_DIR)
+	$(ASSET_PROCESSOR) build $(GAME_VERSION) $(ASSETS_DIR)
 	touch $@
 
 assets: $(BUILD_DIR)/extracted_assets

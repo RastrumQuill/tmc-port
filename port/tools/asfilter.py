@@ -6,6 +6,7 @@ Only data directives are expected (.byte/.2byte/.4byte/.incbin/macros...).
 The translation is purely syntactic:
   * '@' and '//' comments are stripped (outside of string literals)
   * '.align N' (power of two on ARM) becomes '.p2align N'
+  * '.word' (32 bit on ARM) becomes '.4byte'
   * 'label::' (global label shorthand) becomes '.global label' + 'label:'
   * ARM/Thumb mode directives are dropped
   * '.include' directives are expanded inline (recursively) so that the
@@ -18,6 +19,8 @@ import sys
 
 DROP = re.compile(r'^\s*\.(syntax|thumb|arm|code|thumb_func|force_thumb|pool|ltorg|type|size|cpu|fpu)\b')
 ALIGN = re.compile(r'^(\s*)\.align\b')
+# '.word' is 32 bit on ARM but 16 bit on x86
+WORD = re.compile(r'(^|[\s:])\.word\b')
 GLABEL = re.compile(r'^(\s*)([A-Za-z_.$][\w.$]*)::')
 
 
@@ -82,6 +85,7 @@ def process(data, dirs, w, depth=0):
             w('\n')
             continue
         line = ALIGN.sub(r'\1.p2align', line)
+        line = WORD.sub(r'\1.4byte', line)
         line = THUMB_CALL.sub(r'\1', line)
         # x86 gas splits macro arguments on whitespace, ARM gas does not:
         # glue binary operators to their operands ("A * 2" -> "A*2").

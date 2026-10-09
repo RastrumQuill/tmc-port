@@ -47,6 +47,121 @@ static bool sFastForward;
 static uint16_t sKeys;
 static const char* sConfigPath = "tmc_pc.ini";
 
+/* ---- testing helpers: scripted input and screenshots ---- */
+
+#define MAX_SCRIPT 64
+typedef struct {
+    uint32_t start, end;
+    uint16_t keys;
+} ScriptedInput;
+static ScriptedInput sScript[MAX_SCRIPT];
+static int sScriptCount;
+static uint32_t sShots[MAX_SCRIPT];
+static int sShotCount;
+
+static uint16_t ParseKeyName(const char* name, size_t len) {
+    static const struct {
+        const char* name;
+        uint16_t key;
+    } sNames[] = {
+        { "A", A_BUTTON },      { "B", B_BUTTON },        { "SELECT", SELECT_BUTTON }, { "START", START_BUTTON },
+        { "RIGHT", DPAD_RIGHT }, { "LEFT", DPAD_LEFT },   { "UP", DPAD_UP },           { "DOWN", DPAD_DOWN },
+        { "R", R_BUTTON },      { "L", L_BUTTON },
+    };
+    size_t i;
+    for (i = 0; i < sizeof(sNames) / sizeof(sNames[0]); i++) {
+        if (strlen(sNames[i].name) == len && SDL_strncasecmp(sNames[i].name, name, len) == 0)
+            return sNames[i].key;
+    }
+    return 0;
+}
+
+/* "100-110:START,200-260:RIGHT+B" */
+static void ParseScript(const char* spec) {
+    const char* p = spec;
+    while (*p && sScriptCount < MAX_SCRIPT) {
+        ScriptedInput* in = &sScript[sScriptCount];
+        char* end;
+        in->start = strtoul(p, &end, 10);
+        in->end = in->start;
+        p = end;
+        if (*p == '-') {
+            in->end = strtoul(p + 1, &end, 10);
+            p = end;
+        }
+        in->keys = 0;
+        if (*p == ':') {
+            p++;
+            while (*p && *p != ',') {
+                const char* name = p;
+                while (*p && *p != ',' && *p != '+')
+                    p++;
+                in->keys |= ParseKeyName(name, p - name);
+                if (*p == '+')
+                    p++;
+            }
+        }
+        sScriptCount++;
+        if (*p == ',')
+            p++;
+    }
+}
+
+static uint16_t ScriptKeys(uint64_t frame) {
+    uint16_t keys = 0;
+    int i;
+    for (i = 0; i < sScriptCount; i++) {
+        if (frame >= sScript[i].start && frame <= sScript[i].end)
+            keys |= sScript[i].keys;
+    }
+    return keys;
+}
+
+static void WriteBmp(const char* path, const uint32_t* pixels, int pitch, int w, int h) {
+    FILE* f = fopen(path, "wb");
+    int rowSize = (w * 3 + 3) & ~3;
+    uint32_t fileSize = 54 + rowSize * h;
+    uint8_t header[54] = { 'B', 'M' };
+    int x, y;
+    uint8_t* row;
+    if (f == NULL)
+        return;
+    header[2] = fileSize;
+    header[3] = fileSize >> 8;
+    header[4] = fileSize >> 16;
+    header[5] = fileSize >> 24;
+    header[10] = 54;
+    header[14] = 40;
+    header[18] = w;
+    header[19] = w >> 8;
+    header[22] = h;
+    header[23] = h >> 8;
+    header[26] = 1;
+    header[28] = 24;
+    fwrite(header, 1, 54, f);
+    row = calloc(rowSize, 1);
+    for (y = h - 1; y >= 0; y--) {
+        for (x = 0; x < w; x++) {
+            uint32_t c = pixels[y * pitch + x];
+            row[x * 3 + 0] = c;
+            row[x * 3 + 1] = c >> 8;
+            row[x * 3 + 2] = c >> 16;
+        }
+        fwrite(row, 1, rowSize, f);
+    }
+    free(row);
+    fclose(f);
+}
+
+static bool ShotThisFrame(uint64_t frame) {
+    int i;
+    for (i = 0; i < sShotCount; i++) {
+        if (sShots[i] == frame)
+            return true;
+    }
+    return false;
+}
+
 /* ---- logging ---- */
 
 void Port_Log(const char* fmt, ...) {
@@ -159,6 +274,8 @@ static void Usage(const char* argv0) {
            "  --save FILE              save file (default tmc.sav, emulator .sav files work)\n"
            "  --no-audio\n"
            "  --headless --frames N    run without a window for N frames (testing)\n"
+           "  --keys SPEC              scripted input, e.g. 100-110:START,200-260:RIGHT+B\n"
+           "  --shot FRAME             save shot_FRAME.bmp (repeatable)\n"
            "In game: F1 toggles the extended view, +/- (or mouse wheel) zoom,\n"
            "F11 fullscreen, Tab fast forward.\n",
            argv0);
@@ -196,7 +313,14 @@ static void ParseArgs(int argc, char** argv) {
             gPortConfig.headless = true;
         else if (strcmp(a, "--frames") == 0 && next)
             gPortConfig.frameSkipLimit = atoi(argv[++i]);
-        else if (strcmp(a, "--config") == 0 && next)
+        else if (strcmp(a, "--keys") == 0 && next)
+            ParseScript(argv[++i]);
+        else if (strcmp(a, "--shot") == 0 && next) {
+            if (sShotCount < MAX_SCRIPT)
+                sShots[sShotCount++] = strtoul(argv[++i], NULL, 10);
+            else
+                i++;
+        } else if (strcmp(a, "--config") == 0 && next)
             i++;
         else if (strcmp(a, "--help") == 0 || strcmp(a, "-h") == 0) {
             Usage(argv[0]);
@@ -482,15 +606,23 @@ void Port_VBlankIntrWait(void) {
         PORT_IO16(0x006) = 80;
         HBlankIntr();
     }
+    Audio_Frame();
 
-    if (!gPortConfig.headless) {
+    if (!gPortConfig.headless || ShotThisFrame(sFrameCount)) {
         /* the frame is displayed with the state latched at the previous vblank */
         Ppu_RenderFrame(sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
+        if (ShotThisFrame(sFrameCount)) {
+            char name[64];
+            snprintf(name, sizeof(name), "shot_%u.bmp", (unsigned)sFrameCount);
+            WriteBmp(name, sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
+        }
+    }
+    if (!gPortConfig.headless) {
         if (!sFastForward || (sFrameCount & 3) == 0)
             PresentFrame();
         HandleEvents();
     }
-    PORT_IO16(0x130) = (uint16_t)(~sKeys & 0x3FF);
+    PORT_IO16(0x130) = (uint16_t)(~(sKeys | ScriptKeys(sFrameCount)) & 0x3FF);
 
     /* vblank */
     PORT_IO16(0x006) = 160;
