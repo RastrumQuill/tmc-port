@@ -131,3 +131,63 @@ void Port_MapMemory(void) {
 __attribute__((constructor(101))) static void MapMemoryEarly(void) {
     Port_MapMemory();
 }
+
+/* ---- reads and DMA through out of range pointers ---- */
+
+bool Port_IsReadable(const void* p, size_t size) {
+#ifdef _WIN32
+    MEMORY_BASIC_INFORMATION mbi;
+    uintptr_t a = (uintptr_t)p, end = a + size;
+    while (a < end) {
+        if (VirtualQuery((const void*)a, &mbi, sizeof(mbi)) == 0 || mbi.State != MEM_COMMIT ||
+            (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)))
+            return false;
+        a = (uintptr_t)mbi.BaseAddress + mbi.RegionSize;
+    }
+    return true;
+#else
+    long page = 4096;
+    uintptr_t a = (uintptr_t)p & ~(uintptr_t)(page - 1), end = (uintptr_t)p + size;
+    unsigned char v;
+    for (; a < end; a += page) {
+        if (mincore((void*)a, page, &v) != 0)
+            return false;
+    }
+    return true;
+#endif
+}
+
+/*
+ * The GBA decodes only 28 address bits and mirrors each memory region over its
+ * whole 16 MB slot. Pointers the game computes out of range (and that the PC
+ * does not map) are folded the same way.
+ */
+uint32_t Port_GbaAddress(uint32_t a) {
+    uint32_t region;
+    if (a >= 0x10000000u) {
+        if (Port_IsReadable((const void*)(uintptr_t)a, 1))
+            return a;
+        a &= 0x0FFFFFFFu;
+    }
+    region = a >> 24;
+    switch (region) {
+        case 2:
+            return PORT_EWRAM_ADDR + (a & (PORT_EWRAM_SIZE - 1));
+        case 3:
+            return PORT_IWRAM_ADDR + (a & (PORT_IWRAM_SIZE - 1));
+        case 5:
+            return PORT_PLTT_ADDR + (a & (PORT_PLTT_SIZE - 1));
+        case 6:
+            /* the port's extra sprite VRAM lies after the GBA's 96 KB */
+            if ((a & 0xFFFFFF) < PORT_VRAM_SIZE)
+                return a;
+            a &= 0x1FFFF;
+            if (a >= 0x18000)
+                a -= 0x8000;
+            return PORT_VRAM_ADDR + a;
+        case 7:
+            return PORT_OAM_ADDR + (a & (PORT_OAM_SIZE - 1));
+        default:
+            return a;
+    }
+}

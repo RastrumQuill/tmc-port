@@ -137,10 +137,22 @@ void SetBGDefaults(void) {
     gMapTop.bgSettings->control = gUnk_080B77C0[1];
 }
 
+#ifdef PC
+_Bool Port_IsReadable(const void* p, unsigned int size);
+#endif
+
 void LoadMapData(MapDataDefinition* dataDefinition) {
     u32 uVar1;
     u8* src;
     void* dest;
+
+#ifdef PC
+    // Some rooms (the beanstalk climbs) read their tile set past the end of the
+    // area's table, which gives an out of range pointer. The GBA reads open bus
+    // there and loads nothing useful; skip it.
+    if (!Port_IsReadable(dataDefinition, sizeof(*dataDefinition)))
+        return;
+#endif
 
     do {
         dest = dataDefinition->dest;

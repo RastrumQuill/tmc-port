@@ -89,6 +89,10 @@ extern int gPortScreenHeight;
 
 /* ---- platform services ---- */
 void Port_MapMemory(void);
+/** whether [p, p + size) is mapped and readable */
+bool Port_IsReadable(const void* p, size_t size);
+/** an address as the GBA decodes it (28 bits, regions mirrored), unless the PC maps it */
+uint32_t Port_GbaAddress(uint32_t a);
 /** Make NULL-pointer accesses behave like GBA BIOS-area accesses (port/src/nullguard.c). */
 void Port_InstallNullGuard(void);
 void Port_Init(int argc, char** argv);

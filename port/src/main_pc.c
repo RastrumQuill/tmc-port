@@ -63,7 +63,7 @@ static const char* sConfigPath = "tmc_pc.ini";
 
 /* ---- testing helpers: scripted input and screenshots ---- */
 
-#define MAX_SCRIPT 256
+#define MAX_SCRIPT 2048
 typedef struct {
     uint32_t start, end, period;
     uint16_t keys;
@@ -208,7 +208,7 @@ static void WarpTick(void) {
 }
 
 /* --cmd FRAME:COMMAND */
-#define MAX_CMDS 64
+#define MAX_CMDS 2048
 static struct {
     uint32_t frame;
     char text[120];

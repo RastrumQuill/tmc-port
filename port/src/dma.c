@@ -51,8 +51,8 @@ static void Transfer(u32 n, DmaChannel* ch) {
     u32 unit = (control & (DMA_32BIT << 16)) ? 4 : 2;
     s32 srcStep = Step((control >> 23) & 3, unit);
     s32 destStep = Step((control >> 21) & 3, unit);
-    u32 s = ch->curSrc;
-    u32 d = ch->curDest;
+    u32 s = Port_GbaAddress(ch->curSrc);
+    u32 d = Port_GbaAddress(ch->curDest);
     u32 i;
 
     if (count == 0)
