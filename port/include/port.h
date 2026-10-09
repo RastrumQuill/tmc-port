@@ -60,8 +60,10 @@ typedef struct {
     bool hudAnchor;       /**< move the HUD to the corners of the extended view */
     int frameSkipLimit;   /**< headless/testing: exit after this many frames (0 = never) */
     bool headless;        /**< no window, no audio (smoke tests) */
-    char romPath[512];    /**< unused at runtime; assets are baked in at build time */
     char savePath[512];
+    char romPath[1024];   /**< the player's ROM, used once to create the resource pack */
+    char dataPath[1024];  /**< resource pack with the game data (default: tmc_data.pak) */
+    bool rebuildData;     /**< create the resource pack again from the ROM */
 } PortConfig;
 
 extern PortConfig gPortConfig;
@@ -200,6 +202,9 @@ uint16_t Input_GetKeys(void); /**< GBA KEYINPUT bits, 1 = pressed */
 void View_PrepareFrame(void);
 /** True while the game is in a state where showing more than 240x160 is safe. */
 bool View_IsExtendedActive(void);
+
+/* ---- game data (port/src/resources.c) ---- */
+void Port_LoadGameData(const char* packPath, char* romPath, size_t romPathSize, bool rebuild);
 
 /* ---- debug tools (port/src/debug.c) ---- */
 extern bool gDebugOverlay;

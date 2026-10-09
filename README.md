@@ -4,8 +4,9 @@ A native PC version of *The Legend of Zelda: The Minish Cap*, built from the
 [decompilation](https://github.com/zeldaret/tmc), that can show **more of the
 world than the Game Boy Advance's 240×160 screen**.
 
-The repository contains no game assets. They are extracted from your own
-legally obtained ROM when you build.
+Neither the repository nor the downloads contain any game assets. On its first
+start the game reads your own legally obtained ROM once and creates a
+compressed resource pack (`tmc_data.pak`) that it runs from afterwards.
 
 ![South Hyrule Field at 640×360](docs/pc_port/field_640x360.png)
 
@@ -13,8 +14,10 @@ legally obtained ROM when you build.
 
 - [How much of the world you see](#how-much-of-the-world-you-see)
 - [Example images at different scales](#example-images-at-different-scales)
+- [Getting started](#getting-started)
 - [Building](#building)
 - [Running](#running)
+- [The resource pack and modding](#the-resource-pack-and-modding)
 - [Controls](#controls)
 - [Settings](#settings)
 - [Debug tools](#debug-tools)
@@ -80,17 +83,30 @@ The town is narrower than the larger views, so it is centred with borders.
 
 ![](docs/pc_port/town_960x540.png)
 
+## Getting started
+
+1. Download `tmc-pc-windows.zip` from
+   [Releases](https://github.com/RastrumQuill/tmc-port/releases) and unzip it,
+   or [build it yourself](#building).
+2. Put your ROM next to `tmc_pc.exe` as `baserom.gba`, or start `tmc_pc.exe` and
+   pick the file when it asks. It must be the unmodified USA version:
+
+   | Game | SHA-1 |
+   |---|---|
+   | The Legend of Zelda: The Minish Cap (USA) | `b4bd50e4131b027c334547b4524e2dbbd4227130` |
+
+3. On the first start the game checks the ROM and creates `tmc_data.pak` next
+   to the executable. After that it starts from the pack, and the ROM is no
+   longer needed.
+
 ## Building
 
-You need:
+Building needs no ROM. The game data comes from the player's ROM at runtime.
+The build only uses a description of the data's layout (`port/assets`): sizes,
+symbol names and the pointers between data, but none of the content.
 
-- **Your ROM**: put it in the repository root as `baserom.gba`. It must be the
-  unmodified USA version, SHA-1 `b4bd50e4131b027c334547b4524e2dbbd4227130`.
-- **The decompilation's tools**: see [INSTALL.md](INSTALL.md) for the
-  prerequisites (`build-essential`, `python3`, `pycparser`, `cmake`,
-  `libpng-dev`), then run `make tools`.
-- **SDL2, 32-bit**: the game code stores pointers in 4-byte tables, so the
-  port is a 32-bit x86 program.
+The game code stores pointers in 4-byte tables, so the port is a 32-bit x86
+program.
 
 ### Windows (cross compiled from Linux or WSL)
 
@@ -98,20 +114,16 @@ On Windows, install [WSL](https://learn.microsoft.com/windows/wsl/install) and
 run these commands in it.
 
 ```sh
-sudo apt install gcc-mingw-w64-i686 binutils-mingw-w64-i686
-# 32-bit SDL2 for MinGW: SDL2-devel-2.30.8-mingw.tar.gz from
-# https://github.com/libsdl-org/SDL/releases
-tar -xzf SDL2-devel-2.30.8-mingw.tar.gz
-S=$PWD/SDL2-2.30.8/i686-w64-mingw32
-
-make tools
-make -f pc.mk -j$(nproc) PC_CC=i686-w64-mingw32-gcc PC_AS=i686-w64-mingw32-as \
-    SDL2_CFLAGS="-I$S/include/SDL2 -Dmain=SDL_main" \
-    SDL2_LIBS="-L$S/lib -lmingw32 -lSDL2main -lSDL2 -mwindows"
-cp $S/bin/SDL2.dll .
+sudo apt install build-essential python3 curl zip gcc-mingw-w64-i686 binutils-mingw-w64-i686
+make pc-windows        # downloads SDL2 for MinGW, builds tmc_pc.exe, copies SDL2.dll
+make pc-dist-windows   # the same, packaged as dist/tmc-pc-windows.zip
 ```
 
 This gives you `tmc_pc.exe`. Keep `SDL2.dll` in the same folder.
+
+GitHub Actions (`.github/workflows/build.yml`) runs `make pc-dist-windows` on
+every push and keeps the zip as a build artifact. Pushing a tag such as
+`v0.1.0` also publishes the zip on the Releases page.
 
 ### Linux
 
@@ -119,7 +131,7 @@ Linux works but isn't tested regularly yet.
 
 ```sh
 sudo dpkg --add-architecture i386
-sudo apt install gcc-multilib libsdl2-dev:i386
+sudo apt install gcc-multilib python3 libsdl2-dev:i386
 make pc          # or: make -f pc.mk -j$(nproc)
 ```
 
@@ -128,10 +140,18 @@ If `SDL_config.h` is not found with `-m32`, pass the flags explicitly:
 
 macOS is not supported, because it can't run 32-bit programs.
 
+### Changing the game's data files (maintainers)
+
+`port/assets` is generated from the decompilation's `data/` files and a ROM.
+After changing those files, put `baserom.gba` in the repository root, run
+`make tools` (see [INSTALL.md](INSTALL.md) for its prerequisites), then run
+`make pc-layout`. Players then get a new `tmc_data.pak` automatically, because
+the game recreates the pack when it doesn't match the executable.
+
 ## Running
 
-Run `tmc_pc.exe` (or `./tmc_pc` on Linux). The game data is built into the
-executable, so the ROM isn't needed after building.
+Run `tmc_pc.exe` (or `./tmc_pc` on Linux). The first start needs your ROM (see
+[Getting started](#getting-started)); later starts only need `tmc_data.pak`.
 
 - Settings are saved to `tmc_pc.ini` when you quit (see [Settings](#settings)).
 - The save file is `tmc.sav`. It uses the same 8 KB format as GBA emulators, so
@@ -148,6 +168,9 @@ Command-line options:
 --no-audio
 --save FILE              save file (default tmc.sav)
 --config FILE            settings file (default tmc_pc.ini)
+--rom FILE               your ROM, used to create the resource pack
+--data FILE              resource pack (default tmc_data.pak)
+--rebuild-data           create the resource pack again from the ROM
 ```
 
 ## Controls
@@ -185,7 +208,32 @@ vsync = 1
 audio = 1
 hud_corners = 1        ; move hearts, buttons and rupees to the corners of the view
 save = tmc.sav
+data = tmc_data.pak    ; the resource pack
+rom = baserom.gba      ; only used to create the resource pack
 ```
+
+## The resource pack and modding
+
+`tmc_data.pak` holds all of the game's data: graphics, palettes, maps, music,
+sound samples, text and tables. It is about 8.7 MB, compressed from 13.8 MB.
+The data is stored as 284 named entries, one per data file of the
+decompilation, for example `data/gfx/gfx_and_palettes:.rodata` or
+`data/sound/sounds:.rodata`. The game checks every entry's CRC when it loads.
+If the pack is damaged or belongs to another version, the game creates it
+again from the ROM.
+
+`port/tools/tmcpak.py` lists, extracts and replaces entries:
+
+```sh
+python3 port/tools/tmcpak.py list tmc_data.pak
+python3 port/tools/tmcpak.py extract tmc_data.pak extracted/            # every entry as a .bin file
+python3 port/tools/tmcpak.py replace tmc_data.pak "data/gfx/gfx_and_palettes:.rodata" my_palettes.bin
+```
+
+For now a replaced entry must keep its size. Each entry contains pointers,
+whose positions are fixed in the executable, so larger or smaller entries
+need more work. Within that limit you can already recolour, redraw and
+retext things.
 
 ## Debug tools
 

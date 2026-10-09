@@ -1,71 +1,53 @@
-# Makefile for the native PC port.
+# Makefile for the PC port (the top-level Makefile has shortcuts: make pc, pc-windows, pc-dist-windows).
 #
-#   make -f pc.mk            (or: make pc)
+# The executable contains no game data. The game's data objects are built from
+# port/assets/layout.json.gz (sizes, symbols and pointers only). On the first
+# start the game creates a resource pack (tmc_data.pak) from the player's ROM
+# and loads the data from it (port/src/resources.c).
 #
-# Needs: a 32-bit capable host C compiler (gcc -m32 / i686 mingw), GNU as for
-# the same target, python3 + pycparser, SDL2 (32-bit) and a legally obtained
-# ROM (baserom.gba for USA) to extract the assets from. See PC_PORT.md.
+#   make -f pc.mk           build tmc_pc(.exe), needs no ROM
+#   make -f pc.mk layout    regenerate the layout, needs baserom.gba and the decomp tools (make tools)
 
 GAME_VERSION ?= USA
-PC_CC ?= gcc
-BUILD_DIR := build/pc-$(GAME_VERSION)$(if $(findstring mingw,$(PC_CC)),-win)
-
-ifeq ($(GAME_VERSION), EU)
-BUILD_NAME    := tmc_eu
-GAME_LANGUAGE := ENGLISH
-TRANSLATIONS  := translations/English.bin translations/French.bin translations/German.bin translations/Spanish.bin translations/Italian.bin
-else ifeq ($(GAME_VERSION), JP)
-BUILD_NAME    := tmc_jp
-GAME_LANGUAGE := JAPANESE
-TRANSLATIONS  :=
-else ifeq ($(GAME_VERSION), USA)
+ifneq ($(GAME_VERSION),USA)
+$(error the PC port supports GAME_VERSION=USA only)
+endif
 BUILD_NAME    := tmc
 GAME_LANGUAGE := ENGLISH
 TRANSLATIONS  := translations/USA.bin
-else
-$(error the PC port supports GAME_VERSION=USA, EU or JP)
-endif
-REVISION := 0
+REVISION      := 0
+
+PC_CC ?= gcc
+# Windows target: a MinGW compiler, either cross (i686-w64-mingw32-gcc) or native (MSYS2 MINGW32 gcc)
+MINGW := $(findstring mingw,$(PC_CC) $(shell $(PC_CC) -dumpmachine 2>/dev/null))
+BUILD_DIR := build/pc-$(GAME_VERSION)$(if $(MINGW),-win)
 
 EXE_NAME ?= tmc_pc
-ifneq ($(OS)$(findstring mingw,$(PC_CC)),)
-EXE := $(EXE_NAME).exe
-else
-EXE := $(EXE_NAME)
-endif
+EXE_DIR ?= .
+EXE := $(EXE_DIR)/$(EXE_NAME)$(if $(MINGW),.exe)
 
 # ---- toolchain ----
-# Default: native gcc in 32-bit mode. For Windows cross builds use e.g.
+# Default: native gcc in 32-bit mode. Windows cross build:
 #   make -f pc.mk PC_CC=i686-w64-mingw32-gcc PC_AS=i686-w64-mingw32-as
 PC_AS ?= as
 PYTHON ?= python3
 SDL2_CFLAGS ?= $(shell sdl2-config --cflags 2>/dev/null)
 SDL2_LIBS ?= $(shell sdl2-config --libs 2>/dev/null || echo -lSDL2)
 
-MINGW := $(findstring mingw,$(PC_CC))
 M32 := $(if $(MINGW),-mno-ms-bitfields,-m32)
-ASM32 := $(if $(findstring mingw,$(PC_AS)),,--32)
+ASM32 := $(if $(MINGW),,--32)
 PC_OBJCOPY ?= $(if $(MINGW),$(subst gcc,objcopy,$(PC_CC)),objcopy)
 
-PREPROC := tools/bin/preproc
-ASSET_PROCESSOR := tools/bin/asset_processor
-ENUM_PROCESSOR := tools/extract_include_enum.py
-
-ASSETS_DIR := $(BUILD_DIR)/assets
-ENUM_DIR := $(BUILD_DIR)/enum_include
-
 DEFINES := -DPC=1 -DNON_MATCHING=1 -D$(GAME_VERSION) -DREVISION=$(REVISION) -D$(GAME_LANGUAGE)
-CPPFLAGS := $(DEFINES) -I include -I port/include -I $(BUILD_DIR) $(SDL2_CFLAGS)
+CPPFLAGS := $(DEFINES) -I include -I port/include -I port/assets/include $(SDL2_CFLAGS)
 # The decompiled code relies on GBA/agbcc semantics:
 #  - unsigned plain char, wrapping signed overflow, no strict aliasing
 #  - data emitted in source order (code indexes across adjacent tables)
+#  - locals that are read before being written get a fixed value instead of stack contents
 OPT ?= -O2
-CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -ftrivial-auto-var-init=zero -fno-toplevel-reorder \
-          -fno-pie -malign-data=abi \
-          -w -Wno-error
+CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -ftrivial-auto-var-init=zero \
+          -fno-toplevel-reorder -fno-pie -malign-data=abi -w -Wno-error
 PORT_CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -fno-pie -Wall -Wno-unused-function
-ASFLAGS := $(ASM32) --divide --defsym $(GAME_VERSION)=1 --defsym REVISION=$(REVISION) --defsym $(GAME_LANGUAGE)=1 --defsym PC=1 \
-           -I . -I $(ASSETS_DIR) -I $(ENUM_DIR)
 # The GBA memory map (0x02000000-0x07FFFFFF) must stay free: move the Windows image above it.
 WIN_LDFLAGS := -Wl,--image-base=0x10000000
 LDFLAGS := $(M32) $(if $(MINGW),$(WIN_LDFLAGS),-no-pie)
@@ -85,46 +67,30 @@ GAME_C_OBJS := $(filter src/%,$(GAME_OBJS))
 GAME_S_OBJS := $(filter-out src/%,$(GAME_OBJS))
 
 PORT_SRCS := $(wildcard port/src/*.c port/src/asm/*.c)
-PORT_DATA_SRCS := $(wildcard port/data/*.s)
+PORT_DATA_OBJS := $(patsubst %.s,%.o,$(wildcard port/data/*.s))
+# all objects made from game data, in link order
+DATA_OBJS := $(GAME_S_OBJS) $(PORT_DATA_OBJS)
 
-OBJS := $(addprefix $(BUILD_DIR)/,$(GAME_C_OBJS) $(GAME_S_OBJS)) \
+LAYOUT := port/assets/layout.json.gz
+SKELETON_DIR := $(BUILD_DIR)/skeleton
+
+OBJS := $(addprefix $(BUILD_DIR)/,$(GAME_C_OBJS)) \
+        $(addprefix $(SKELETON_DIR)/,$(DATA_OBJS)) \
         $(patsubst %.c,$(BUILD_DIR)/%.o,$(PORT_SRCS)) \
-        $(patsubst %.s,$(BUILD_DIR)/%.o,$(PORT_DATA_SRCS))
-
-ENUM_ASM_SRCS := $(wildcard include/*.h)
-ENUM_ASM_HEADERS := $(patsubst include/%.h,$(ENUM_DIR)/%.inc,$(ENUM_ASM_SRCS))
+        $(SKELETON_DIR)/rom_table.o
 
 .SUFFIXES:
 .SECONDARY:
 .DELETE_ON_ERROR:
-.PHONY: all clean assets
+.PHONY: all clean layout
 
 all: $(EXE)
 
 clean:
 	rm -rf $(BUILD_DIR) $(EXE)
 
-# ---- assets ----
-$(BUILD_DIR)/extracted_assets: assets/assets.json assets/gfx.json assets/map.json assets/samples.json assets/sounds.json $(TRANSLATIONS)
-	@mkdir -p $(BUILD_DIR)
-	$(ASSET_PROCESSOR) extract $(GAME_VERSION) $(ASSETS_DIR)
-	@# The raw extracted assets contain absolute ROM pointers (songs, ...). Converting
-	@# them to sources and rebuilding (the decomp's "custom" build) makes them relocatable.
-	$(ASSET_PROCESSOR) convert $(GAME_VERSION) $(ASSETS_DIR)
-	$(ASSET_PROCESSOR) build $(GAME_VERSION) $(ASSETS_DIR)
-	touch $@
-
-assets: $(BUILD_DIR)/extracted_assets
-
-translations/%.bin: translations/%.json
-	tools/bin/tmc_strings -p --source $< --dest $@
-
-$(ENUM_DIR)/%.inc: include/%.h
-	@mkdir -p $(dir $@)
-	$(PYTHON) $(ENUM_PROCESSOR) $< $(PC_CC) "-D__attribute__(x)=" "-D$(GAME_VERSION)" "-E" "-nostdinc" "-Iport/tools/fake_libc" "-iquote include" > $@
-
 # ---- compile ----
-$(BUILD_DIR)/src/%.o: src/%.c | $(BUILD_DIR)/extracted_assets
+$(BUILD_DIR)/src/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(PC_CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
 
@@ -132,11 +98,15 @@ $(BUILD_DIR)/port/%.o: port/%.c
 	@mkdir -p $(dir $@)
 	$(PC_CC) $(CPPFLAGS) $(PORT_CFLAGS) -MMD -MP -c $< -o $@
 
-$(BUILD_DIR)/%.o: %.s $(ENUM_ASM_HEADERS) $(BUILD_DIR)/extracted_assets port/tools/asfilter.py
+# ---- game data: zero filled objects with the right layout ----
+$(SKELETON_DIR)/.generated: $(LAYOUT) port/tools/gen_asset_skeleton.py
+	@mkdir -p $(SKELETON_DIR)/src
+	$(PYTHON) port/tools/gen_asset_skeleton.py $(LAYOUT) $(SKELETON_DIR)/src
+	touch $@
+
+$(SKELETON_DIR)/%.o: $(SKELETON_DIR)/.generated
 	@mkdir -p $(dir $@)
-	$(PREPROC) $(BUILD_NAME) $< -- -I $(ASSETS_DIR) -I $(ENUM_DIR) | \
-	  $(PYTHON) port/tools/asfilter.py -I $(ASSETS_DIR) -I $(ENUM_DIR) > $(BUILD_DIR)/$*.pc.s
-	$(PC_AS) $(ASFLAGS) -o $@ $(BUILD_DIR)/$*.pc.s
+	$(PC_AS) $(ASM32) -o $@ $(SKELETON_DIR)/src/$*.s
 ifneq ($(MINGW),)
 	@# PE/COFF C symbols have a leading underscore, the assembly data does not
 	$(PC_OBJCOPY) --prefix-symbols=_ $@
@@ -152,5 +122,49 @@ $(BUILD_DIR)/ram_symbols.ld: $(BUILD_DIR)/linker.i port/tools/gen_ram_syms.py
 
 $(EXE): $(OBJS) $(BUILD_DIR)/ram_symbols.ld
 	$(PC_CC) $(LDFLAGS) -o $@ $(OBJS) $(BUILD_DIR)/ram_symbols.ld $(LIBS)
+
+# ---- layout (maintainers only: needs baserom.gba and `make tools`) ----
+# The data files are assembled for real (as 32-bit ELF objects, whatever the
+# target) and only their layout is kept.
+LAYOUT_DIR := build/pc-layout
+LAYOUT_AS ?= as
+PREPROC := tools/bin/preproc
+ASSET_PROCESSOR := tools/bin/asset_processor
+ENUM_PROCESSOR := tools/extract_include_enum.py
+ASSETS_DIR := $(LAYOUT_DIR)/assets
+ENUM_DIR := $(LAYOUT_DIR)/enum_include
+ENUM_ASM_HEADERS := $(patsubst include/%.h,$(ENUM_DIR)/%.inc,$(wildcard include/*.h))
+LAYOUT_ASFLAGS := --32 --divide --defsym $(GAME_VERSION)=1 --defsym REVISION=$(REVISION) \
+                  --defsym $(GAME_LANGUAGE)=1 --defsym PC=1 -I . -I $(ASSETS_DIR) -I $(ENUM_DIR)
+
+layout: $(addprefix $(LAYOUT_DIR)/,$(DATA_OBJS)) port/tools/make_asset_layout.py
+	@mkdir -p port/assets/include/assets
+	$(PYTHON) port/tools/make_asset_layout.py baserom.gba $(LAYOUT) $(LAYOUT_DIR) $(DATA_OBJS)
+	@mkdir -p port/assets/include/assets
+	cp $(ASSETS_DIR)/gfx_offsets.h $(ASSETS_DIR)/map_offsets.h port/assets/include/assets/
+
+$(LAYOUT_DIR)/extracted_assets: assets/assets.json assets/gfx.json assets/map.json assets/samples.json \
+                                assets/sounds.json $(TRANSLATIONS)
+	@mkdir -p $(LAYOUT_DIR)
+	$(ASSET_PROCESSOR) extract $(GAME_VERSION) $(ASSETS_DIR)
+	@# The raw extracted assets contain absolute ROM pointers (songs, ...). Converting
+	@# them to sources and rebuilding (the decomp's "custom" build) makes them relocatable.
+	$(ASSET_PROCESSOR) convert $(GAME_VERSION) $(ASSETS_DIR)
+	$(ASSET_PROCESSOR) build $(GAME_VERSION) $(ASSETS_DIR)
+	touch $@
+
+translations/%.bin: translations/%.json
+	tools/bin/tmc_strings -p --source $< --dest $@
+
+$(ENUM_DIR)/%.inc: include/%.h
+	@mkdir -p $(dir $@)
+	$(PYTHON) $(ENUM_PROCESSOR) $< gcc "-D__attribute__(x)=" "-D$(GAME_VERSION)" "-E" "-nostdinc" \
+	  "-Iport/tools/fake_libc" "-iquote include" > $@
+
+$(LAYOUT_DIR)/%.o: %.s $(ENUM_ASM_HEADERS) $(LAYOUT_DIR)/extracted_assets port/tools/asfilter.py
+	@mkdir -p $(dir $@)
+	$(PREPROC) $(BUILD_NAME) $< -- -I $(ASSETS_DIR) -I $(ENUM_DIR) | \
+	  $(PYTHON) port/tools/asfilter.py -I $(ASSETS_DIR) -I $(ENUM_DIR) > $(LAYOUT_DIR)/$*.pc.s
+	$(LAYOUT_AS) $(LAYOUT_ASFLAGS) -o $@ $(LAYOUT_DIR)/$*.pc.s
 
 -include $(shell find $(BUILD_DIR) -name '*.d' 2>/dev/null)
