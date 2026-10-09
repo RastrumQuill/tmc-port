@@ -14,9 +14,10 @@ How the port works inside. For playing, building and the debug tools, see
   range (image base 0x10000000). If the addresses are already in use when the
   game starts, it restarts itself with them reserved.
 * The game's hand-written ARM assembly is replaced by C (`port/src/asm`).
-* Video is a software renderer of the GBA's hardware (`port/src/ppu.c`):
-  tiled and affine backgrounds, sprites, windows, blending, mosaic and
-  per-line (HBlank DMA) effects.
+* Video is a software renderer of the GBA's hardware: tiled and affine
+  backgrounds, sprites, windows, blending, mosaic and per-line (HBlank DMA)
+  effects. Each effect is a shader-like stage in `port/src/shaders` (see its
+  [README](port/src/shaders/README.md)); `port/src/ppu.c` runs the pipeline.
 * Sound: the m4a engine (sequencer and sample mixer) in C
   (`port/src/m4a_pc.c`), with the GBA's tone and noise channels emulated
   (`port/src/audio.c`).

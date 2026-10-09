@@ -66,7 +66,7 @@ GAME_OBJS := $(filter-out $(EXCLUDED_OBJS),$(LD_OBJS))
 GAME_C_OBJS := $(filter src/%,$(GAME_OBJS))
 GAME_S_OBJS := $(filter-out src/%,$(GAME_OBJS))
 
-PORT_SRCS := $(wildcard port/src/*.c port/src/asm/*.c)
+PORT_SRCS := $(wildcard port/src/*.c port/src/asm/*.c port/src/shaders/*.c)
 PORT_DATA_OBJS := $(patsubst %.s,%.o,$(wildcard port/data/*.s))
 # all objects made from game data, in link order
 DATA_OBJS := $(GAME_S_OBJS) $(PORT_DATA_OBJS)

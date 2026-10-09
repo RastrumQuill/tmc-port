@@ -18,6 +18,7 @@ compressed resource pack (`tmc_data.pak`) that it runs from afterwards.
 - [Building](#building)
 - [Running](#running)
 - [The resource pack and modding](#the-resource-pack-and-modding)
+- [Rendering stages (shaders)](#rendering-stages-shaders)
 - [Controls](#controls)
 - [Settings](#settings)
 - [Debug tools](#debug-tools)
@@ -262,6 +263,17 @@ For now a replaced entry must keep its size. Each entry contains pointers,
 whose positions are fixed in the executable, so larger or smaller entries
 need more work. Within that limit you can already recolour, redraw and
 retext things.
+
+## Rendering stages (shaders)
+
+Every visual effect is its own shader-like file in
+[`port/src/shaders`](port/src/shaders/README.md). That includes backgrounds,
+sprites, windows, blending and fades, color output, and scaling to the
+window. The way scaled and rotated graphics are sampled is one swappable
+function in `scaling.c`. That covers the giant bosses (Big Green ChuChu, Big
+Octo, Gyorg) and other zoomed objects, so a filtering, upscaling or AI model
+can replace the hardware's nearest neighbour lookup there. Whole-picture
+post-processing goes in `present.c`.
 
 ## Debug tools
 

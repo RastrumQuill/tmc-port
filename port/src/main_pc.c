@@ -3,6 +3,7 @@
  * @brief Entry point, SDL frontend, configuration, input and frame timing.
  */
 #include "port.h"
+#include "shaders/shader.h"
 
 #include <SDL.h>
 #include <setjmp.h>
@@ -484,42 +485,21 @@ static void InitVideo(void) {
         sRenderer = SDL_CreateRenderer(sWindow, -1, 0);
     if (sRenderer == NULL)
         Port_Fatal("SDL_CreateRenderer: %s", SDL_GetError());
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-    sTexture = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, PORT_MAX_VIEW_WIDTH,
-                                 PORT_MAX_VIEW_HEIGHT);
+    sTexture = Present_CreateTexture(sRenderer, PORT_MAX_VIEW_WIDTH, PORT_MAX_VIEW_HEIGHT);
     if (sTexture == NULL)
         Port_Fatal("SDL_CreateTexture: %s", SDL_GetError());
 }
 
 static void PresentFrame(void) {
-    int outW, outH, winW, winH;
-    SDL_Rect src, dst;
-    float scale;
+    int winW, winH;
     SDL_GetWindowSize(sWindow, &winW, &winH);
     if (!gPortConfig.fullscreen && (winW != gPortConfig.windowWidth || winH != gPortConfig.windowHeight)) {
         gPortConfig.windowWidth = winW;
         gPortConfig.windowHeight = winH;
     }
-    SDL_GetRendererOutputSize(sRenderer, &outW, &outH);
-    SDL_UpdateTexture(sTexture, NULL, sFrame, PORT_MAX_VIEW_WIDTH * 4);
-    src.x = 0;
-    src.y = 0;
-    src.w = gPortViewWidth;
-    src.h = gPortViewHeight;
-    /* fit the logical view into the window keeping square pixels */
-    scale = (float)outW / gPortViewWidth;
-    if ((float)outH / gPortViewHeight < scale)
-        scale = (float)outH / gPortViewHeight;
-    if (gPortConfig.integerScaling && scale >= 1.0f)
-        scale = (float)(int)scale;
-    dst.w = (int)(gPortViewWidth * scale);
-    dst.h = (int)(gPortViewHeight * scale);
-    dst.x = (outW - dst.w) / 2;
-    dst.y = (outH - dst.h) / 2;
-    SDL_SetRenderDrawColor(sRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(sRenderer);
-    SDL_RenderCopy(sRenderer, sTexture, &src, &dst);
-    SDL_RenderPresent(sRenderer);
+    /* scaling to the window and post-processing: port/src/shaders/present.c */
+    Present_Frame(sRenderer, sTexture, sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight,
+                  gPortConfig.integerScaling);
 }
 
 /* ---- input ---- */
