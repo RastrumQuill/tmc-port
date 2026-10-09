@@ -312,11 +312,14 @@ reached yet can show missing or odd objects, as with any warp cheat.
 - `--cmd FRAME:COMMAND` runs a console command at that frame.
 - `--warp AREA,ROOM,X,Y` warps once the game is running.
 - `--wav FILE` records the audio.
+- `--bench` prints the average time to render a frame when the game exits.
 
 Environment variables:
 - `TMC_HASH_LOG=1` prints a hash of the game RAM every frame (to compare two builds).
 - `TMC_VIEW_LOG`, `TMC_SOUND_LOG` and `TMC_NULL_LOG` print diagnostics.
 - `TMC_NO_NULLGUARD` is for running under a debugger.
+- `TMC_RENDER_THREADS=N` sets how many CPU threads draw the picture (default:
+  all cores, 1 = only the main thread).
 
 ## Known issues
 

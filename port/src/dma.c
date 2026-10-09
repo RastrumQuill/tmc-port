@@ -144,3 +144,30 @@ void* Dma_StateData(size_t* size) {
     *size = sizeof(sDma);
     return sDma;
 }
+
+/* true when the active HBlank transfers only write I/O registers (the renderer may then snapshot
+ * the registers per line and render the lines in any order) */
+bool Port_DmaHBlankOnlyIo(void) {
+    u32 n;
+    for (n = 0; n < 4; n++) {
+        const DmaChannel* ch = &sDma[n];
+        u32 control = ch->control, count, unit, step;
+        u32 lo, hi;
+        if (!ch->active || ((control >> 28) & 3) != 2)
+            continue;
+        count = control & 0xFFFF;
+        if (count == 0)
+            count = (n == 3) ? 0x10000 : 0x4000;
+        unit = (control & (DMA_32BIT << 16)) ? 4 : 2;
+        step = (((control >> 21) & 3) == 2) ? 0 : count * unit; /* fixed destination writes one unit */
+        lo = ch->curDest;
+        hi = ch->curDest + (step ? step : unit);
+        if (((control >> 21) & 3) == 1) { /* decrementing */
+            lo = ch->curDest - count * unit + unit;
+            hi = ch->curDest + unit;
+        }
+        if (lo < PORT_IO_ADDR || hi > PORT_IO_ADDR + PORT_IO_SIZE)
+            return false;
+    }
+    return true;
+}

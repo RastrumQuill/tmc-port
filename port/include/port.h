@@ -36,8 +36,8 @@
 #define GBA_HEIGHT 160
 
 /* Largest supported logical view (in GBA pixels). */
-#define PORT_MAX_VIEW_WIDTH 1024
-#define PORT_MAX_VIEW_HEIGHT 640
+#define PORT_MAX_VIEW_WIDTH 3840
+#define PORT_MAX_VIEW_HEIGHT 2160
 
 /**
  * Runtime configuration (tmc_pc.ini / command line).
@@ -100,6 +100,8 @@ void Port_Log(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /* ---- DMA ---- */
 void Port_DmaOnHBlank(int line);
+/** true when the active HBlank DMA transfers only write I/O registers */
+bool Port_DmaHBlankOnlyIo(void);
 void Port_DmaOnVBlank(void);
 
 /* ---- PPU ---- */
@@ -109,6 +111,9 @@ void Port_DmaOnVBlank(void);
  * real line (HBlank effects are stretched).
  */
 void Ppu_RenderFrame(uint32_t* out, int pitchPixels, int w, int h);
+/** a frame that is not displayed: runs only the per-line side effects (HBlank DMA) */
+void Ppu_SkipFrame(void);
+const uint8_t* Port_TileSwapCharData(uint32_t charBase, uint16_t entry, bool bpp8, int mx, int my);
 
 /**
  * Extended background source.

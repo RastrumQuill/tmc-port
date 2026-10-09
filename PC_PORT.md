@@ -16,7 +16,10 @@ How the port works inside. For playing, building and the debug tools, see
 * The game's hand-written ARM assembly is replaced by C (`port/src/asm`).
 * Video is a software renderer of the GBA's hardware (`port/src/ppu.c`):
   tiled and affine backgrounds, sprites, windows, blending, mosaic and
-  per-line (HBlank DMA) effects.
+  per-line (HBlank DMA) effects. A frame is drawn in two passes: the first
+  records the video registers every line sees (running the HBlank DMA in
+  order), the second draws the lines from those records on all CPU cores.
+  While fast-forwarding, only the frames that are shown are drawn.
 * Sound: the m4a engine (sequencer and sample mixer) in C
   (`port/src/m4a_pc.c`), with the GBA's tone and noise channels emulated
   (`port/src/audio.c`).

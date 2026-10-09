@@ -44,8 +44,15 @@ int gPortViewHeight = GBA_HEIGHT;
 static SDL_Window* sWindow;
 static SDL_Renderer* sRenderer;
 static SDL_Texture* sTexture;
+static int sTextureW, sTextureH;
+/* size of the drawable area of the window in pixels (0 until known) */
+static int sOutputW, sOutputH;
 static SDL_GameController* sController;
 static uint32_t* sFrame;
+/* --bench: render every frame headless and report the render time */
+static bool sBench;
+static double sBenchSeconds;
+static uint64_t sBenchFrames;
 static jmp_buf sResetJump;
 static uint64_t sFrameCount;
 static uint64_t sNextFrameTime;
@@ -364,6 +371,7 @@ static void Usage(const char* argv0) {
            "  --headless --frames N    run without a window for N frames (testing)\n"
            "  --keys SPEC              scripted input, e.g. 100-110:START,200-260:RIGHT+B,300-900/30:A\n"
            "  --shot FRAME             save shot_FRAME.bmp (repeatable)\n"
+           "  --bench                  render every frame headless and report the render time\n"
            "  --warp AREA,ROOM,X,Y     warp once in game (testing)\n"
            "  --wav FILE               record the audio (testing)\n"
            "  --cmd FRAME:COMMAND      run a debug console command at a frame (repeatable)\n"
@@ -408,6 +416,8 @@ static void ParseArgs(int argc, char** argv) {
             snprintf(gPortConfig.dataPath, sizeof(gPortConfig.dataPath), "%s", argv[++i]);
         else if (strcmp(a, "--rebuild-data") == 0)
             gPortConfig.rebuildData = true;
+        else if (strcmp(a, "--bench") == 0)
+            sBench = true;
         else if (strcmp(a, "--headless") == 0)
             gPortConfig.headless = true;
         else if (strcmp(a, "--frames") == 0 && next)
@@ -445,8 +455,13 @@ static void ParseArgs(int argc, char** argv) {
 
 /* ---- view size ---- */
 
+/*
+ * The view is the window's drawable area divided by the scale: zooming out
+ * (smaller scale) shows more of the world, and the picture always fills the
+ * window.
+ */
 void Port_UpdateViewSize(void) {
-    int w, h;
+    int w, h, outW, outH;
     float scale = gPortConfig.scale;
     if (gPortConfig.integerScaling && scale >= 1.0f)
         scale = (float)(int)scale;
@@ -455,8 +470,10 @@ void Port_UpdateViewSize(void) {
         gPortViewHeight = GBA_HEIGHT;
         return;
     }
-    w = (int)(gPortConfig.windowWidth / scale);
-    h = (int)(gPortConfig.windowHeight / scale);
+    outW = sOutputW > 0 ? sOutputW : gPortConfig.windowWidth;
+    outH = sOutputH > 0 ? sOutputH : gPortConfig.windowHeight;
+    w = (int)(outW / scale + 0.5f);
+    h = (int)(outH / scale + 0.5f);
     if (w < GBA_WIDTH)
         w = GBA_WIDTH;
     if (h < GBA_HEIGHT)
@@ -485,40 +502,56 @@ static void InitVideo(void) {
     if (sRenderer == NULL)
         Port_Fatal("SDL_CreateRenderer: %s", SDL_GetError());
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-    sTexture = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, PORT_MAX_VIEW_WIDTH,
-                                 PORT_MAX_VIEW_HEIGHT);
+    SDL_GetRendererOutputSize(sRenderer, &sOutputW, &sOutputH);
+}
+
+/* the texture has the size of the view, so only visible pixels are uploaded */
+static void EnsureTexture(int w, int h) {
+    if (sTexture != NULL && sTextureW == w && sTextureH == h)
+        return;
+    if (sTexture != NULL)
+        SDL_DestroyTexture(sTexture);
+    sTexture = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, w, h);
     if (sTexture == NULL)
         Port_Fatal("SDL_CreateTexture: %s", SDL_GetError());
+    sTextureW = w;
+    sTextureH = h;
 }
 
 static void PresentFrame(void) {
     int outW, outH, winW, winH;
-    SDL_Rect src, dst;
-    float scale;
+    SDL_Rect dst;
     SDL_GetWindowSize(sWindow, &winW, &winH);
     if (!gPortConfig.fullscreen && (winW != gPortConfig.windowWidth || winH != gPortConfig.windowHeight)) {
         gPortConfig.windowWidth = winW;
         gPortConfig.windowHeight = winH;
     }
     SDL_GetRendererOutputSize(sRenderer, &outW, &outH);
+    sOutputW = outW;
+    sOutputH = outH;
+    EnsureTexture(gPortViewWidth, gPortViewHeight);
     SDL_UpdateTexture(sTexture, NULL, sFrame, PORT_MAX_VIEW_WIDTH * 4);
-    src.x = 0;
-    src.y = 0;
-    src.w = gPortViewWidth;
-    src.h = gPortViewHeight;
-    /* fit the logical view into the window keeping square pixels */
-    scale = (float)outW / gPortViewWidth;
-    if ((float)outH / gPortViewHeight < scale)
-        scale = (float)outH / gPortViewHeight;
-    if (gPortConfig.integerScaling && scale >= 1.0f)
-        scale = (float)(int)scale;
-    dst.w = (int)(gPortViewWidth * scale);
-    dst.h = (int)(gPortViewHeight * scale);
-    dst.x = (outW - dst.w) / 2;
-    dst.y = (outH - dst.h) / 2;
+    if (gPortViewWidth == GBA_WIDTH && gPortViewHeight == GBA_HEIGHT) {
+        /* classic picture: as large as fits, square pixels, black bars */
+        float scale = (float)outW / GBA_WIDTH;
+        if ((float)outH / GBA_HEIGHT < scale)
+            scale = (float)outH / GBA_HEIGHT;
+        if (gPortConfig.integerScaling && scale >= 1.0f)
+            scale = (float)(int)scale;
+        dst.w = (int)(GBA_WIDTH * scale);
+        dst.h = (int)(GBA_HEIGHT * scale);
+        dst.x = (outW - dst.w) / 2;
+        dst.y = (outH - dst.h) / 2;
+    } else {
+        /* extended view: the view was sized from the window, fill it */
+        dst.x = 0;
+        dst.y = 0;
+        dst.w = outW;
+        dst.h = outH;
+    }
     SDL_SetRenderDrawColor(sRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sRenderer);
-    SDL_RenderCopy(sRenderer, sTexture, &src, &dst);
+    SDL_RenderCopy(sRenderer, sTexture, NULL, &dst);
     SDL_RenderPresent(sRenderer);
 }
 
@@ -737,6 +770,7 @@ static bool IrqEnabled(uint16_t flag) {
 }
 
 void Port_VBlankIntrWait(void) {
+    bool present;
     /* VCOUNT interrupt (line 80): the game mixes audio there */
     if (IrqEnabled(INTR_FLAG_VCOUNT) && (PORT_IO16(0x004) & DISPSTAT_VCOUNT_INTR)) {
         PORT_IO16(0x006) = 80;
@@ -744,18 +778,36 @@ void Port_VBlankIntrWait(void) {
     }
     Audio_Frame();
 
-    if (!gPortConfig.headless || ShotThisFrame(sFrameCount)) {
+    /* fast forward only shows every 4th frame; frames nobody sees are not rendered */
+    present = !gPortConfig.headless && (!sFastForward || (sFrameCount & 3) == 0);
+    if (present || (gPortConfig.headless && (sBench || ShotThisFrame(sFrameCount)))) {
         /* the frame is displayed with the state latched at the previous vblank */
+        uint64_t t0 = sBench ? SDL_GetPerformanceCounter() : 0;
+        static int benchW, benchH;
+        if (sBench && (benchW != gPortViewWidth || benchH != gPortViewHeight)) {
+            /* average over the current view size only */
+            benchW = gPortViewWidth;
+            benchH = gPortViewHeight;
+            sBenchSeconds = 0;
+            sBenchFrames = 0;
+        }
         Ppu_RenderFrame(sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
+        if (sBench) {
+            sBenchSeconds += (double)(SDL_GetPerformanceCounter() - t0) / SDL_GetPerformanceFrequency();
+            sBenchFrames++;
+        }
         Debug_DrawOverlay(sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight, sFrameCount);
         if (ShotThisFrame(sFrameCount)) {
             char name[64];
             snprintf(name, sizeof(name), "shot_%u.bmp", (unsigned)sFrameCount);
             WriteBmp(name, sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
         }
+    } else {
+        /* still run what happens between the lines (HBlank DMA), the game state stays the same */
+        Ppu_SkipFrame();
     }
     if (!gPortConfig.headless) {
-        if (!sFastForward || (sFrameCount & 3) == 0)
+        if (present)
             PresentFrame();
         HandleEvents();
     }
@@ -794,6 +846,9 @@ void ram_IntrMain(void) {
 }
 
 void Port_Shutdown(void) {
+    if (sBench && sBenchFrames)
+        Port_Log("bench: %llu frames rendered, %.3f ms per frame (last view %dx%d)", (unsigned long long)sBenchFrames,
+                 sBenchSeconds * 1000.0 / sBenchFrames, gPortViewWidth, gPortViewHeight);
     extern void Audio_StopDump(void);
     Audio_StopDump();
     Save_Flush();
