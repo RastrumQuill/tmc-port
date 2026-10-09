@@ -152,8 +152,17 @@ void VaatiAppearingManager_Action3(VaatiAppearingManager* this) {
     }
 }
 
+#ifdef PC
+// The PC port's larger view: Vaati's picture is drawn once, not repeated.
+enum { PORT_BG_SINGLE = 4 };
+void Port_ViewBgHint(int bg, int mode, int parallaxX, int parallaxY);
+#endif
+
 void sub_0805D9D8(VaatiAppearingManager* this) {
     Entity* vaati = super->parent;
+#ifdef PC
+    Port_ViewBgHint(3, PORT_BG_SINGLE, 0, 0);
+#endif
     if (vaati != NULL) {
         gScreen.bg3.xOffset = 0x80 - (vaati->x.HALF.HI - gRoomControls.scroll_x);
         gScreen.bg3.yOffset = 0x8c - (vaati->y.HALF.HI - gRoomControls.scroll_y);

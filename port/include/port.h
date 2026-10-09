@@ -153,10 +153,27 @@ typedef enum {
     PPU_BG_WRAP,
     /** classic area from VRAM, everything outside from the override map */
     PPU_BG_OVERRIDE,
+    /** the 240x160 picture of the layer scaled up to cover the view (light rays: its
+     *  map does not repeat seamlessly, so the GBA never shows more than one copy) */
+    PPU_BG_STRETCH,
+    /** outside the classic area, only the copy of the map at the classic screen's
+     *  centre (one picture placed with the BG offset, like Vaati's teleport) */
+    PPU_BG_SINGLE,
 } PpuBgMode;
 
 /** How each background is extended beyond the classic area (set by view.c every frame). */
 extern PpuBgMode gPpuBgMode[4];
+/** PPU_BG_STRETCH: the part of the BG offset that follows the camera (parallax), kept
+ *  at its own speed instead of being scaled up with the picture */
+extern int gPpuBgParallax[4][2];
+
+/**
+ * Game code (#ifdef PC) asks for a background mode in the extended view, for
+ * layers whose map can't repeat. Call it every frame the layer is shown.
+ */
+void Port_ViewBgHint(int bg, PpuBgMode mode, int parallaxX, int parallaxY);
+/* game code passes the modes as numbers */
+_Static_assert(PPU_BG_STRETCH == 3 && PPU_BG_SINGLE == 4, "Port_ViewBgHint callers");
 
 typedef struct {
     bool enabled;

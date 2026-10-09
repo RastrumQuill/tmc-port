@@ -31,6 +31,7 @@
 
 PpuBgOverride gPpuBgOverride[4];
 PpuBgMode gPpuBgMode[4];
+int gPpuBgParallax[4][2];
 bool gPpuHudAnchor;
 int gPortViewOffsetX;
 int gPortViewOffsetY;
@@ -354,6 +355,54 @@ static void RenderTextBgMosaic(RenderCtx* ctx, int bg, int y, bool lineInside, i
     }
 }
 
+/* PPU_BG_STRETCH: the classic picture of the layer, scaled up around the view's centre to cover it */
+static void RenderTextBgStretch(RenderCtx* ctx, int bg, int line) {
+    uint16_t* out = ctx->bgLine[bg];
+    int vy = line + gPortViewOffsetY;
+    /* view pixels to classic pixels, 16.16 (the smaller factor: the picture covers the view) */
+    int64_t inv = (int64_t)GBA_WIDTH * 65536 / sViewW;
+    int64_t invY = (int64_t)GBA_HEIGHT * 65536 / sViewH;
+    const LineState* st;
+    uint16_t cnt;
+    uint32_t charBase, screenBase;
+    bool bpp8;
+    int size, cy, hofs, vofs, px, py, vx, a, b;
+    if (invY < inv)
+        inv = invY;
+    memset(out, 0, sViewW * sizeof(uint16_t));
+    if (vy < gPortClipTop || vy >= gPortClipBottom)
+        return;
+    cy = GBA_HEIGHT / 2 + (int)(((int64_t)(vy - sViewH / 2) * inv) >> 16);
+    if (cy < 0)
+        cy = 0;
+    if (cy >= GBA_HEIGHT)
+        cy = GBA_HEIGHT - 1;
+    /* that classic line's registers (per line scroll waves keep their shape) */
+    st = &sLines[gPortViewOffsetY + cy];
+    cnt = st->io[(0x08 + bg * 2) >> 1];
+    charBase = ((cnt >> 2) & 3) * 0x4000;
+    screenBase = ((cnt >> 8) & 0x1F) * 0x800;
+    bpp8 = (cnt >> 7) & 1;
+    size = cnt >> 14;
+    /* the camera part of the offset moves at its own speed, not scaled up */
+    px = gPpuBgParallax[bg][0];
+    py = gPpuBgParallax[bg][1];
+    hofs = (st->io[(0x10 + bg * 4) >> 1] & 0x1FF) - px + (int)(((int64_t)px * inv) >> 16);
+    vofs = (st->io[(0x12 + bg * 4) >> 1] & 0x1FF) - py + (int)(((int64_t)py * inv) >> 16);
+    a = gPortClipLeft;
+    b = gPortClipRight;
+    for (vx = a; vx < b; vx++) {
+        int cx = GBA_WIDTH / 2 + (int)(((int64_t)(vx - sViewW / 2) * inv) >> 16);
+        int bx = cx + hofs, by = cy + vofs;
+        out[vx] = TextTilePixel(TextMapEntry(screenBase, size, bx, by), bx & 7, by & 7, charBase, bpp8);
+    }
+}
+
+/* floor division */
+static inline int FloorDiv(int a, int b) {
+    return a >= 0 ? a / b : -((-a + b - 1) / b);
+}
+
 static void RenderTextBg(RenderCtx* ctx, int bg, int line /* classic line */, int mosaicH, int mosaicV) {
     uint16_t cnt = REG(0x08 + bg * 2);
     uint32_t charBase = ((cnt >> 2) & 3) * 0x4000;
@@ -370,6 +419,10 @@ static void RenderTextBg(RenderCtx* ctx, int bg, int line /* classic line */, in
     int ox = gPortViewOffsetX;
     int seg[4], s;
 
+    if (mode == PPU_BG_STRETCH) {
+        RenderTextBgStretch(ctx, bg, line);
+        return;
+    }
     if ((cnt & 0x40) && mosaicV > 1)
         y -= ((y % mosaicV) + mosaicV) % mosaicV;
     if ((cnt & 0x40) && mosaicH > 1) {
@@ -389,7 +442,26 @@ static void RenderTextBg(RenderCtx* ctx, int bg, int line /* classic line */, in
             continue;
         if (inside)
             TextSpanHw(out, a, b, a - ox + hofs, y + vofs, screenBase, size, charBase, bpp8);
-        else if (mode == PPU_BG_WRAP) {
+        else if (mode == PPU_BG_SINGLE) {
+            /* the copy of the map at the classic screen's centre, nothing around it */
+            int w = (size & 1) ? 512 : 256, h = (size & 2) ? 512 : 256;
+            const LineState* mid = &sLines[gPortViewOffsetY + GBA_HEIGHT / 2];
+            int cvofs = mid->io[(0x12 + bg * 4) >> 1] & 0x1FF;
+            int ky = FloorDiv(GBA_HEIGHT / 2 + cvofs, h);
+            int kx = FloorDiv(GBA_WIDTH / 2 + hofs, w);
+            int vy = line + gPortViewOffsetY;
+            int by = y + vofs;
+            int ca = a < gPortClipLeft ? gPortClipLeft : a;
+            int cb = b > gPortClipRight ? gPortClipRight : b;
+            int lo = kx * w + ox - hofs, hi = lo + w; /* view x of the copy */
+            memset(out + a, 0, (b - a) * sizeof(uint16_t));
+            if (ca < lo)
+                ca = lo;
+            if (cb > hi)
+                cb = hi;
+            if (ca < cb && vy >= gPortClipTop && vy < gPortClipBottom && FloorDiv(by, h) == ky)
+                TextSpanHw(out, ca, cb, ca - ox + hofs, by, screenBase, size, charBase, bpp8);
+        } else if (mode == PPU_BG_WRAP) {
             /* repeating layers (sky, clouds, fog, darkness) only inside the room */
             int vy = line + gPortViewOffsetY;
             int ca = a < gPortClipLeft ? gPortClipLeft : a;

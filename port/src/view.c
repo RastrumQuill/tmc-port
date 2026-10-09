@@ -152,8 +152,26 @@ float View_RoomFitScale(int outW, int outH) {
     return fit;
 }
 
+/* the modes game code asked for (Port_ViewBgHint), with the frame they were asked in */
+static struct {
+    PpuBgMode mode;
+    int parallax[2];
+    unsigned frame;
+} sBgHint[4];
+static unsigned sViewFrame = 2;
+
+void Port_ViewBgHint(int bg, PpuBgMode mode, int parallaxX, int parallaxY) {
+    if (bg < 0 || bg > 3)
+        return;
+    sBgHint[bg].mode = mode;
+    sBgHint[bg].parallax[0] = parallaxX;
+    sBgHint[bg].parallax[1] = parallaxY;
+    sBgHint[bg].frame = sViewFrame;
+}
+
 void View_PrepareFrame(void) {
     int i;
+    sViewFrame++;
     for (i = 0; i < 4; i++) {
         gPpuBgOverride[i].enabled = false;
         gPpuBgMode[i] = PPU_BG_CLASSIC_ONLY;
@@ -220,8 +238,15 @@ void View_PrepareFrame(void) {
     {
         int bg;
         for (bg = 1; bg < 4; bg++) {
-            if (gPpuBgMode[bg] == PPU_BG_CLASSIC_ONLY)
-                gPpuBgMode[bg] = PPU_BG_WRAP;
+            if (gPpuBgMode[bg] != PPU_BG_CLASSIC_ONLY)
+                continue;
+            gPpuBgMode[bg] = PPU_BG_WRAP;
+            /* asked for in this frame's game update or the one before */
+            if (sViewFrame - sBgHint[bg].frame <= 1) {
+                gPpuBgMode[bg] = sBgHint[bg].mode;
+                gPpuBgParallax[bg][0] = sBgHint[bg].parallax[0];
+                gPpuBgParallax[bg][1] = sBgHint[bg].parallax[1];
+            }
         }
     }
 }
