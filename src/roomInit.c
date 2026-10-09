@@ -595,21 +595,11 @@ void sub_StateChange_HyruleCastle_0(void) {
         LoadRoomEntityList(&gUnk_080D7328);
     }
 
-#if defined(JP) || defined(DEMO_JP)
-    if (CheckGlobalFlag(CASTLE_BGM) || CheckGlobalFlag(ENDING)) {
-        gArea.queued_bgm = gArea.bgm;
-    }
-#elif defined(EU)
-    if (CheckGlobalFlag(ENDING)) {
-        gArea.queued_bgm = gArea.bgm;
-    }
-#else
     if (CheckGlobalFlag(CASTLE_BGM)) {
         gArea.queued_bgm = BGM_HYRULE_CASTLE_NOINTRO;
     } else if (CheckGlobalFlag(ENDING)) {
         gArea.queued_bgm = gArea.bgm;
     }
-#endif
 }
 
 extern u32 gUnk_080D7410;
@@ -635,11 +625,9 @@ void sub_StateChange_HyruleCastle_1(void) {
         if (!CheckGlobalFlag(LV1_CLEAR) && CheckGlobalFlag(TABIDACHI)) {
             LoadRoomEntityList(&gUnk_080D73E0);
         }
-#ifndef EU
         if (CheckGlobalFlag(CASTLE_BGM)) {
             gArea.queued_bgm = gArea.bgm;
         }
-#endif
     }
 }
 
@@ -653,11 +641,9 @@ extern EntityData gUnk_080D75D8;
 extern EntityData gUnk_080D7618;
 
 void sub_StateChange_HyruleCastle_2(void) {
-#ifndef EU
     if (CheckGlobalFlag(CASTLE_BGM)) {
         gArea.queued_bgm = gArea.bgm;
     }
-#endif
 
     if (CheckGlobalFlag(ENDING)) {
         LoadRoomEntityList(&gUnk_080D7618);
@@ -700,31 +686,15 @@ void sub_StateChange_HyruleCastle_4(void) {
         gPlayerEntity.base.x.HALF.HI = gRoomControls.origin_x + 0xb0;
         gPlayerEntity.base.y.HALF.HI = gRoomControls.origin_y + 0x40;
         sub_080751E8(0, 6, &script_PlayerWakingUpInHyruleCastle);
-#ifdef EU
-        SoundReq(SONG_STOP_ALL);
-        gArea.bgm = gArea.queued_bgm;
-    }
-#else
     }
 
     if (!CheckGlobalFlag(TABIDACHI)) {
         sub_08052878();
-#if !(defined(JP) || defined(DEMO_JP))
     } else {
-#else
-    }
-#endif
         if (CheckGlobalFlag(CASTLE_BGM)) {
-#if defined(JP) || defined(DEMO_JP)
-            gArea.queued_bgm = gArea.bgm;
-#else
         gArea.queued_bgm = BGM_HYRULE_CASTLE_NOINTRO;
-#endif
         }
-#if !(defined(JP) || defined(DEMO_JP))
     }
-#endif
-#endif
 }
 
 void sub_0804BCDC(void) {
@@ -2256,24 +2226,8 @@ u32 sub_unk3_DeepwoodShrine_Entrance(void) {
     return 1;
 }
 
-#if defined(DEMO_USA) || defined(DEMO_JP)
-void sub_StateChange_DeepwoodShrine_Entrance(void) {
-#ifdef DEMO_USA
-    if (gSaveHeader->saveFileId != 0 && GetInventoryValue(ITEM_EARTH_ELEMENT) == 0) {
-#else
-#ifdef DEMO_JP
-    if (GetInventoryValue(ITEM_EARTH_ELEMENT) == 0) {
-#endif
-#endif
-        SetTileType(TILE_TYPE_869, TILE_POS(9, 13), LAYER_BOTTOM);
-        SetTileType(TILE_TYPE_869, TILE_POS(10, 13), LAYER_BOTTOM);
-        SetTileType(TILE_TYPE_869, TILE_POS(11, 13), LAYER_BOTTOM);
-    }
-}
-#else
 void sub_StateChange_DeepwoodShrine_Entrance(void) {
 }
-#endif
 
 u32 sub_unk3_DeepwoodShrine_Torch(void) {
     return 1;
@@ -2399,18 +2353,8 @@ u32 sub_unk3_CaveOfFlames_Entrance(void) {
     return 1;
 }
 
-#ifdef DEMO_USA
-void sub_StateChange_CaveOfFlames_Entrance(void) {
-    if (GetInventoryValue(ITEM_FIRE_ELEMENT) == 0) {
-        SetTileType(TILE_TYPE_869, TILE_POS(7, 10), LAYER_TOP);
-        SetTileType(TILE_TYPE_869, TILE_POS(8, 10), LAYER_TOP);
-        SetTileType(TILE_TYPE_869, TILE_POS(9, 10), LAYER_TOP);
-    }
-}
-#else
 void sub_StateChange_CaveOfFlames_Entrance(void) {
 }
-#endif
 
 u32 sub_unk3_CaveOfFlames_MainCart(void) {
     return 1;
@@ -4368,9 +4312,7 @@ extern EntityData gUnk_080EEBAC;
 void sub_StateChange_HyruleTown_0(void) {
     EnableRandomDrops();
     TryLoadPrologueHyruleTown();
-#if defined(USA) || defined(DEMO_USA) || defined(DEMO_JP)
     SetTileType(TILE_TYPE_374, TILE_POS(43, 25), LAYER_BOTTOM);
-#endif
     if (gSave.global_progress == 1) {
         sub_0801D000(0);
     } else {
@@ -4596,20 +4538,12 @@ extern EntityData gUnk_080F0920;
 void sub_StateChange_CastleGarden_Main(void) {
     if (!CheckGlobalFlag(TABIDACHI)) {
         LoadRoomEntityList(&gUnk_080F0650);
-#ifdef EU
-        gArea.queued_bgm = BGM_FESTIVAL_APPROACH;
-#else
         gArea.queued_bgm = BGM_BEANSTALK;
         SetGlobalFlag(CASTLE_BGM);
     } else {
         if (CheckGlobalFlag(CASTLE_BGM)) {
-#if defined(JP) || defined(DEMO_JP)
-            gArea.queued_bgm = gArea.bgm;
-#else
             gArea.queued_bgm = BGM_HYRULE_CASTLE_NOINTRO;
-#endif
         }
-#endif
     }
     if (!CheckLocalFlag(SOUGEN_08_TORITSUKI)) {
         LoadRoomEntityList(&gUnk_080F0800);
@@ -5227,10 +5161,6 @@ void sub_StateChange_MinishWoods_Main(void) {
     if (!IS_BIT_SET(gSave.windcrests, WINDCREST_MINISH_WOODS)) {
         LoadRoomEntityList(&gUnk_080F4E10);
     }
-#ifdef DEMO_USA
-    SetTileType(TILE_TYPE_375, TILE_POS(52, 22), LAYER_BOTTOM);
-    SetTileType(TILE_TYPE_375, TILE_POS(52, 23), LAYER_BOTTOM);
-#endif
 }
 
 void sub_unk1_MinishWoods_Main(void) {
@@ -5379,12 +5309,10 @@ void sub_StateChange_HouseInteriors3_StockwellShop(void) {
         }
         if (!GetInventoryValue(ITEM_BOOMERANG) && !GetInventoryValue(ITEM_MAGIC_BOOMERANG)) {
             LoadRoomEntityList(&gUnk_080F5888);
-#ifndef EU
         } else {
             if (!CheckLocalFlag(SHOP00_BOMBBAG)) {
                 LoadRoomEntityList(&gUnk_080F58A8);
             }
-#endif
         }
     }
     if (GetInventoryValue(ITEM_BOW) || CheckGlobalFlag(LV3_CLEAR)) {
@@ -5414,11 +5342,9 @@ u32 sub_unk3_HouseInteriors3_RemShoeShop(void) {
 extern EntityData gUnk_080F5B3C;
 
 void sub_StateChange_HouseInteriors3_RemShoeShop(void) {
-#ifndef EU
     if (GetInventoryValue(ITEM_QST_MUSHROOM) == 1) {
         LoadRoomEntityList(&gUnk_080F5B3C);
     }
-#endif
 }
 
 u32 sub_unk3_HouseInteriors3_Bakery(void) {
@@ -5565,9 +5491,7 @@ void sub_StateChange_WindTribeTowerRoof_Main(void) {
         LoadRoomEntityList(&gUnk_080F66AC);
     }
     SetWorldMapPos(8, 0, 0x1e8, 0x158);
-#ifndef EU
     gArea.areaMetadata |= AR_ALLOWS_WARP;
-#endif
 }
 
 u32 sub_unk3_Beanstalks_MountCrenel(void) {
@@ -5772,11 +5696,9 @@ u32 sub_unk3_HyruleField_OutsideCastle(void) {
         gRoomVars.properties[7] = sub_0804F4E4;
         gRoomVars.properties[2] = NULL;
     }
-#ifndef EU
     if (CheckGlobalFlag(TABIDACHI)) {
         ClearGlobalFlag(CASTLE_BGM);
     }
-#endif
     return 1;
 }
 
@@ -5798,11 +5720,7 @@ void sub_StateChange_HyruleField_OutsideCastle(void) {
         SetTileType(TILE_TYPE_372, TILE_POS(39, 30), LAYER_BOTTOM);
     }
     if (!CheckGlobalFlag(TABIDACHI)) {
-#ifdef EU
-        gArea.queued_bgm = BGM_FESTIVAL_APPROACH;
-#else
         gArea.queued_bgm = BGM_BEANSTALK;
-#endif
     }
 }
 
@@ -6625,9 +6543,7 @@ u32 sub_unk3_MtCrenel_Entrance(void) {
 }
 
 void sub_StateChange_MtCrenel_Entrance(void) {
-#if defined(USA) || defined(DEMO_USA) || defined(DEMO_JP)
     SetTileType(TILE_TYPE_374, TILE_POS(47, 25), LAYER_BOTTOM);
-#endif
 }
 
 u32 sub_unk3_CrenelCaves_BlockPushing(void) {

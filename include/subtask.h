@@ -111,11 +111,7 @@ typedef struct {
 
 extern const struct_gUnk_08128E94 gUnk_08128E94[];
 
-#ifdef EU
-#define DRAW_DIRECT_SPRITE_INDEX 0x1fa
-#else
 #define DRAW_DIRECT_SPRITE_INDEX 0x1fb
-#endif
 
 extern void MenuFadeIn(u32, u32);
 extern void sub_080A71C4(u32, u32, u32, u32);

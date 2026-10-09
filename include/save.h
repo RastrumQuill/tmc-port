@@ -162,9 +162,5 @@ extern const char gUnk_0811E470[];
 void UpdateGlobalProgress(void);
 void sub_0807CD9C(void);
 
-#ifdef DEMO_USA
-extern const u8* const demoPointers[];
-extern const u8 demoUnknown1[];
-#endif
 
 #endif // SAVE_H

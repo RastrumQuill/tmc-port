@@ -236,11 +236,7 @@ void sub_080A5128(void) {
     gOamCmd._8 = 0x400;
     gOamCmd.x = p[0].x;
     gOamCmd.y = p[0].y;
-#ifdef EU
-    r5 = 0x1fa;
-#else
     r5 = 0x1fb;
-#endif
     DrawDirect(r5, 0);
     gOamCmd.x = p[1].x;
     gOamCmd.y = p[1].y;
@@ -387,12 +383,8 @@ void PauseMenu_ItemMenu_Update(void) {
         switch (gInput.newKeys) {
             case A_BUTTON:
                 if (menuSlot == MENU_SLOT_SAVE_BUTTON) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-                    SoundReq(SFX_MENU_ERROR);
-#else
                     sub_080A4E84(0xb);
                     SoundReq(SFX_TEXTBOX_SELECT);
-#endif
                     break;
                 }
             case B_BUTTON:
@@ -449,13 +441,8 @@ u32 GetMenuSlotForItem(u32 item);
 
 extern Frame* gSpriteAnimations_322[];
 
-#ifdef EU
-#define sub_080A5384_draw_constant0 0x1fa
-#define sub_080A5384_draw_constant1 0x141
-#else
 #define sub_080A5384_draw_constant0 0x1fb
 #define sub_080A5384_draw_constant1 0x142
-#endif
 void PauseMenu_ItemMenu_Draw(void) {
     u32 tmp;
     u32 i;
@@ -739,21 +726,12 @@ void sub_080A56A0(void) {
                     }
                 }
                 break;
-#if !defined(DEMO_USA) && !defined(DEMO_JP)
             case 4:
                 iVar1 = 9;
                 break;
             case 5:
                 iVar1 = 10;
                 break;
-#else
-            case 4:
-                SoundReq(SFX_MENU_ERROR);
-                break;
-            case 5:
-                SoundReq(SFX_MENU_ERROR);
-                break;
-#endif
         }
         if (iVar1 != 0) {
             sub_080A4E84(iVar1);
@@ -858,11 +836,7 @@ void sub_080A57F4(void) {
                 }
 
                 uVar5 = gSpriteAnimations_322[uVar5]->index;
-#ifdef EU
-                spriteIndex = 0x141;
-#else
                 spriteIndex = 0x142;
-#endif
             }
             DrawDirect(spriteIndex, uVar5);
         }
@@ -993,13 +967,11 @@ void PauseMenu_Screen_9() {
 void sub_080A5AF4(void) {
     gMenu.field_0x3 = 0;
     SetPopupState(2, 0);
-#ifndef EU
     if (gSaveHeader->language == 0) {
         gScreen.bg1.yOffset = -4;
     } else {
         gScreen.bg1.yOffset = 0;
     }
-#endif
     SetMenuType(1);
 }
 
@@ -1123,11 +1095,7 @@ void sub_080A5CFC(u32 menuType, void* param_2, u32 param_3) {
     DrawDungeonMap(menuType, &gMapDataBottomSpecial, 0x400);
 }
 
-#ifdef EU
-#define SUB_080A5D1C_SPRITE_INDEX 0x143
-#else
 #define SUB_080A5D1C_SPRITE_INDEX 0x144
-#endif
 
 // Actually draw the sprites for the dungeon map.
 void DrawDungeonMapActually(void) {

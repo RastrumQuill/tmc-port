@@ -11,8 +11,6 @@
 #include "room.h"
 #include "scroll.h"
 #include "tiles.h"
-#ifndef EU
-#endif
 
 void DiggingCaveEntranceManager_Main(DiggingCaveEntranceManager*);
 void DiggingCaveEntranceManager_Init(DiggingCaveEntranceManager*);
@@ -116,7 +114,6 @@ void DiggingCaveEntranceManager_EnterEntrance(DiggingCaveEntranceManager* this, 
     gDiggingCaveEntranceTransition.offsetY =
         gPlayerEntity.base.y.HALF.HI - gRoomControls.origin_y - ((entr->sourceTilePos & TILE_POS_Y_COMPONENT) >> 2);
 
-#ifndef EU
     isDiggingCave = gDiggingCaveEntranceTransition.isDiggingCave;
     if (!isDiggingCave) {
         if ((entr->targetRoom | 0x80) != gDiggingCaveEntranceTransition.targetRoom) {
@@ -124,7 +121,6 @@ void DiggingCaveEntranceManager_EnterEntrance(DiggingCaveEntranceManager* this, 
         }
         gDiggingCaveEntranceTransition.targetRoom = entr->targetRoom | 0x80;
     }
-#endif
 
     sub_08080930(entr->type);
     DeleteManager(this);

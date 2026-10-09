@@ -3725,15 +3725,9 @@ voicegroup033:: @ 08A07394
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.ifdef EU
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-	voice_directsound 60, 0, gUnk_08A16610, 255, 0, 255, 89
-	voice_directsound 60, 0, gUnk_08A12ED0, 255, 0, 255, 165
-.else
 	voice_directsound 60, 0, gUnk_08A12ED0, 255, 0, 255, 188
 	voice_directsound 60, 0, gUnk_08A16610, 255, 0, 255, 165
 	voice_directsound 60, 0, gUnk_08A12ED0, 255, 0, 255, 216
-.endif
 	voice_directsound 60, 0, gUnk_08A1A54C, 255, 0, 255, 89
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
@@ -5724,11 +5718,7 @@ voicegroup050:: @ 08A0CF44
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.ifdef EU
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.else
 	voice_directsound 60, 0, gUnk_08A1A54C, 255, 0, 255, 127
-.endif
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
@@ -5745,11 +5735,7 @@ voicegroup050:: @ 08A0CF44
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.ifdef EU
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.else
 	voice_directsound 60, 0, gUnk_08A7D788, 255, 0, 255, 127
-.endif
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
@@ -5761,27 +5747,16 @@ voicegroup050:: @ 08A0CF44
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.ifdef EU
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.else
 	voice_directsound 60, 0, gUnk_08B1CC7C, 255, 0, 255, 127
-.endif
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.ifdef EU
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
-.else
 	voice_directsound 60, 0, gUnk_08AF5C90, 255, 0, 255, 127
 	voice_directsound 60, 0, gUnk_08B25CD0, 255, 0, 255, 127
 	voice_directsound 60, 0, gUnk_08B2A77C, 255, 0, 255, 127
-.endif
 	voice_directsound 60, 0, gUnk_08B08B14, 255, 0, 255, 127
 	voice_directsound 60, 0, gUnk_08B3F61C, 255, 0, 255, 127
 	voice_directsound 60, 0, gUnk_08B47114, 255, 0, 255, 127
-.ifndef EU
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
@@ -5840,7 +5815,6 @@ voicegroup050:: @ 08A0CF44
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_keysplit_all voicegroup059
-.endif
 
 
 voicegroup051:: @ 08A0D544

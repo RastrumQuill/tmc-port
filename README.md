@@ -172,8 +172,7 @@ macOS is not supported, because it can't run 32-bit programs.
 
 `port/assets` is generated from the decompilation's `data/` files and a ROM.
 After changing those files, put `baserom.gba` in the repository root, run
-`make tools` (see [INSTALL.md](INSTALL.md) for its prerequisites), then run
-`make pc-layout`. Players then get a new `tmc_data.pak` automatically, because
+`make tools` (needs CMake and a C++17 compiler), then run `make pc-layout`. Players then get a new `tmc_data.pak` automatically, because
 the game recreates the pack when it doesn't match the executable.
 
 ## Running
@@ -331,12 +330,10 @@ Environment variables:
 - Moving the HUD to the corners relies on a heuristic. Set `hud_corners = 0` to
   keep the original position.
 - Rooms only create the objects the game expects near its own camera. In very
-  large views, some objects pop in as they come within that range, just as on
-  the GBA.
+  large views, some objects appear as they come within that range, just as on
+  the GBA (they fade in at the edge of the view).
 
-More technical details are in [PC_PORT.md](PC_PORT.md). The decompilation's own
-GBA build (a matching ROM) is described in [INSTALL.md](INSTALL.md) and still
-works.
+More technical details are in [PC_PORT.md](PC_PORT.md).
 
 This project is not affiliated with Nintendo. Please use your own legally
 obtained copy of the game.

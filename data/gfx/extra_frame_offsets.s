@@ -4,16 +4,9 @@
 	.section .rodata
 	.align 2
 
-.ifdef EU
-	@ EU has one entry less, so all the offsets are reduced by 2
-	.macro offset bytes
-		.2byte \bytes - 2
-	.endm
-.else
 	.macro offset bytes
 		.2byte \bytes
 	.endm
-.endif
 
 gExtraFrameOffsets:: @ 089FB770
 	.byte 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -314,9 +307,7 @@ gExtraFrameOffsets:: @ 089FB770
 	offset 0x410
 	offset 0x410
 	offset 0x410
-.ifndef EU
 	offset 0x410
-.endif
 	offset 0xce1
 	offset 0x410
 	offset 0x410
@@ -2822,10 +2813,6 @@ gExtraFrameOffsets:: @ 089FB770
 	.byte 0x0
 	.byte 0x0
 	.byte 0xff
-.ifdef EU
-    .byte 0xff
-    .byte 0xff
-.endif
 
 @ Extra frame offsets
 	extra_offset x=0, y=0

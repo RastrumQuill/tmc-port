@@ -74,10 +74,8 @@ void CloudPiranha_OnCollision(CloudPiranhaEntity* this) {
                     super->health = 0;
                     break;
             }
-#ifndef EU
         } else if ((super->contactFlags & 0x3f) == 0x1d) {
             sub_08038754(this);
-#endif
         }
     }
 }
@@ -215,11 +213,7 @@ void sub_08038754(CloudPiranhaEntity* this) {
     super->action = 4;
     super->flags |= ENT_COLLIDE;
     super->hitType = 0x5a;
-#ifdef EU
-    super->speed = 0x100;
-#else
     super->speed = 0xc0;
-#endif
     super->zVelocity = Q_16_16(2);
     this->unk_81 = 0;
     super->spritePriority.b1 = 3;

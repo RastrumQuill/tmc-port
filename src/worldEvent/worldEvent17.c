@@ -28,11 +28,7 @@ void sub_08054EB8(Entity* this, ScriptExecutionContext* context) {
         manager->x = this->x.HALF.HI - gRoomControls.origin_x;
         manager->y = (this->y.HALF.HI - gRoomControls.origin_y) - 0x10;
         manager->layer = LAYER_BOTTOM;
-#if defined(EU) || defined(JP) || defined(DEMO_JP)
-        manager->flag = 0x77;
-#else
         manager->flag = 0x79;
-#endif
         AppendEntityToList((Entity*)manager, 6);
     }
 }
@@ -64,12 +60,8 @@ void sub_08054F64(Entity* this, ScriptExecutionContext* context) {
 extern Script script_GoronKinstone;
 const EntityData gUnk_080FEF48[] = {
     { NPC, 79, GORON, 0, 0, 0x88, 0x368, (u32)&script_GoronKinstone },
-#if defined(USA) || defined(DEMO_USA)
     // TODO 0x7c is a flag?
     { MANAGER, 15, MOVEABLE_OBJECT_MANAGER, 0, 0x10e82e00, 0xd8, 0x388, 0x7c1388 },
-#else
-    { MANAGER, 15, MOVEABLE_OBJECT_MANAGER, 0, 0x10e82e00, 0xd8, 0x388, 0x7a1388 },
-#endif
     { 0xff, 0, 0, 0, 0, 0x0, 0x0, 0 },
 };
 

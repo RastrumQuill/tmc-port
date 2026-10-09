@@ -5,20 +5,7 @@
     .align 2
 
 gUnk_080B4410:: @ 080B4410
-.ifdef JP
-	@ TODO only small differences
-	.incbin "data_080B4410/gUnk_080B4410_JP.bin"
-.else
-.ifdef EU
-	.incbin "data_080B4410/gUnk_080B4410_1_EU.bin"
-.else
-.ifdef DEMO_JP
-	.incbin "data_080B4410/gUnk_080B4410_2_DEMO_JP.bin"
-.else
 	.incbin "data_080B4410/gUnk_080B4410_3_USA-DEMO_USA.bin"
-.endif
-.endif
-.endif
 
 gUnk_080B4458:: @ 080B4458
 	.4byte sub_08019698

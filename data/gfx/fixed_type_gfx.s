@@ -509,11 +509,7 @@
 	fixed_gfx src=offset_fixedTypeGfx_499, size=0x800	@ 499
 	fixed_gfx src=offset_fixedTypeGfx_500, size=0x800	@ 500
 	fixed_gfx src=offset_fixedTypeGfx_501, size=0x400	@ 501
-.ifdef EU
-    fixed_gfx src=offset_fixedTypeGfx_502, size=0x1e00	@ 502
-.else
 	fixed_gfx src=offset_fixedTypeGfx_502, size=0x1000	@ 502
-.endif
 	fixed_gfx src=offset_fixedTypeGfx_503, size=0x400	@ 503
 	fixed_gfx src=offset_fixedTypeGfx_504, size=0xc00	@ 504
 	fixed_gfx src=offset_fixedTypeGfx_505, size=0x200	@ 505
@@ -530,9 +526,7 @@
 	fixed_gfx src=offset_fixedTypeGfx_516, size=0x600	@ 516
 	fixed_gfx src=offset_fixedTypeGfx_517, size=0x600	@ 517
 	fixed_gfx src=offset_fixedTypeGfx_518, size=0x200	@ 518
-.ifndef EU
 	fixed_gfx src=offset_fixedTypeGfx_519, size=0xc00	@ 519
-.endif
 	fixed_gfx src=offset_fixedTypeGfx_520, size=0x200	@ 520
 	fixed_gfx src=offset_fixedTypeGfx_521, size=0x200	@ 521
 	fixed_gfx src=offset_fixedTypeGfx_522, size=0x200	@ 522

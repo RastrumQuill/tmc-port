@@ -98,11 +98,7 @@ void GyorgFemale_Setup(GyorgFemaleEntity* this) {
     GyorgFemale_Reset(this);
     gPlayerEntity.base.collisionLayer = 2;
     UpdateSpriteForCollisionLayer(&gPlayerEntity.base);
-#ifndef EU
     RegisterTransitionHandler(this, GyorgFemale_OnEnterRoom, NULL);
-#else
-    RegisterTransitionHandler(this, GyorgFemale_Reset, NULL);
-#endif
 }
 
 void GyorgFemale_Action1(GyorgFemaleEntity* this) {
@@ -159,10 +155,8 @@ void GyorgFemale_Action2(GyorgFemaleEntity* this) {
         } else {
             if (this->eyeTimer == 1320) {
                 this->eyesVulnerable = 0;
-#ifndef EU
                 this->eyesHit = 0;
                 this->unk_7f = 0;
-#endif
             }
         }
     }
@@ -173,9 +167,7 @@ void GyorgFemale_Action2(GyorgFemaleEntity* this) {
     if ((((GyorgHeap*)super->myHeap)->boss->unk_6c & 0x38) == 0) {
         super->action = 1;
         this->childrenSpawnTimer = 60;
-#ifndef EU
         this->eyesVulnerable = 0;
-#endif
         this->unk_80 = 0;
     }
 }
@@ -198,34 +190,25 @@ void GyorgFemale_Action3(GyorgFemaleEntity* this) {
         } else {
             if (this->eyeTimer == 1320) {
                 this->eyesVulnerable = 0;
-#ifndef EU
                 this->eyesHit = 0;
                 this->unk_7f = 0;
-#endif
             }
         }
     }
     if (super->health == 0) {
         super->action = 1;
-#ifdef EU
-        this->eyesVulnerable = 0;
-#endif
         this->childrenSpawnTimer = 60;
-#ifndef EU
         this->eyesVulnerable = 0;
-#endif
         this->unk_80 = 0;
         SoundReq(SFX_BOSS_DIE);
     }
 }
 
-#ifndef EU
 void GyorgFemale_OnEnterRoom(GyorgFemaleEntity* this) {
     MemClear(&gMapDataBottomSpecial, 0x8000);
     MemClear(&gMapDataTopSpecial, 0x8000);
     GyorgFemale_Reset(this);
 }
-#endif
 
 void GyorgFemale_Reset(GyorgFemaleEntity* this) {
     static const MapDataDefinition* const gyorgMappings[] = {
@@ -329,11 +312,9 @@ void GyorgFemale_ChooseEyePattern(GyorgFemaleEntity* this) {
     if (super->health == 0) {
         return;
     }
-#ifndef EU
     if (this->eyesVulnerable == 0xFF) {
         return;
     }
-#endif
     this->eyesVulnerable = gUnk_080D1AF8[Random() & 3];
     this->unk_7f = 0;
     this->damageTakenCycle = 0;
@@ -344,11 +325,7 @@ void GyorgFemale_ProcessEyeHit(GyorgFemaleEntity* this) {
     if (this->eyesHitFrame != 0) {
         this->eyesHit |= this->eyesHitFrame;
         if (super->timer == 0 && this->eyesVulnerable != 0xFF) {
-#ifndef EU
             super->timer = 4;
-#else
-            super->timer = 3;
-#endif
         }
         if (sub_08000E62(this->eyesHit) > 2) {
             super->timer = 0;
@@ -378,9 +355,7 @@ void GyorgFemale_ProcessEyeHit(GyorgFemaleEntity* this) {
         this->unk_80 |= this->eyesHit;
         this->eyesHit = 0;
         sub_080467DC(this);
-#ifndef EU
         if (((GyorgHeap*)super->myHeap)->unk_3c != 0xFF) {
-#endif
             tmp = &gPlayerEntity.base;
             tmp->knockbackDirection = ((GyorgHeap*)super->myHeap)->unk_3c;
             tmp->iframes = 0xF4;
@@ -392,9 +367,7 @@ void GyorgFemale_ProcessEyeHit(GyorgFemaleEntity* this) {
                 tmp->collisionLayer = 1;
                 UpdateSpriteForCollisionLayer(tmp);
             }
-#ifndef EU
         }
-#endif
     }
     this->eyesHitFrame = 0;
 }

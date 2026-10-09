@@ -92,15 +92,9 @@ void sub_08087640(Entity* this) {
     this->x.HALF.HI += ptr[0];
     this->y.HALF.HI += ptr[1];
     if (gRoomControls.area == 3 && gRoomControls.room == 4) {
-#ifdef EU
-        tmp = 0x18;
-    } else {
-        tmp = 0x17;
-#else
         tmp = 0x17;
     } else {
         tmp = 0x16;
-#endif
     }
     CreateRandomItemDrop(this, tmp);
     this->x.HALF.HI = oldX;

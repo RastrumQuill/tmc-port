@@ -94,20 +94,12 @@ SECTIONS {
         . = 0x000369F0; gEntityListsBackup = .;
         . = 0x00036A38; gCurrentWindow = .;
         . = 0x00036A40; gNewWindow = .;
-#if defined(DEMO_USA) || defined(DEMO_JP)
-        . = 0x00036A50; gUnk_02036A58 = .;
-        . = 0x00036AD0; gUnk_02036AD8 = .;
-        . = 0x00036BB0; gUnk_02036BB8 = .;
-        . = 0x00036BB8; gMPlayTracks = .;
-        . = 0x00038558; gEndOfEwram = .;
-#else
         . = 0x00036A50; gEEPROMConfig = .;
         . = 0x00036A58; gUnk_02036A58 = .;
         . = 0x00036AD8; gUnk_02036AD8 = .;
         . = 0x00036BB8; gUnk_02036BB8 = .;
         . = 0x00036BC0; gMPlayTracks = .;
         . = 0x00038560; gEndOfEwram = .;
-#endif
         . = 0x00040000;
     } >ewram
 
@@ -198,25 +190,12 @@ SECTIONS {
         . = 0x00005FF0; ram_sub_080B227C = .;
         . = 0x000060F0; ram_CalcCollisionDirection = .;
         . = 0x00006164; ram_DrawEntities = .;
-#if defined(EU) || defined(DEMO_JP)
-        . = 0x000065AC; ram_DrawDirect = .;
-        . = 0x000065C8; ram_sub_080ADA04 = .;
-        . = 0x0000689C; ram_sub_080B2088 = .;
-        . = 0x000068F0; ram_sub_080B20DC = .;
-        . = 0x00006954; ram_sub_080B2140 = .;
-        . = 0x000069AC; ram_gUnk_080B2A70 = .;
-        . = 0x00006A94; ram_0x80b2b58 = .; /* TODO 0x80b2b58 in unusedLabel_080B2AA8*/
-        . = 0x00006B14; ram_0x80b2bd8 = .; /* 0x80b2bd8 */
-        . = 0x00006B24; ram_0x80b2be8 = .; /* 0x80b2be8 */
-        . = 0x00006C14; usr_stack_top = .;
-#else
         . = 0x00006580; ram_DrawDirect = .;
         . = 0x0000659C; ram_sub_080ADA04 = .;
         . = 0x000067E4; ram_gUnk_080B2A70 = .;
         . = 0x000068CC; ram_0x80b2b58 = .; /* TODO 0x80b2b58 in unusedLabel_080B2AA8*/
         . = 0x0000694C; ram_0x80b2bd8 = .; /* 0x80b2bd8 */
         . = 0x0000695C; ram_0x80b2be8 = .; /* 0x80b2be8 */
-#endif
         . = 0x00007F00; usr_stack_begin = .;
         . = 0x00007FA0; irq_stack_begin = .;
         . = 0x00007FFA; soft_reset_flag = .;
@@ -226,32 +205,16 @@ SECTIONS {
     rom : ALIGN(2) {
 
         /* handwritten assembly */
-        asm/src/crt0.o(.text);
-#if defined(EU) || defined(DEMO_JP)
-        asm/src/stack_check.o(.text);
-#endif
-        asm/src/veneer.o(.text);
         data/data_08000360.o(.rodata);
-        asm/src/code_08000E44.o(.text);
-        asm/lib/libgcc.o(.text);
-        asm/src/code_08000F10.o(.text);
         data/data_08000F54.o(.rodata);
-        asm/src/enemy.o(.text);
         src/droptables.o(.rodata);
-        asm/src/code_08001A7C.o(.text);
         data/gfx/sprite_ptrs.o(.rodata);
-        asm/src/code_08003FC4.o(.text);
-        asm/src/code_080043E8.o(.text);
         src/data/data_080046A4.o(.rodata);
         data/gfx/link_animations.o(.rodata);
         src/data/mapActTileToSurfaceType.o(.rodata);
-        asm/src/code_08007CAC.o(.text);
         data/data_08007DF4.o(.rodata);
-        asm/src/player.o(.text);
         /* scripts */
         data/scripts.o(.text);
-        asm/src/script.o(.text);
-        asm/src/projectileUpdate.o(.text);
 
         /* C source compiled with interworking */
         src/interrupts.o(.text);
@@ -799,9 +762,6 @@ SECTIONS {
         src/objectUtils.o(.text);
         src/playerItem/playerItemShield.o(.text);
         src/playerItem/playerItemFireRodProjectile.o(.text);
-#ifdef DEMO_USA
-        src/demo.o(.text);
-#endif
         src/sound.o(.text);
         src/staffroll.o(.text);
         src/menu/kinstoneMenu.o(.text);
@@ -860,13 +820,9 @@ SECTIONS {
         src/vram.o(.text);
         src/movement.o(.text);
         /* library functions */
-        asm/lib/m4a_asm.o(.text);
         src/gba/m4a.o(.text);
-        asm/lib/libagbsyscall.o(.text);
-        src/eeprom.o(.text);
         *libc.a:memcpy.o(.text);
         /* handwritten assembly in arm mode */
-        asm/src/intr.o(.text);
 
         /* data */
         data/const/interrupts.o(.rodata);
@@ -1595,9 +1551,6 @@ SECTIONS {
         data/animations/spriteAnimations166.o(.rodata);
         src/playerItem/playerItemShield.o(.rodata);
         src/playerItem/playerItemFireRodProjectile.o(.rodata);
-#ifdef DEMO_USA
-        src/demo.o(.rodata);
-#endif
         src/staffroll.o(.rodata);
         data/const/staffroll.o(.rodata);
         src/data/areaMetadata.o(.rodata);
@@ -1694,7 +1647,6 @@ SECTIONS {
         src/sound.o(.rodata);
         data/sound/direct_sound_samples.o(.rodata);
         data/sound/sounds.o(.rodata);
-        src/eeprom.o(.rodata);
     } >rom
 
     /* DWARF 2 sections */

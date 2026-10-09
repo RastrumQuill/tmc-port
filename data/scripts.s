@@ -494,9 +494,7 @@
 	.include "data/scripts/sanctuary/script_CutsceneMiscObjectSwordCharge9.inc"
 	.include "data/scripts/sanctuary/script_CutsceneMiscObjectSwordCharge10.inc"
 	.include "data/scripts/sanctuary/script_CutsceneMiscObjectSwordCharge11.inc"
-.ifndef EU
 	.include "data/scripts/sanctuary/script_Npc4ELookAtPictureAgain.inc"
-.endif
 	.include "data/scripts/hyruleTown/script_Stockwell.inc"
 	.include "data/scripts/hyruleTown/script_StockwellBuy.inc"
 	.include "data/scripts/hyruleTown/script_StockwellDogFood.inc"

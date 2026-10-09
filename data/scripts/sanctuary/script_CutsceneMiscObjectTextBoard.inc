@@ -26,9 +26,7 @@ script_08013C32:
 	Call MakeCheckableObjectInteractable
 	DoPostScriptAction 0x000a
 	CallWithArg sub_080962F8, 0x00000000
-.ifndef EU
 	CallWithArg sub_0807F8E8, 0x00000004
-.endif
 	EndBlock
 script_08013C58:
 	EndBlock

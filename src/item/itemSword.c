@@ -51,11 +51,9 @@ void sub_08075338(ItemBehavior* this, u32 index) {
                 return;
             }
         }
-#ifndef EU
         sub_080759B8(this, index);
         return;
     } else if (gPlayerEntity.base.z.WORD) {
-#endif
         sub_080759B8(this, index);
         return;
     }

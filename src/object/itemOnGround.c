@@ -302,12 +302,8 @@ void ItemOnGround_Burried_Action2(ItemOnGroundEntity* this) {
 
 void ItemOnGround_Sunken_Action2(ItemOnGroundEntity* this) {
     PlayerState* playerState = &gPlayerState;
-#ifdef EU
-    if ((playerState->swim_state & 0x80) && IsColliding(super, &gPlayerEntity.base)) {
-#else
     if ((playerState->swim_state & 0x80) && (playerState->flags & PL_MINISH) == 0 &&
         IsColliding(super, &gPlayerEntity.base)) {
-#endif
         ItemOnGround_Kind1_Init(this);
     }
 }

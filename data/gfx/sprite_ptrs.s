@@ -1441,13 +1441,11 @@ gSpritePtrs:: @ 080029B4
 	.4byte 00000000
 
 	.4byte gSpriteAnimations_JapaneseSubtitle
-.ifndef EU
 	.4byte 00000000
 	.4byte 00000000
 	.4byte 00000000
 
 	.4byte gSpriteAnimations_JapaneseSubtitle
-.endif
 	.4byte 00000000
 	.4byte 00000000
 	.4byte 00000000

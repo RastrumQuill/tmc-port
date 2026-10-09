@@ -96,7 +96,7 @@ damaged one (a CRC mismatch), is recreated from the ROM.
 
 ## Limitations / known issues
 
-* USA version only. The EU debug overlay is not supported.
+* USA version only.
 * Raster (HBlank) effects designed for 160 lines are stretched over the
   larger view.
 * The HUD-to-corner placement is heuristic.

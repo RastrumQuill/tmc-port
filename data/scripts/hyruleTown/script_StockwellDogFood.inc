@@ -28,12 +28,10 @@ script_080143FA:
 	WaitUntilTextboxCloses
 	SetIntVariable 0x00000303
 	Call LoadMenu
-.ifndef EU
 	Wait 0x001e
 	FaceAwayFromPlayer
 	MessageNoOverlap TEXT_STOCKWELL, 0x22
 	WaitUntilTextboxCloses
-.endif
 script_0801443E:
 	SetAnimation 0x0004
 	SetAction 0x0001

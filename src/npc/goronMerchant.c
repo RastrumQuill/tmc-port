@@ -169,27 +169,6 @@ void (*const gUnk_08111B98[])(Entity*) = {
 };
 
 static const u16 sKinstonePrices[] = {
-#ifdef EU
-    200,
-    100,
-    50,
-    // prices after restock 1
-    300,
-    200,
-    100,
-    // prices after restock 2
-    400,
-    300,
-    200,
-    // prices after restock 3
-    500,
-    400,
-    300,
-    // prices after restock 4
-    600,
-    500,
-    400,
-#else
     300,
     200,
     50,
@@ -209,5 +188,4 @@ static const u16 sKinstonePrices[] = {
     300,
     200,
     50,
-#endif
 };

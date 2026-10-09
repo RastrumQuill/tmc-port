@@ -42,11 +42,7 @@ void MinishPortalCloseup_Init(MinishPortalCloseupEntity* this) {
 }
 
 void MinishPortalCloseup_Action1(MinishPortalCloseupEntity* this) {
-#ifdef EU
-    static const u16 gUnk_081216C8[] = { 206, 19, 333, 208, 16, 333, 207, 1, 333, 0 };
-#else
     static const u16 gUnk_081216C8[] = { 206, 19, 334, 208, 16, 334, 207, 1, 334, 0 };
-#endif
     const u16* ptr;
     this->unk_68 -= 2;
     if (this->unk_68 >= 0x15) {

@@ -29,9 +29,7 @@ void AmbientClouds(Entity* this) {
 }
 
 void AmbientClouds_Init(Entity* this) {
-#ifndef EU
     if ((this->flags & ENT_DID_INIT) != 0) {
-#endif
         this->collisionLayer = 3;
         if (this->type2 == 0) {
             if (this->type == 0x80) {
@@ -71,9 +69,7 @@ void AmbientClouds_Init(Entity* this) {
                 this->z.HALF.HI = this->type2 * -0x24;
             }
         }
-#ifndef EU
     }
-#endif
 }
 
 void AmbientClouds_Action1(Entity* this) {

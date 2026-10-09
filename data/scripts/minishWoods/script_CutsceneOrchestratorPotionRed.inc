@@ -21,14 +21,10 @@ script_080161C6:
 	MessageFromTarget TEXT_SYRUP, 0x0b
 	Jump script_080161E2
 script_080161D8:
-.ifndef EU
 	WaitPlayerGetItem 
 	WaitUntilTextboxCloses
 	FaceAwayFromPlayer
 	MessageNoOverlap TEXT_SYRUP, 0x06
-.else
-	MessageFromTarget TEXT_SYRUP, 0x06
-.endif
 script_080161E2:
 	EnablePlayerControl
 	Jump script_0801619A

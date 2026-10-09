@@ -21,11 +21,7 @@ void LadderUp(Entity* this) {
             if (this->timer) {
                 action = 1;
             } else {
-#ifndef EU
                 action = 3;
-#else
-                action = 2;
-#endif
             }
             this->action = action;
             this->spriteOffsetY += 8;
@@ -48,20 +44,16 @@ void LadderUp(Entity* this) {
                 InitScreenShake(30, 0);
                 SoundReq(SFX_10B);
                 this->action = 2;
-#ifndef EU
                 this->timer = 60;
-#endif
             }
             break;
         case 2:
-#ifndef EU
             if (--this->timer) {
                 return;
             }
             this->action = 3;
             SoundReq(SFX_SECRET_BIG);
             break;
-#endif
         default:
             if (this->type2 == 0) {
                 if (gPlayerEntity.base.y.HALF.HI < this->y.HALF.HI) {

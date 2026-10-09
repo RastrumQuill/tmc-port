@@ -51,11 +51,9 @@ void sub_080ADD70(void) {
     u32 index;
     GfxSlot* slot;
     if (gGFXSlots.unk0 != 0) {
-#ifndef EU
         if (gGFXSlots.unk_3 != 0) {
             sub_080ADE24();
         } else {
-#endif
             index = 0;
             for (index = 0; index < MAX_GFX_SLOTS; index++) {
                 slot = &gGFXSlots.slots[index];
@@ -72,9 +70,7 @@ void sub_080ADD70(void) {
                         break;
                 }
             }
-#ifndef EU
         }
-#endif
     }
 }
 
@@ -166,38 +162,6 @@ void sub_080ADE74(u32 index) {
 }
 
 bool32 LoadFixedGFX(Entity* entity, u32 gfxIndex) {
-#ifdef EU
-    GfxSlot* slot;
-    u32 index;
-    u32 count;
-    u32 result;
-    u32 data;
-    if (gfxIndex == 0) {
-        result = TRUE;
-    } else {
-        for (index = 4; index < MAX_GFX_SLOTS; index++) {
-            if (gfxIndex == gGFXSlots.slots[index].gfxIndex) {
-                // Gfx is already loaded to a slot.
-                sub_080AE0C8(index, entity, GFX_SLOT_RESERVED);
-                result = TRUE;
-                return result;
-            }
-        }
-        data = gFixedTypeGfxData[gfxIndex];
-        count = (data & 0x7f000000) >> 0x18;
-        index = FindFreeGFXSlots(count);
-        if (index != 0) {
-            ReserveGFXSlots(index, gfxIndex, count);
-            sub_080ADDD8(index, data);
-        _080ADFF2:
-            sub_080AE0C8(index, entity, GFX_SLOT_RESERVED);
-            result = TRUE;
-        } else {
-            result = FALSE;
-        }
-    }
-    return result;
-#else
 
     GfxSlot* slot;
     u32 index;
@@ -225,17 +189,14 @@ bool32 LoadFixedGFX(Entity* entity, u32 gfxIndex) {
         sub_080AE0C8(index, entity, GFX_SLOT_RESERVED);
     }
     return TRUE;
-#endif
 }
 
 // If slotIndex != 0 the gfx loaded starting from that slot, else in the first fitting free one.
 bool32 LoadSwapGFX(Entity* entity, u32 count, u32 slotIndex) {
     u32 status;
     if ((slotIndex == 0) && (slotIndex = FindFreeGFXSlots(count), slotIndex == 0)) {
-#ifndef EU
         CleanUpGFXSlots();
         slotIndex = FindFreeGFXSlots(count);
-#endif
         if (slotIndex == 0) {
             goto _080AE058;
         }
@@ -333,11 +294,7 @@ u32 FindFreeGFXSlots(u32 slotCount) {
     continuosFreeSlots = 0;
     index = 4;
     for (index = 4; index < MAX_GFX_SLOTS; index++) {
-#ifdef EU
-        if (gGFXSlots.slots[index].status == GFX_SLOT_UNLOADED) {
-#else
         if (gGFXSlots.slots[index].status == GFX_SLOT_FREE || gGFXSlots.slots[index].status == GFX_SLOT_UNLOADED) {
-#endif
             continuosFreeSlots++;
             if (slotCount <= continuosFreeSlots) {
                 return (index - continuosFreeSlots) + 1;
@@ -349,7 +306,6 @@ u32 FindFreeGFXSlots(u32 slotCount) {
     return 0;
 }
 
-#ifndef EU
 void CleanUpGFXSlots(void) {
     u32 occupiedIndex;
     u32 firstFreeIndex;
@@ -456,4 +412,3 @@ u32 FindFirstFreeGFXSlot(void) {
     }
     return 0;
 }
-#endif

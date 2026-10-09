@@ -359,11 +359,9 @@ u32 UpdatePlayerCollision(void) {
             if (sub_08079778() == 0) {
                 return 0;
             }
-#if !(defined(EU) || defined(JP))
             if (gPlayerState.field_0xa != 0) {
                 return 0;
             }
-#endif
             if ((Direction8FromAnimationState(gPlayerEntity.base.animationState)) - gPlayerState.direction !=
                 DirectionNorth) {
                 return 0;

@@ -2227,10 +2227,8 @@
 	enum pal_2215
 	enum pal_2216
 	enum pal_2217
-	.ifndef EU
 	enum pal_2218
 	enum pal_2219
-	.endif
 	enum pal_2220
 	enum pal_2221
 	enum pal_2222
@@ -4127,12 +4125,10 @@ gPaletteGroup_206::
 	palette_set palette=pal_11, offset=0xc, count=1
 	palette_set palette=pal_2433, offset=0x13, count=1, terminator=1
 
-.ifndef EU
 gPaletteGroup_207::
 	palette_set palette=pal_0, count=4
 	palette_set palette=pal_0, offset=0x10, count=5
 	palette_set palette=pal_2218, offset=0xc, count=2, terminator=1
-.endif
 
 gPaletteGroups::
 	.4byte 0
@@ -4342,6 +4338,4 @@ gPaletteGroups::
 	.4byte gPaletteGroup_204
 	.4byte gPaletteGroup_205
 	.4byte gPaletteGroup_206
-.ifndef EU
 	.4byte gPaletteGroup_207
-.endif

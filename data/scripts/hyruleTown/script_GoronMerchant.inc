@@ -67,13 +67,7 @@ script_08010860:
 	MessageNoOverlap TEXT_STOCKWELL, 0x21
 	Jump script_080108B2
 script_080108AA:
-.ifdef USA
 	SetLocalFlag 0x00fa
-.else
-.ifdef DEMO_USA
-	SetLocalFlag 0x00fa
-.endif
-.endif
 	MessageNoOverlap TEXT_STOCKWELL, 0x20
 script_080108B2:
 	WaitUntilTextboxCloses

@@ -1,30 +1,14 @@
-.PHONY: default all
-default: build
-all: eu jp usa demo_jp demo_usa
-
-MAKEFLAGS += --no-print-directory
-
-.PHONY: build eu jp usa demo_jp demo_usa custom
-build: GAME_VERSION ?=USA
-build: tools
-	@$(MAKE) -f GBA.mk build GAME_VERSION=$(GAME_VERSION)
-
-eu: GAME_VERSION=EU
-jp: GAME_VERSION=JP
-usa: GAME_VERSION=USA
-demo_jp: GAME_VERSION=DEMO_JP
-demo_usa: GAME_VERSION=DEMO_USA
-eu jp usa demo_jp demo_usa: tools
-	@$(MAKE) GAME_VERSION=$(GAME_VERSION)
-
-custom: tools
-	@$(MAKE) GAME_VERSION=USA CUSTOM=1
-
-# ---- Native PC port (see README.md) ----
+# The Minish Cap PC port (see README.md)
 #   make pc-windows       tmc_pc.exe + SDL2.dll (MinGW cross compiler, no ROM needed)
 #   make pc-dist-windows  the same, packaged as dist/tmc-pc-windows.zip
 #   make pc               native build (Linux, 32-bit)
-#   make pc-layout        maintainers: regenerate port/assets from baserom.gba
+#   make pc-layout        maintainers: regenerate port/assets from baserom.gba (needs `make tools`)
+#   make tools            the asset tools pc-layout uses (tools/bin)
+.PHONY: default
+default: pc-windows
+
+MAKEFLAGS += --no-print-directory
+
 PC_JOBS ?= $(shell nproc 2>/dev/null || echo 4)
 PC_SDL_VERSION := 2.30.8
 PC_SDL_ROOT := build/sdl2-mingw/SDL2-$(PC_SDL_VERSION)
@@ -60,10 +44,6 @@ $(PC_SDL_DIR)/.extracted:
 pc-layout: tools
 	@$(MAKE) -f pc.mk -j$(PC_JOBS) layout
 
-.PHONY: extract_assets
-extract_assets: tools
-	@$(MAKE) -f GBA.mk extract_assets
-
 .PHONY: tools
 tools: tools/bin
 
@@ -74,7 +54,8 @@ tools/bin:
 
 .PHONY: clean clean-tools
 clean:
-	@$(MAKE) -f GBA.mk clean
+	@$(MAKE) -f pc.mk clean
+	@$(MAKE) -f pc.mk clean PC_CC=i686-w64-mingw32-gcc
 
 clean-tools:
 	rm -rf tools/bin

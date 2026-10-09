@@ -57,9 +57,7 @@ void sub_08075ADC(ItemBehavior* this, u32 index) {
     u32 bVar1;
 
     if (
-#ifndef EU
         gPlayerState.item != NULL ||
-#endif
         (this->playerFrame & 1) == 0 || (gPlayerState.flags & (PL_DISABLE_ITEMS | PL_CAPTURED)) != 0 ||
         sub_08079D48() == 0) {
         this->animPriority = 0;

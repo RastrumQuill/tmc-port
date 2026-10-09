@@ -66,70 +66,14 @@ gUnk_0810B7BA:: @ 0810B7BA
 
 gUnk_0810B7C0:: @ 0810B7C0
 	.incbin "townsperson/gUnk_0810B7C0.bin"
-.ifdef JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_1_JP.bin"
-.else
-.ifdef DEMO_JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_2_DEMO_JP.bin"
-.else
-.ifdef EU
-	.incbin "townsperson/gUnk_0810B7C0_3_EU.bin"
-.else
 	.incbin "townsperson/gUnk_0810B7C0_4_USA-DEMO_USA.bin"
-.endif
-.endif
-.endif
 
-.ifdef JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_5_JP.bin"
-.else
-.ifdef DEMO_JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_6_DEMO_JP.bin"
-.else
-.ifdef EU
-	.incbin "townsperson/gUnk_0810B7C0_7_EU.bin"
-.else
 	.incbin "townsperson/gUnk_0810B7C0_8_USA-DEMO_USA.bin"
-.endif
-.endif
-.endif
 
 	.incbin "townsperson/gUnk_0810B7C0_9.bin"
-.ifdef JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_10_JP.bin"
-.else
-.ifdef DEMO_JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_11_DEMO_JP.bin"
-.else
-.ifdef EU
-	.incbin "townsperson/gUnk_0810B7C0_12_EU.bin"
-.else
 	.incbin "townsperson/gUnk_0810B7C0_13_USA-DEMO_USA.bin"
-.endif
-.endif
-.endif
 	.incbin "townsperson/gUnk_0810B7C0_14.bin"
 	.4byte sub_0806200C
 	.incbin "townsperson/gUnk_0810B7C0_15.bin"
-.ifdef JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_16_JP.bin"
-.else
-.ifdef DEMO_JP
-    @ TODO only small differences
-	.incbin "townsperson/gUnk_0810B7C0_17_DEMO_JP.bin"
-.else
-.ifdef EU
-	.incbin "townsperson/gUnk_0810B7C0_18_EU.bin"
-.else
 	.incbin "townsperson/gUnk_0810B7C0_19_USA-DEMO_USA.bin"
-.endif
-.endif
-.endif
 	.incbin "townsperson/gUnk_0810B7C0_20.bin"

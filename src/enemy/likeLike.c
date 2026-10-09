@@ -222,11 +222,7 @@ void sub_0802805C(LikeLikeEntity* this) {
 
 void LikeLike_ReleasePlayer(LikeLikeEntity* this) {
 // This matches but ugly
-#ifndef NON_MATCHING
-    register u32 tmp asm("r3");
-#else
     u32 tmp;
-#endif
     gPlayerState.jump_status = 0x41;
     gPlayerState.field_0xa = 0;
     gPlayerState.flags &= ~PL_CAPTURED;
@@ -279,11 +275,7 @@ bool32 LikeLike_StealItem(u32 item) {
 }
 
 void LikeLike_ReturnStolenItem(u32 item) {
-#ifdef EU
-    CreateItemEntity(item, 0, 1);
-#else
     InitItemGetSequence(item, 0, 1);
-#endif
     MessageFromTarget(TEXT_INDEX(TEXT_ITEM_GET, 0x79));
 }
 

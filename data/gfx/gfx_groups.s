@@ -9,12 +9,6 @@
 	.include "gfx_offsets.inc"
 
 @ helper variable
-.ifdef JP
-	JP_D::
-.endif
-.ifdef DEMO_JP
-	JP_D::
-.endif
 
 
 gGfxGroup_1::
@@ -25,33 +19,13 @@ gGfxGroup_2::
 	gfx_raw src=offset_gGfx_2_0, unknown=0x7, dest=0x6000000, size=0x8000
 	gfx_raw src=offset_gGfx_2_1, unknown=0x7, dest=0x600f000, size=0x500
 	gfx_raw src=offset_gGfx_2_2, unknown=0x7, dest=0x600e800, size=0x500
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_2_3_JP, dest=0x6008000, size=0x4000
-	gfx_raw src=offset_gGfx_2_4_JP, dest=0x600e000, size=0x500
-	gfx_raw src=offset_gGfx_2_5_JP, dest=0x6006000, size=0x500
-.else
 	gfx_raw src=offset_gGfx_2_3, unknown=0xf, dest=0x6008000, size=0x4000
 	gfx_raw src=offset_gGfx_2_4, unknown=0xf, dest=0x600e000, size=0x400
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_3::
-.ifdef EU
-	gfx_raw src=offset_gGfx_3_0, unknown=0x2, dest=0x6010000, size=0x300
-	gfx_raw src=offset_gGfx_3_1, unknown=0x3, dest=0x6010000, size=0x300
-	gfx_raw src=offset_gGfx_3_2, unknown=0x4, dest=0x6010000, size=0x300
-	gfx_raw src=offset_gGfx_3_3, unknown=0x5, dest=0x6010000, size=0x300
-	gfx_raw src=offset_gGfx_3_4, unknown=0x6, dest=0x6010000, size=0x300
-	gfx_raw src=offset_gGfx_3_5, unknown=0xe, dest=0x6010400, size=0x400
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_3_0, dest=0x6010000, size=0x300
-	gfx_raw src=offset_gGfx_3_5, dest=0x6010400, size=0x400
-.else
 	gfx_raw src=offset_gGfx_3_0, unknown=0x1, dest=0x6010000, size=0x300
 	gfx_raw src=offset_gGfx_3_7, unknown=0x1, dest=0x6010400, size=0x400
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_4::
@@ -66,19 +40,7 @@ gGfxGroup_5::
 	gfx_raw src=offset_gGfx_5_3, unknown=0x7, dest=0x600f000, size=0x500, terminator=1
 
 gGfxGroup_6::
-.ifdef EU
-	gfx_raw src=offset_gGfx_6_0, unknown=0x2, dest=0x6015800, size=0x2000
-	gfx_raw src=offset_gGfx_6_1, unknown=0x3, dest=0x6015800, size=0x2000
-	gfx_raw src=offset_gGfx_6_2, unknown=0x4, dest=0x6015800, size=0x2000
-	gfx_raw src=offset_gGfx_6_3, unknown=0x5, dest=0x6015800, size=0x2000
-	gfx_raw src=offset_gGfx_6_4, unknown=0x6, dest=0x6015800, size=0x2000
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_6_0_JP, dest=0x6015800, size=0x2000
-.else
 	gfx_raw src=offset_gGfx_6_0, unknown=0x1, dest=0x6015800, size=0x2000
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_7::
@@ -99,49 +61,18 @@ gGfxGroup_14::
 	gfx_raw src=offset_gGfx_14_0, unknown=0x7, dest=0x20344b0, size=0x500, terminator=1
 
 gGfxGroup_15::
-.ifdef EU
-	gfx_raw src=offset_gGfx_15_0, unknown=0x2, dest=0x6010800, size=0x1600
-	gfx_raw src=offset_gGfx_15_1, unknown=0x3, dest=0x6010800, size=0x1600
-	gfx_raw src=offset_gGfx_15_2, unknown=0x4, dest=0x6010800, size=0x1600
-	gfx_raw src=offset_gGfx_15_3, unknown=0x5, dest=0x6010800, size=0x1600
-	gfx_raw src=offset_gGfx_15_4, unknown=0x6, dest=0x6010800, size=0x1600
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_15_0_JP, dest=0x6010800, size=0x1600
-.else
 	gfx_raw src=offset_gGfx_15_0, unknown=0x1, dest=0x6010800, size=0x1600
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_9::
-.ifdef EU
-	gfx_raw src=offset_gGfx_9_0, unknown=0xe, dest=0x2001a40, size=0x500
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_9_0_JP, dest=0x2001a40, size=0x500
-.else
 	gfx_raw src=offset_gGfx_9_0, unknown=0x1, dest=0x2001a40, size=0x500
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_10::
-.ifdef EU
-	gfx_raw src=offset_gGfx_10_0, unknown=0xe, dest=0x2001a40, size=0x500
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_10_0_JP, dest=0x2001a40, size=0x500
-.else
 	gfx_raw src=offset_gGfx_10_0, unknown=0x1, dest=0x2001a40, size=0x500
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_11::
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_11_1_JP, dest=0x2001a40, size=0x500
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_16::
@@ -427,11 +358,7 @@ gGfxGroup_88::
 	gfx_raw src=offset_gGfx_88_3, unknown=0x7, dest=0x6012000, size=0x1c0, terminator=1
 
 gGfxGroup_89::
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_89_0_JP, dest=0x20344b0, size=0x500
-.else
 	gfx_raw src=offset_gGfx_89_0, unknown=0xf, dest=0x20344b0, size=0x500
-.endif
 	gfx_raw src=offset_gGfx_89_1, unknown=0x7, dest=0x6000000, size=0x3bc0
 	gfx_raw src=offset_gGfx_89_2, unknown=0x7, dest=0x6008000, size=0xe00
 	gfx_raw src=offset_gGfx_89_3, unknown=0x7, dest=0x6010000, size=0x2000
@@ -443,119 +370,39 @@ gGfxGroup_90::
 	gfx_raw src=offset_gGfx_90_0, unknown=0x7, dest=0x6000000, size=0x2640
 	gfx_raw src=offset_gGfx_90_1, unknown=0x7, dest=0x20344b0, size=0x500
 	gfx_raw src=offset_gGfx_90_2, unknown=0x7, dest=0x6014000, size=0x200
-.ifdef EU
-	gfx_raw src=offset_gGfx_90_3, unknown=0x2, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_4, unknown=0x2, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_90_5, unknown=0x3, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_6, unknown=0x3, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_90_7, unknown=0x4, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_8, unknown=0x4, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_90_9, unknown=0x5, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_10, unknown=0x5, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_90_11, unknown=0x6, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_12, unknown=0x6, dest=0x6015800, size=0x700
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_90_3_JP, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_4_JP, dest=0x6015800, size=0x700
-.else
 	gfx_raw src=offset_gGfx_90_3, unknown=0x1, dest=0x6010800, size=0x800
 	gfx_raw src=offset_gGfx_91_4, unknown=0x1, dest=0x6015800, size=0x700
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_91::
 	gfx_raw src=offset_gGfx_91_0, unknown=0x7, dest=0x6000000, size=0x3300
 	gfx_raw src=offset_gGfx_91_1, unknown=0x7, dest=0x20344b0, size=0x500
 	gfx_raw src=offset_gGfx_91_2, unknown=0x7, dest=0x6014000, size=0x1780
-.ifdef EU
-	gfx_raw src=offset_gGfx_91_3, unknown=0x2, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_4, unknown=0x2, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_91_5, unknown=0x3, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_6, unknown=0x3, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_91_7, unknown=0x4, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_8, unknown=0x4, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_91_9, unknown=0x5, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_10, unknown=0x5, dest=0x6015800, size=0x700
-	gfx_raw src=offset_gGfx_91_11, unknown=0x6, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_12, unknown=0x6, dest=0x6015800, size=0x700
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_91_3_JP, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_91_4_JP, dest=0x6015800, size=0x700
-.else
 	gfx_raw src=offset_gGfx_91_3, unknown=0x1, dest=0x6010800, size=0x800
 	gfx_raw src=offset_gGfx_91_4, unknown=0x1, dest=0x6015800, size=0x700
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_92::
 	gfx_raw src=offset_gGfx_92_0, unknown=0x7, dest=0x6000000, size=0x2000
 	gfx_raw src=offset_gGfx_92_1, unknown=0x7, dest=0x2021f30, size=0x500
 	gfx_raw src=offset_gGfx_92_2, unknown=0x7, dest=0x20344b0, size=0x500
-.ifdef EU
-	gfx_raw src=offset_gGfx_92_3, unknown=0x2, dest=0x6014800, size=0x800
-	gfx_raw src=offset_gGfx_92_4_EU, unknown=0x3, dest=0x6014800, size=0x800
-	gfx_raw src=offset_gGfx_92_5_EU, unknown=0x4, dest=0x6014800, size=0x800
-	gfx_raw src=offset_gGfx_92_6, unknown=0x5, dest=0x6014800, size=0x800
-	gfx_raw src=offset_gGfx_92_7, unknown=0x6, dest=0x6014800, size=0x800
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_92_3_JP, dest=0x6014800, size=0x800
-.else
 	gfx_raw src=offset_gGfx_92_3, unknown=0x1, dest=0x6014800, size=0x800
-.endif
-.endif
 	gfx_raw src=offset_gGfx_92_4, unknown=0x7, dest=0x6014000, size=0x700
 	gfx_raw src=offset_fixedTypeGfx_521, unknown=0x7, dest=0x6017000, size=0x1c0, terminator=1
 
 gGfxGroup_129::
-.ifdef EU
-	gfx_raw src=offset_gGfx_129_0, unknown=0x2, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_129_1, unknown=0x3, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_129_2, unknown=0x4, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_129_3, unknown=0x5, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_129_4, unknown=0x6, dest=0x6010800, size=0x800
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_129_0_JP, dest=0x6010800, size=0x800
-.else
 	gfx_raw src=offset_gGfx_129_0, unknown=0x1, dest=0x6010800, size=0x800
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_127::
-.ifdef EU
-	gfx_raw src=offset_gGfx_127_0, unknown=0x7, dest=0x20344b0, size=0x500
-	gfx_raw src=offset_gGfx_128_1, unknown=0x7, dest=0x6004000, size=0x19e0, terminator=1
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_127_0_JP, dest=0x20344b0, size=0x500
-	gfx_raw src=offset_gGfx_127_1_JP, dest=0x6004000, size=0x2000
-.else
 	gfx_raw src=offset_gGfx_127_0, unknown=0xf, dest=0x20344b0, size=0x500
 	gfx_raw src=offset_gGfx_128_1, unknown=0xf, dest=0x6004000, size=0x19e0
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
-.endif
 
 gGfxGroup_128::
-.ifdef EU
-	gfx_raw src=offset_gGfx_128_0, unknown=0x7, dest=0x20344b0, size=0x500
-	gfx_raw src=offset_gGfx_128_1, unknown=0x7, dest=0x6004000, size=0x19e0, terminator=1
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_128_0_JP, dest=0x20344b0, size=0x500
-	gfx_raw src=offset_gGfx_127_1_JP, dest=0x6004000, size=0x2000
-.else
 	gfx_raw src=offset_gGfx_128_0, unknown=0xf, dest=0x20344b0, size=0x500
 	gfx_raw src=offset_gGfx_128_1, unknown=0xf, dest=0x6004000, size=0x19e0
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
-.endif
 
 gGfxGroup_93::
 	gfx_raw src=offset_gGfx_94_0, unknown=0x7, dest=0x6000000, size=0x4000
@@ -700,19 +547,7 @@ gGfxGroup_117::
 	gfx_raw src=offset_gGfx_117_0, unknown=0x7, dest=0x6000000, size=0x2a80
 	gfx_raw src=offset_fixedTypeGfx_494, unknown=0x7, dest=0x6015400, size=0x600
 	gfx_raw src=offset_gGfx_117_2, unknown=0x7, dest=0x20344b0, size=0x500
-.ifdef EU
-	gfx_raw src=offset_gGfx_117_3, unknown=0x2, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_117_4_EU, unknown=0x3, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_117_5, unknown=0x4, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_117_6, unknown=0x5, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_117_7, unknown=0x6, dest=0x6010800, size=0x840
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_117_3_JP, dest=0x6010800, size=0x800
-.else
 	gfx_raw src=offset_gGfx_117_3, unknown=0x1, dest=0x6010800, size=0x800
-.endif
-.endif
 	gfx_raw src=offset_gGfx_117_4, unknown=0x7, dest=0x6011c00, size=0x80, terminator=1
 
 gGfxGroup_118::
@@ -739,19 +574,7 @@ gGfxGroup_124::
 gGfxGroup_125::
 	gfx_raw src=offset_gGfx_125_0, unknown=0x7, dest=0x6000000, size=0x3800
 	gfx_raw src=offset_gGfx_125_1, unknown=0x7, dest=0x20344b0, size=0x500
-.ifdef EU
-	gfx_raw src=offset_gGfx_125_2, unknown=0x2, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_125_3_EU, unknown=0x3, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_125_4, unknown=0x4, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_125_5, unknown=0x5, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_125_6, unknown=0x6, dest=0x6010800, size=0x800
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_125_2_JP, dest=0x6010800, size=0x800
-.else
 	gfx_raw src=offset_gGfx_125_2, unknown=0x1, dest=0x6010800, size=0x800
-.endif
-.endif
 	gfx_raw src=offset_gGfx_125_3, unknown=0x7, dest=0x6011000, size=0x80, terminator=1
 
 gGfxGroup_126::
@@ -760,19 +583,7 @@ gGfxGroup_126::
 	gfx_raw src=offset_gGfx_126_2, unknown=0x7, dest=0x6014000, size=0x3100
 	gfx_raw src=offset_gGfx_126_3, unknown=0x7, dest=0x6013000, size=0x200
 	gfx_raw src=offset_gGfx_126_4, unknown=0x7, dest=0x6013400, size=0x200
-.ifdef EU
-	gfx_raw src=offset_gGfx_126_5, unknown=0x2, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_126_6, unknown=0x3, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_126_7, unknown=0x4, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_126_8, unknown=0x5, dest=0x6010800, size=0x800
-	gfx_raw src=offset_gGfx_126_9, unknown=0x6, dest=0x6010800, size=0x800
-.else
-.ifdef JP_D
-	gfx_raw src=offset_gGfx_126_5_JP, dest=0x6010800, size=0x800
-.else
 	gfx_raw src=offset_gGfx_126_5, unknown=0x1, dest=0x6010800, size=0x800
-.endif
-.endif
 	gfx_raw src=offset_gPalette_0, unknown=0xd, terminator=1
 
 gGfxGroup_130::

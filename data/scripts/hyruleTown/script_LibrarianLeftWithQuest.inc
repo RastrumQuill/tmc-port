@@ -5,16 +5,11 @@ SCRIPT_START script_LibrarianLeftWithQuest
 	SetAnimationState 0x0004
 	DoPostScriptAction 0x000a
 	SetAnimation 0x0000
-.ifdef EU
-	SetGlobalFlag MIZUKAKI_NECHAN
-.endif
 	EndBlock
 script_08008BD2:
 	TriggerInteract
 	SetPlayerIdle
-.ifndef EU
 	SetGlobalFlag MIZUKAKI_NECHAN
-.endif
 	SetAnimation 0x0004
 	Call WaitForAnimDone
 	WaitUntilTextboxCloses

@@ -189,12 +189,7 @@ typedef enum {
     MIZUUMI_00_H00,               /**< Obtained Heart Piece in Lake Hylia, north */
     MIZUUMI_00_H01,               /**< Obtained Heart Piece in Lake Hylia, next to Stockwell's House */
     MIZUUMI_00_H02,               /**< Obtained Heart Piece in Lake Hylia, south */
-#if !defined(EU) && !defined(JP) && !defined(DEMO_JP)
     MIZUUMI_00_CAP_0,             /**< undocumented */
-#else
-    HIKYOU_00_T0,                 /**< undocumented */
-    HIKYOU_00_T1,                 /**< undocumented */
-#endif
     MAENIWA_00_00,                /**< Ladder to Hyrule Castle Basement revealed in Hyrule Castle Garden */
     MAENIWA_00_01,                /**< undocumented */
     MAENIWA_00_02,                /**< Ladder to Grimblade revealed in Hyrule Castle Garden */
@@ -215,15 +210,10 @@ typedef enum {
     HIKYOU_00_SEKIZOU,            /**< Square block destroyed in Castor Wilds */
     HIKYOU_00_14,                 /**< North shortcut open in Castor Wilds */
     HIKYOU_00_BOSEKI,             /**< Opened Swiftblade I's Grave in Castor Wilds */
-#if defined(EU) || defined(JP) || defined(DEMO_JP)
-    HIKYOU_00_H00,                /**< undocumented */
-#endif
     HIKYOU_00_M0,                 /**< Red W Kinstone Obtained in Castor Wilds, underwater */
     HIKYOU_00_M1,                 /**< Red (> Kinstone Obtained in Castor Wilds, underwater */
     HIKYOU_00_M2,                 /**< Red 3 Prong Kinstone Obtained in Castor Wilds, underwater */
-#if !defined(EU) && !defined(JP) && !defined(DEMO_JP)
     HIKYOU_00_T1,                 /**< undocumented */
-#endif
     LOST_00_ENTER,                /**< ??? in Wind Ruins */
     LOST_00_00,                   /**< Shortcut 1 Open in Wind Ruins */
     LOST_00_01,                   /**< Blew up wall to chest cave in Wind Ruins */
@@ -238,10 +228,8 @@ typedef enum {
     LOST_04_SIBA4,                /**< Cut bottom grass in Wind Ruins Minish Grass Path */
     LOST_05_00,                   /**< Defeated Armoses in Wind Ruins Running Armos */
     LOST_05_01,                   /**< Defeated Beetles & Ropes in Wind Ruins */
-#if !defined(JP) && !defined(EU) && !defined(DEMO_JP)
     LOST_05_02,                   /**< undocumented */
     LOST_05_03,                   /**< undocumented */
-#endif
     LOST_05_T0,                   /**< 100 Rupee Chest Open in Wind Ruins */
     LOST_05_T1,                   /**< 50 Shell Chest Open in Wind Ruins */
     MORI_00_HIBI_0,               /**< Left rock "blown up in Minish Woods */
@@ -264,9 +252,7 @@ typedef enum {
     YAMA_03_DOKU_1,               /**< Upper wall tile "blown up in Mount Crenel Wall Entrance */
     YAMA_03_DOKU_2,               /**< Bottom wall tile "blown up in Mount Crenel Wall Entrance */
     YAMA_04_CAP_0,                /**< Ezlo talks about Whirlwind in Mount Crenel Base */
-#if !defined(JP) && !defined(EU) && !defined(DEMO_JP)
     YAMA_04_CAP_1,                /**< undocumented */
-#endif
     YAMA_04_R00,                  /**< Grabbed Red Rupee in Mount Crenel Base */
     YAMA_04_HIBI_0,               /**< undocumented */
     YAMA_04_HIBI_1,               /**< Rock to Spring blown up in Mount Crenel Base */
@@ -339,9 +325,6 @@ typedef enum {
     SOUGEN_07_00,                 /**< Blown open Keese chest cave in Trilby Highlands, above exit ladder */
     SOUGEN_07_01,                 /**< Blown open Fairy Fountain in Trilby Highlands, next to shortcut */
     SOUGEN_07_02,                 /**< Trilby - South Trilby Shortcut Open in Trilby Highlands */
-#if defined(JP) || defined(EU) || defined(DEMO_JP)
-    SOUGEN_07_H00,                /**< undocumented */
-#endif
     SOUGEN_08_00,                 /**< South Hyrule Field - Western Wood Shortcut Open in Western Wood */
     SOUGEN_08_01,                 /**< Dug Up Top Left 50 Rupee in Western Wood */
     SOUGEN_08_02,                 /**< Dug Up Bottom Left 50 Rupee in Western Wood */
@@ -365,9 +348,7 @@ typedef enum {
     SUIGEN_00_CAP_1,              /**< undocumented */
     SUIGEN_00_R0,                 /**< Obtained hidden 50 Rupee in Veil Falls, rock circle */
     SUIGEN_00_R1,                 /**< undocumented */
-#if !defined(JP) && !defined(EU) && !defined(DEMO_JP)
     SUIGEN_00_R2,                 /**< undocumented */
-#endif
     SUIGEN_00_h1,                 /**< Obtained Heart Piece in Veil Falls South */
     SUIGENGORON_00_CAP_0,         /**< Ezlo talks about vortex in Veil Springs */
     DAIGORON_SHIELD,              /**< Gave biggoron the first shield in Veil Falls, Biggoron */
@@ -379,9 +360,7 @@ typedef enum {
     BEANDEMO_04,                  /**< Western Wood Beanstalk has grown in Western Wood, Minish house, fuse with minish */
     KAKERA_TAKARA_A,              /**< Bottle Chest Opened in Eastern Hills */
     KAKERA_TAKARA_E,              /**< Blue S Kinstone Chest Open in Minish Woods, northwest */
-#if !defined(JP) && !defined(EU) && !defined(DEMO_JP)
     KAKERA_TAKARA_J,              /**< undocumented */
-#endif
     KAKERA_TAKARA_K,              /**< Bomb Bag Chest Open in Wind Ruins, near entrance to Fortress of Winds */
     KAKERA_TAKARA_L,              /**< Red W Kinstone Chest Open in Minish Woods */
     KAKERA_TAKARA_M,              /**< Red (> Kinstone Chest Open in Trilby Highlands */
@@ -448,22 +427,10 @@ typedef enum {
     KUMOUE_02_03,                 /**< Obtained Bottom Î£ Gold Kinstone in Cloud Tops, Bottom Piranhas */
     KUMOUE_UNCLE_TALK,            /**< Talked to Gale in Cloud Tops Entrance */
     KUMOUE_GIRL_TALK,             /**< Talked to Hailey in Cloud Tops Entrance */
-#if !defined(JP) && !defined(EU) && !defined(DEMO_JP)
     KS_A06,                       /**< undocumented */
     KS_B18,                       /**< undocumented */
     KS_C21,                       /**< undocumented */
     KS_C25,                       /**< undocumented */
-#else
-    MIZUUMI_00_CAP_0,             /**< undocumented */
-    SUIGEN_00_R2,                 /**< undocumented */
-    YAMA_04_CAP_1,                /**< undocumented */
-    LOST_05_02,                   /**< undocumented */
-    LOST_05_03,                   /**< undocumented */
-    KAKERA_TAKARA_J,              /**< undocumented */
-#endif
-#ifdef DEMO_JP
-    KS_WARPUSE,                   /**< undocumented */
-#endif
     END_1,
 } LocalFlags1;
 
@@ -673,21 +640,13 @@ typedef enum {
     MHOUSE_15_CAP_1,              /**< Ezlo talks about something being unusual in Link's House, bottom left corner of bedroom */
     SHOP_03_CAP_0,                /**< Ezlo talks about pastries in Hyrule Town Bakery */
     MHOUSE_07_CAP_2,              /**< Ezlo talks about library book in Hyrule Town, Julietta's House */
-#ifndef EU
     SHOP00_BOMBBAG,               /**< undocumented */
     CAFE_01_CAP_1,                /**< undocumented */
-#endif
-#if !defined(EU) && !defined(JP) && !defined(DEMO_JP)
     KS_A02,                       /**< undocumented */
     KS_A09,                       /**< undocumented */
     KS_A18,                       /**< undocumented */
     KS_B07,                       /**< undocumented */
     KS_B16,                       /**< undocumented */
-#endif
-#ifdef DEMO_JP
-    MH01_KS_KUSURI,               /**< undocumented */
-    MH09_KS_KUSURI,               /**< undocumented */
-#endif
     END_2,
 } LocalFlags2;
 
@@ -891,12 +850,8 @@ typedef enum {
     LV4_HAKA_08_B0,               /**< Obtained Bomb Drop in Royal Crypt Entrance */
     LV4_HAKA_08_K0,               /**< Obtained Small Key in Royal Crypt Entrance */
     MAROYA_1ST,                   /**< undocumented */
-#ifndef EU
     MACHI_CHIKA2_10_CAP_0,        /**< undocumented */
-#endif
-#if !defined(EU) && !defined(JP) && !defined(DEMO_JP)
     KS_C02,                       /**< undocumented */
-#endif
     END_3,
 } LocalFlags3;
 
@@ -1036,14 +991,12 @@ typedef enum {
     KOBITO_DOUKUTU_02_H00,        /**< Obtained Heart Piece in Castor Wilds Southeast Water Cave */
     KOBITO_DOUKUTU_01_T0,         /**< Red (> Kinstone Chest Open in Castor Wilds Southeast Water Cave Left Chest */
     YAMADOUKUTU_04_CAP_0,         /**< Ezlo talks about Helmasaurs in Mount Crenel Base Cave */
-#if !defined(EU) && !defined(JP) && !defined(DEMO_JP)
     KS_B06,                       /**< undocumented */
     KS_B15,                       /**< undocumented */
     KS_B01,                       /**< undocumented */
     KS_B12,                       /**< undocumented */
     KS_C12,                       /**< undocumented */
     KS_C37,                       /**< undocumented */
-#endif
     END_4,
 } LocalFlags4;
 
@@ -1134,9 +1087,7 @@ typedef enum {
     LV1_08_01,                    /**< Key Falls & Door Open in Deepwood Shrine 10 (Mulldozer fight) */
     LV1_01_05,                    /**< Blue Portal Activated in Deepwood Shrine 12 (To Madderpillar) */
     LV1_10_CAP_0,                 /**< Ezlo talks about locked door in Deepwood Shrine 2 (Slug & Torches) */
-#if !defined(EU) && !defined(JP)
     LV1_12_CAP_0,                 /**< undocumented */
-#endif
     END_5,
 } LocalFlags5;
 

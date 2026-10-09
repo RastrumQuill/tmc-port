@@ -18,10 +18,6 @@
 #include "game.h"
 #include "affine.h"
 #include "fade.h"
-#ifdef DEMO_JP
-#include "item.h"
-#include "flags.h"
-#endif
 
 typedef struct {
     u8 filler0[0x4];
@@ -71,62 +67,6 @@ static const u16 sLightRaysAlphaBlends[] = {
 #define FLAG_BYTE(bank, flag) (((bank) + (flag)) >> 3)
 #define FLAG_X(flag) (1 << ((flag)&7))
 
-#ifdef DEMO_JP
-static const SaveFile gDemoSave = {
-    .initialized = 1,
-    .msg_speed = 1,
-    .brightness = 1,
-    .global_progress = 1,
-    .map_hints = 0x1F,
-    .windcrests = 0x00013780,
-    .enemies_killed = 7,
-    .areaVisitFlags = { 0x0114C300 },
-    .name = "\x97\x7f\xdd",
-    .saved_status = {
-        .area_next = AREA_DEEPWOOD_SHRINE,
-        .room_next = ROOM_DEEPWOOD_SHRINE_ENTRANCE,
-        .start_pos_x = 0xa8,
-        .start_pos_y = 0xc8,
-        .layer = 1,
-        .overworld_map_x = 0xd66,
-        .overworld_map_y = 0xae0,
-    },
-    .stats = {
-        .health = 40,
-        .maxHealth = 40,
-        .equipped = { ITEM_SHIELD, ITEM_SMITH_SWORD },
-        .rupees = 5,
-    },
-    .inventory = {
-        [0] = 5,
-        [3] = 4,
-        [13] = 6,
-        [17] = 0x40,
-        [22] = 0x40,
-    },
-    .flags = {
-        [FLAG_BYTE(FLAG_BANK_G, START)] = FLAG_X(START) | FLAG_X(EZERO_1ST) | FLAG_X(TABIDACHI),
-        [FLAG_BYTE(FLAG_BANK_G, OUTDOOR)] = FLAG_X(OUTDOOR),
-        [FLAG_BYTE(FLAG_BANK_G, ENTRANCE_0)] = FLAG_X(ENTRANCE_0),
-        [FLAG_BYTE(FLAG_BANK_1, MORI_00_KOBITO)] = FLAG_X(MORI_00_KOBITO) | FLAG_X(MORI_ENTRANCE_1ST),
-        [FLAG_BYTE(FLAG_BANK_1, SOUGEN_01_ZELDA)] = FLAG_X(SOUGEN_01_ZELDA),
-        [FLAG_BYTE(FLAG_BANK_1, SOUGEN_06_WAKAGI_1)] = FLAG_X(SOUGEN_06_WAKAGI_1) | FLAG_X(SOUGEN_06_WAKAGI_2) | FLAG_X(SOUGEN_06_WAKAGI_3),
-        [FLAG_BYTE(FLAG_BANK_1, SOUGEN_06_AKINDO)] = FLAG_X(SOUGEN_06_AKINDO),
-        [FLAG_BYTE(FLAG_BANK_1, CASTLE_04_MEZAME)] = FLAG_X(CASTLE_04_MEZAME),
-        [FLAG_BYTE(FLAG_BANK_1, MACHI_01_DEMO)] = FLAG_X(MACHI_01_DEMO),
-        [FLAG_BYTE(FLAG_BANK_2, MHOUSE15_OP1ST)] = FLAG_X(MHOUSE15_OP1ST),
-        [FLAG_BYTE(FLAG_BANK_2, M_PRIEST_TALK)] = FLAG_X(M_PRIEST_TALK) | FLAG_X(M_ELDER_TALK1ST) | FLAG_X(M_PRIEST_MOVE),
-        [FLAG_BYTE(FLAG_BANK_2, KOBITO_MORI_1ST)] = FLAG_X(KOBITO_MORI_1ST),
-        [FLAG_BYTE(FLAG_BANK_5, LV1_0B_WALK)] = FLAG_X(LV1_0B_WALK),
-    },
-};
-static const u8 unk[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0,
-                          0xc2, 0xd1, 0xc2, 0xd2, 0xc2, 0xd3, 0xc2, 0xd4, 0xc2, 0xd5, 0xc2, 0xd6, 0xc2,
-                          0xd7, 0xc2, 0xd8, 0xc2, 0x00, 0xf0, 0x11, 0x90, 0x11, 0x90, 0x05, 0xd3, 0x49,
-                          0xd3, 0x26, 0xd3, 0x65, 0xdf, 0x11, 0x90, 0x11, 0x90, 0x11, 0x90, 0x11, 0x90,
-                          0x11, 0x90, 0x11, 0x90, 0x11, 0x90, 0x11, 0x90, 0x11, 0x90, 0x11, 0x90, 0x11,
-                          0x90, 0x11, 0x90, 0x8a, 0xc2, 0x8b, 0xc2, 0x8c, 0xc2, 0x8d, 0xc2 };
-#endif
 
 static u32 AdvanceIntroSequence(u32 transition) {
     gUI.lastState = transition;
@@ -178,21 +118,6 @@ static void HandleNintendoCapcomLogos(void) {
         gScreen.bg1.updated = 1;
         SetFade(FADE_BLACK_WHITE | FADE_INSTANT, 8);
         advance = ADVANCE_NONE;
-#if defined(DEMO_USA)
-        if (gUnk_02000010.listenForKeyPresses == 0) {
-            if ((gInput.heldKeys & (L_BUTTON | SELECT_BUTTON)) == (L_BUTTON | SELECT_BUTTON)) {
-                gUnk_02000010.field_0x7 = 1;
-                SoundReq(SFX_SECRET_BIG);
-            } else {
-                if ((gInput.heldKeys & (R_BUTTON | SELECT_BUTTON)) == (R_BUTTON | SELECT_BUTTON)) {
-                    gUnk_02000010.field_0x7 = 2;
-                    SoundReq(SFX_TASK_COMPLETE);
-                } else {
-                    gUnk_02000010.field_0x7 = 0;
-                }
-            }
-        }
-#endif
 
     } else {
         if (advance == ADVANCE_TIMER_EXPIRED) {
@@ -264,17 +189,11 @@ static void HandleTitlescreen(void) {
             }
             break;
         case 2:
-#if defined(JP) || defined(DEMO_JP) || defined(EU)
-            if (GetAdvanceState()) {
-#else
             if (--gIntroState.timer == 0) {
-#endif
                 gIntroState.timer = 3600;
                 gIntroState.state++;
             }
-#if defined(USA) || defined(DEMO_USA)
             UpdatePressStartIcon();
-#endif
             break;
         default:
             advance = GetAdvanceState();
@@ -287,31 +206,11 @@ static void HandleTitlescreen(void) {
                 AdvanceIntroSequence(advance);
                 SoundReq(SONG_VOL_FADE_OUT);
             }
-#if defined(JP) || defined(DEMO_JP) || defined(DEMO_JP)
-            gOamCmd._4 = 0;
-            gOamCmd._6 = 0;
-            gOamCmd._8 = 0xE020;
-            gOamCmd.x = 120;
-            gOamCmd.y = 152;
-            DrawDirect(511, 1);
-#elif defined(EU)
-            gOamCmd._4 = 0;
-            gOamCmd._6 = 0;
-            gOamCmd._8 = 0xE020;
-            gOamCmd.x = 120;
-            gOamCmd.y = 152;
-            DrawDirect(510, 1);
-#else
         UpdatePressStartIcon();
-#endif
             if ((gIntroState.timer & 0x20) == 0) {
                 gOamCmd._8 = 0xe000;
                 gOamCmd.y = 0x84;
-#ifdef EU
-                DrawDirect(0x1fe, 0);
-#else
                 DrawDirect(0x1ff, 0);
-#endif
             }
     }
     if (gIntroState.language != gSaveHeader->language) {
@@ -323,7 +222,6 @@ static void HandleTitlescreen(void) {
     DrawEntities();
 }
 
-#if defined(USA) || defined(DEMO_USA)
 static void UpdatePressStartIcon(void) {
     gOamCmd._4 = 0;
     gOamCmd._6 = 0;
@@ -332,7 +230,6 @@ static void UpdatePressStartIcon(void) {
     gOamCmd.y = 152;
     DrawDirect(511, 1);
 }
-#endif
 
 static void UpdateSwordBgAffineData(void) {
     struct BgAffineSrcData aff;
@@ -369,11 +266,7 @@ static void HandleJapaneseTitlescreenAnimationIntro(void) {
             if (!gFadeControl.active) {
                 gFadeControl.mask = 0xFFFFFFFF;
                 gIntroState.subState++;
-#if defined(JP) || defined(EU) || defined(DEMO_JP)
-                gIntroState.timer = 120;
-#else
                 gIntroState.timer = 90;
-#endif
                 pEVar2 = CreateObject(JAPANESE_SUBTITLE, 0, 0);
                 if (pEVar2 != NULL) {
                     pEVar2->x.HALF.HI = 0;
@@ -384,11 +277,7 @@ static void HandleJapaneseTitlescreenAnimationIntro(void) {
         case 2:
             if (GetAdvanceState() != ADVANCE_NONE) {
                 gIntroState.state++;
-#if defined(JP) || defined(EU) || defined(DEMO_JP)
-                gIntroState.timer = 30;
-#else
                 gIntroState.timer = 60;
-#endif
             }
     }
 }
@@ -414,11 +303,7 @@ static void HandleTitlescreenAnimationIntro(void) {
             break;
         case 2:
             if (--gIntroState.timer == 0) {
-#if defined(JP) || defined(EU) || defined(DEMO_JP)
-                gIntroState.timer = 360;
-#else
                 gIntroState.timer = 300;
-#endif
                 gIntroState.subState++;
                 CreateObject(TITLE_SCREEN_OBJECT, 0, 0);
                 SetFade(FADE_BLACK_WHITE | FADE_INSTANT, 16);
@@ -428,23 +313,14 @@ static void HandleTitlescreenAnimationIntro(void) {
         default:
             if (!gFadeControl.active && GetAdvanceState() != ADVANCE_NONE) {
                 gIntroState.state++;
-#if defined(JP) || defined(EU) || defined(DEMO_JP)
-                gIntroState.timer = 30;
-#else
                 gIntroState.timer = 60;
-#endif
             }
             break;
     }
 }
 static void ExitTitlescreen(void) {
     if (!gFadeControl.active) {
-#ifdef DEMO_JP
-        MemCopy(&gDemoSave, &gSave, sizeof(gSave));
-        SetTask(TASK_GAME);
-#else
         SetTask(TASK_FILE_SELECT);
-#endif
     }
 }
 

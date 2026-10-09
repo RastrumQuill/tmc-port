@@ -41,45 +41,12 @@ u32 DataCompare(u32 address, const void* data, u32 size);
 
 const char gUnk_0811E470[4] = "LINK";
 
-#if defined(DEMO_USA) || defined(DEMO_JP)
-const u8 demoUnknown0 = 0x0;
-#ifdef DEMO_USA
-const u8 demoUnknown1[] = {
-    // demo_timer for the three save files
-    0x0f, 0x0a, 0x0a, // gUnk_02000010.field_0x7 == 0
-    0x0f, 0x0f, 0x0f, // gUnk_02000010.field_0x7 == 1
-    0x08, 0x05, 0x05, // gUnk_02000010.field_0x7 == 2
-    0x00, 0x00
-};
-#else
-const u8 demoUnknown1[] = { 0 };
-#endif
-#else
 const u8 padding[2] = { 0, 0 };
-#endif
 
 static SaveResult (*const sSaveHandlers[])(u32) = { HandleSaveInit, HandleSaveInProgress, HandleSaveDone };
 
-#if defined(DEMO_USA) || defined(DEMO_JP)
 
-#ifdef DEMO_USA
-asm("demoPointer1: .incbin \"demo/save1.bin\"");
-asm("demoPointer2: .incbin \"demo/save2.bin\"");
-asm("demoPointer3: .incbin \"demo/save3.bin\"");
-
-extern const u8 demoPointer1[];
-extern const u8 demoPointer2[];
-extern const u8 demoPointer3[];
-
-const u8* const demoPointers[] = { demoPointer1, demoPointer2, demoPointer3 };
-#endif
-#else
-
-#if defined(JP) || defined(EU)
-static const char sSignatureLong[32] = "AGBZELDA:THE MINISH CAP:ZELDA 3";
-#else
 static const char sSignatureLong[32] = "AGBZELDA:THE MINISH CAP:ZELDA 5";
-#endif
 
 // Save file is untouched
 static const SaveFileStatus sSaveDescInit = { 0xffff, 0xffff, 'TINI' };
@@ -103,7 +70,6 @@ const SaveFileEEPROMAddresses gSaveFileEEPROMAddresses[] = { //
     // 6: ? unused?
     { 0x8, 0xfa0, 0x1fa0, 0xfa0, 0x1fa0 }
 };
-#endif
 
 void sub_0807CD9C(void) {
     UpdateGlobalProgress();
@@ -167,10 +133,6 @@ SaveResult HandleSaveDone(u32 action) {
 }
 
 u32 InitSaveData(void) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-    CpuSet(NULL, &gSave, 0x4b4);
-    return 1;
-#else
     const SaveFileEEPROMAddresses* eepromAddresses;
     u32 error;
 
@@ -195,68 +157,40 @@ u32 InitSaveData(void) {
         DataWrite(eepromAddresses->address1, sSignatureLong, eepromAddresses->size);
     }
     return 1;
-#endif
 }
 
 u32 WriteSaveFile(u32 index, SaveFile* saveFile) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-    return 1;
-#else
     return DataDoubleWriteWithStatus(index, saveFile);
-#endif
 }
 
 u32 WriteSaveHeader(SaveHeader* saveHeader) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-    return 1;
-#else
     return DataDoubleWriteWithStatus(3, saveHeader);
-#endif
 }
 
 u32 sub_0807CF1C(u8* arg0) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-    return 1;
-#else
     return DataDoubleWriteWithStatus(5, arg0);
-#endif
 }
 
 s32 ReadSaveFile(u32 index, SaveFile* saveFile) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-    return 1;
-#else
     return DataDoubleReadWithStatus(index, saveFile);
-#endif
 }
 
 u32 ReadSaveHeader(SaveHeader* saveHeader) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-    return 0;
-#else
     return DataDoubleReadWithStatus(3, saveHeader);
-#endif
 }
 
 u32 sub_0807CF3C(u8* arg0) {
-#if defined(DEMO_USA) || defined(DEMO_JP)
-    return 0;
-#else
     return DataDoubleReadWithStatus(5, arg0);
-#endif
 }
 
 void SetFileStatusDeleted(u32 index) {
-#if !(defined(DEMO_USA) || defined(DEMO_JP))
     const SaveFileEEPROMAddresses* eepromAddresses;
 
     eepromAddresses = GetSaveFileEEPROMAddresses(index);
     WriteSaveFileStatus(eepromAddresses->checksum2, &sSaveDescDeleted);
     WriteSaveFileStatus(eepromAddresses->checksum1, &sSaveDescDeleted);
-#endif
 }
 
-#if !(defined(DEMO_USA) || defined(DEMO_JP))
 void SetFileStatusInit(u32 index) {
     const SaveFileEEPROMAddresses* eepromAddresses;
     const SaveFileStatus* fileStatus;
@@ -482,4 +416,3 @@ bool32 DataCompare(u32 address, const void* data, u32 size) {
     }
     return TRUE;
 }
-#endif

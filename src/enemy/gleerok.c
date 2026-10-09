@@ -385,9 +385,7 @@ void sub_0802D3B8(GleerokEntity* this) {
                 heap->filler2[5].unk0.HALF.HI = 0;
                 heap->unk_30[5] = 0;
             }
-#ifndef EU
             gPlayerState.controlMode = CONTROL_DISABLED;
-#endif
             InitializeAnimation(super, 0x4c);
             break;
         case 1:
@@ -434,9 +432,6 @@ void sub_0802D3B8(GleerokEntity* this) {
 }
 
 void sub_0802D650(GleerokEntity* this) {
-#ifdef EU
-    PausePlayer();
-#endif
 
     gUnk_080CD7E4[super->subAction](this);
     sub_0802E7E4(this->unk_84);
@@ -531,9 +526,7 @@ void sub_0802D7B4(GleerokEntity* this) {
             super->subAction = 0;
             this->unk_84->ent2->timer = 24;
             gRoomControls.camera_target = &gPlayerEntity.base;
-#ifndef EU
             gPlayerState.controlMode = CONTROL_1;
-#endif
             gPauseMenuOptions.disabled = 0;
             SoundReq(BGM_BOSS_THEME);
             return;

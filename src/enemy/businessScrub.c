@@ -286,9 +286,7 @@ void BusinessScrub_Action5(BusinessScrubEntity* this) {
                         super->timer = 4;
                         this->unk_81 = 0;
                         sub_080290E0(this, 3);
-#if defined(USA) || defined(DEMO_USA)
                         SetLocalFlag(KS_B06);
-#endif
                         return;
                     case 1: // refill, bottle, specific kinstone
                         CreateItemEntity(offer->offeredItem, offer->item_subtype, 0);
@@ -589,11 +587,7 @@ const struct SalesOffering gUnk_080CC954[] = {
     {0x04, 0x00,     20, TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x10), TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x11), ITEM_BOTTLE1, 0xff, 0xffff},
     {0x0c, 0x00, 0xffff, TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x12), TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x13), 0xff, 0xff, 0x0046},
     {0x04, 0x00,    100, TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x13), TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x02), ITEM_KINSTONE, 0x75, 0xffff},
-#ifdef EU
-    {0x00, 0x00,    100, TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x0d), TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x02), ITEM_KINSTONE, 0xff, 0xffff},
-#else
     {0x00, 0x00,    200, TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x0d), TEXT_INDEX(TEXT_BUSINESS_SCRUB, 0x02), ITEM_KINSTONE, 0xff, 0xffff},
-#endif
 };
 
 const u8 kinstoneTypes[] = { 0x6e, 0x6f, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75 };

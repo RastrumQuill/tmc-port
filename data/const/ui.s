@@ -26,82 +26,27 @@ gUnk_080C8F7C:: @ 080C8F7C
 
 
 gUIElementDefinitions:: @ 080C8F8C
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_1_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte ButtonUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_2_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_3_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte ButtonUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_4_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_5_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte ButtonUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_6_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_7_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte ItemUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_8_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_9_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte ItemUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_10_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_11_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte TextUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_12_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_13_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte HeartUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_14_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_15_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte EzloNagUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_16_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_17_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte EzloNagUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_18_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_19_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte TextUIElement
-.ifdef EU
-    @ TODO only small differences
-	.incbin "data_080B7B74/gUIElementDefinitions_20_EU.bin"
-.else
 	.incbin "data_080B7B74/gUIElementDefinitions_21_USA-JP-DEMO_USA-DEMO_JP.bin"
-.endif
 	.4byte TextUIElement
 	.incbin "data_080B7B74/gUIElementDefinitions_22.bin"
 

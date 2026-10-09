@@ -127,13 +127,8 @@ void sub_0801C25C(void) {
 
 void sub_0801C2F0(u32 dest, u32 param_2) {
     u32 tensDigit;
-#ifdef NON_MATCHING
     u32 onesDigit;
     union SplitDWord divRem;
-#else
-    FORCE_REGISTER(u32 onesDigit, r1);
-    FORCE_REGISTER(union SplitDWord divRem, r0);
-#endif
 
     dest = dest * 0x20 + 0x6010000;
     divRem = DivAndMod(param_2, 10);
@@ -297,11 +292,7 @@ void RenderDigits(u32 iconVramIndex, u32 count, u32 isTextYellow, u32 digits) {
     u32 digit;
     vu32* ptr;
     vu32* ptr2;
-#ifdef NON_MATCHING
     union SplitDWord divRem;
-#else
-    FORCE_REGISTER(union SplitDWord divRem, r0);
-#endif
 
     puVar4 = RupeeKeyDigits;
     if (isTextYellow == 0) {

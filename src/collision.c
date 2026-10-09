@@ -554,11 +554,7 @@ CollisionResult sub_08017F40(Entity* org, Entity* tgt, u32 direction, ColSetting
     if (tgt->confusedTime == 0) {
         if (org == &gPlayerEntity.base) {
             if (PlayerCanBeMoved() &&
-#ifdef EU
-                (gPlayerState.flags & (PL_MINISH | PL_BUSY)) == 0 &&
-#else
                 (gPlayerState.flags & PL_MINISH) == 0 &&
-#endif
                 !gPlayerState.swim_state) {
                 gPlayerState.mobility |= 0x80;
                 gPlayerState.field_0xa |= 0x80;
@@ -650,11 +646,7 @@ CollisionResult sub_08018168(Entity* org, Entity* tgt, u32 direction, ColSetting
     if (tgt->confusedTime == 0) {
         if (org == &gPlayerEntity.base) {
             if (PlayerCanBeMoved() &&
-#ifdef EU
-                (gPlayerState.flags & (PL_MINISH | PL_BUSY)) == 0 &&
-#else
                 (gPlayerState.flags & (PL_MINISH | PL_ROLLING)) == 0 &&
-#endif
                 gPlayerState.swim_state == 0) {
                 gPlayerState.mobility |= 0x80;
                 gPlayerState.field_0xa |= 0x80;
@@ -970,18 +962,10 @@ const u8 gMapTileTypeToActTile[] = {
     ACT_TILE_46, // TILE_TYPE_175
     ACT_TILE_0,  // TILE_TYPE_176
     ACT_TILE_0,  // TILE_TYPE_177
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_178
-#else
     ACT_TILE_41, // TILE_TYPE_178
-#endif
     ACT_TILE_0, // TILE_TYPE_179
     ACT_TILE_0, // TILE_TYPE_180
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_181
-#else
     ACT_TILE_41, // TILE_TYPE_181
-#endif
     ACT_TILE_40, // TILE_TYPE_182
     ACT_TILE_0,  // TILE_TYPE_183
     ACT_TILE_42, // TILE_TYPE_184
@@ -994,18 +978,10 @@ const u8 gMapTileTypeToActTile[] = {
     ACT_TILE_46, // TILE_TYPE_191
     ACT_TILE_0,  // TILE_TYPE_192
     ACT_TILE_0,  // TILE_TYPE_193
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_194
-#else
     ACT_TILE_41, // TILE_TYPE_194
-#endif
     ACT_TILE_0, // TILE_TYPE_195
     ACT_TILE_0, // TILE_TYPE_196
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_197
-#else
     ACT_TILE_41, // TILE_TYPE_197
-#endif
     ACT_TILE_40, // TILE_TYPE_198
     ACT_TILE_0,  // TILE_TYPE_199
     ACT_TILE_42, // TILE_TYPE_200
@@ -1018,19 +994,11 @@ const u8 gMapTileTypeToActTile[] = {
     ACT_TILE_0,  // TILE_TYPE_207
     ACT_TILE_0,  // TILE_TYPE_208
     ACT_TILE_0,  // TILE_TYPE_209
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_210
-#else
     ACT_TILE_41, // TILE_TYPE_210
-#endif
     ACT_TILE_40, // TILE_TYPE_211
     ACT_TILE_0,  // TILE_TYPE_212
     ACT_TILE_0,  // TILE_TYPE_213
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_214
-#else
     ACT_TILE_41, // TILE_TYPE_214
-#endif
     ACT_TILE_0,  // TILE_TYPE_215
     ACT_TILE_43, // TILE_TYPE_216
     ACT_TILE_43, // TILE_TYPE_217
@@ -1042,18 +1010,10 @@ const u8 gMapTileTypeToActTile[] = {
     ACT_TILE_46, // TILE_TYPE_223
     ACT_TILE_0,  // TILE_TYPE_224
     ACT_TILE_0,  // TILE_TYPE_225
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_226
-#else
     ACT_TILE_41, // TILE_TYPE_226
-#endif
     ACT_TILE_0, // TILE_TYPE_227
     ACT_TILE_0, // TILE_TYPE_228
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_229
-#else
     ACT_TILE_41, // TILE_TYPE_229
-#endif
     ACT_TILE_40, // TILE_TYPE_230
     ACT_TILE_0,  // TILE_TYPE_231
     ACT_TILE_44, // TILE_TYPE_232
@@ -1066,19 +1026,11 @@ const u8 gMapTileTypeToActTile[] = {
     ACT_TILE_0,  // TILE_TYPE_239
     ACT_TILE_0,  // TILE_TYPE_240
     ACT_TILE_0,  // TILE_TYPE_241
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_242
-#else
     ACT_TILE_41, // TILE_TYPE_242
-#endif
     ACT_TILE_40, // TILE_TYPE_243
     ACT_TILE_0,  // TILE_TYPE_244
     ACT_TILE_0,  // TILE_TYPE_245
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_246
-#else
     ACT_TILE_41, // TILE_TYPE_246
-#endif
     ACT_TILE_0,  // TILE_TYPE_247
     ACT_TILE_45, // TILE_TYPE_248
     ACT_TILE_45, // TILE_TYPE_249
@@ -1485,18 +1437,10 @@ const u8 gMapTileTypeToActTile[] = {
     ACT_TILE_86, // TILE_TYPE_650
     ACT_TILE_0,  // TILE_TYPE_651
     ACT_TILE_0,  // TILE_TYPE_652
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_653
-#else
     ACT_TILE_41, // TILE_TYPE_653
-#endif
     ACT_TILE_0, // TILE_TYPE_654
     ACT_TILE_0, // TILE_TYPE_655
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_656
-#else
     ACT_TILE_41, // TILE_TYPE_656
-#endif
     ACT_TILE_40,  // TILE_TYPE_657
     ACT_TILE_0,   // TILE_TYPE_658
     ACT_TILE_0,   // TILE_TYPE_659
@@ -2189,25 +2133,12 @@ const u8 gMapTileTypeToActTile[] = {
     ACT_TILE_14,  // TILE_TYPE_1346
     ACT_TILE_41,  // TILE_TYPE_1347
     ACT_TILE_40,  // TILE_TYPE_1348
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_1349
-    ACT_TILE_0, // TILE_TYPE_1350
-#else
     ACT_TILE_41, // TILE_TYPE_1349
     ACT_TILE_41, // TILE_TYPE_1350
-#endif
     ACT_TILE_40, // TILE_TYPE_1351
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_1352
-#else
     ACT_TILE_41, // TILE_TYPE_1352
-#endif
     ACT_TILE_40, // TILE_TYPE_1353
-#ifdef EU
-    ACT_TILE_0, // TILE_TYPE_1354
-#else
     ACT_TILE_41, // TILE_TYPE_1354
-#endif
     ACT_TILE_17,  // TILE_TYPE_1355
     ACT_TILE_15,  // TILE_TYPE_1356
     ACT_TILE_0,   // TILE_TYPE_1357

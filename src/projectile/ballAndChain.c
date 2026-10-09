@@ -141,9 +141,7 @@ void sub_080AB26C(BallAndChainEntity* this) {
         super->action = 1;
         super->timer = 5;
         super->frameIndex = 0;
-#ifndef EU
         super->spritePriority.b1 = 0;
-#endif
     }
     if (--super->timer == 0) {
         DeleteThisEntity();

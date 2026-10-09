@@ -20,13 +20,8 @@ void MinishVillageTileSetManager_LoadGfxGroup(u32);
 // clang-format off
 const u16 gMinishVillageTileSetManagerRegions[] = {
     0, 0x000, 0x020, 0x0E0, 0x0E0,
-#ifdef EU
-    1, 0x028, 0x1C8, 0x060, 0x080,
-    2, 0x188, 0x278, 0x0E0, 0x0A0,
-#else
     1, 0x000, 0x1D0, 0x080, 0x060,
     2, 0x170, 0x278, 0x0F8, 0x0A0,
-#endif
     3, 0x310, 0x178, 0x0C0, 0x150,
     3, 0x340, 0x2C8, 0x060, 0x090,
     4, 0x1D0, 0x000, 0x200, 0x0E0,
@@ -125,18 +120,12 @@ void MinishVillageTileSetManager_Main(MinishVillageTileSetManager* this) {
         super->timer = 8;
         this->unk_20 = 0xFF;
 
-#ifndef EU
         SetEntityPriority((Entity*)this, PRIO_PLAYER_EVENT);
-#endif
         RegisterTransitionHandler(this, MinishVillageTileSetManager_OnEnterRoom, NULL);
 #ifdef PC
         MinishVillageTileSetManager_RegisterPort();
 #endif
     }
-#ifdef EU
-    if (gRoomControls.reload_flags)
-        return;
-#endif
 
     if (MinishVillageTileSetManager_UpdateRoomGfxGroup(this)) {
         gfxGroup = (u32)gRoomVars.graphicsGroups[0];
@@ -145,35 +134,18 @@ void MinishVillageTileSetManager_Main(MinishVillageTileSetManager* this) {
             super->timer = 0;
         }
     }
-#ifndef EU
     if (gRoomControls.reload_flags)
         return;
-#endif
-#ifndef JP
-#ifndef EU
     gfxGroup = this->unk_20;
-#endif
-#endif
 
     gfxInfo = gMinishVillageTileSetManagerGfxInfos[gfxGroup];
-#ifdef EU
-    super_timer = super->timer;
-    if (super_timer == 0) {
-#else
     switch (super->timer) {
         case 0:
-#endif
         gPauseMenuOptions.disabled = 1;
         LoadResourceAsync(&gGlobalGfxAndPalettes[gfxInfo->gfx], gfxInfo->dest, BG_SCREEN_SIZE * 2);
         LoadPaletteGroup(gMinishVillateTileSetManagerPaletteGroups[gfxGroup]);
         super->timer++;
-#ifdef EU
-    } else {
-        switch (super_timer) {
-            case 0:
-#else
             break;
-#endif
             case 1:
             case 2:
             case 3:
@@ -184,20 +156,12 @@ void MinishVillageTileSetManager_Main(MinishVillageTileSetManager* this) {
                 LoadResourceAsync(&gGlobalGfxAndPalettes[gfxInfo[super->timer].gfx], gfxInfo[super->timer].dest,
                                   BG_SCREEN_SIZE * 2);
                 super->timer++;
-#ifdef EU
-                gPauseMenuOptions.disabled = 0;
-#endif
                 break;
             case 8:
-#ifndef EU
                 gPauseMenuOptions.disabled = 0;
                 super->timer++;
-#endif
                 break;
         }
-#ifdef EU
-    }
-#endif
 }
 
 void MinishVillageTileSetManager_OnEnterRoom(void* this) {
@@ -227,10 +191,8 @@ void MinishVillageTileSetManager_LoadGfxGroup(u32 gfxGroup) {
     u32 i;
     const MinishVillageTileSetManagerGfxInfo* gfxInfo;
 
-#ifndef EU
     if (gfxGroup >= ARRAY_COUNT(gMinishVillageTileSetManagerGfxInfos))
         return;
-#endif
 
     LoadPaletteGroup(gMinishVillateTileSetManagerPaletteGroups[gfxGroup]);
     gfxInfo = gMinishVillageTileSetManagerGfxInfos[gfxGroup];

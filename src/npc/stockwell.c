@@ -17,12 +17,8 @@
 #include "script.h"
 #include "save.h"
 #include "subtask.h"
-#ifndef EU
-#endif
 
-#ifndef EU
 static const Rect gUnk_0810FDA0 = { 0, 8, 10, 16 };
-#endif
 
 typedef struct {
     /*0x00*/ Entity base;
@@ -67,9 +63,7 @@ void sub_08065080(StockwellEntity* this) {
     SetEntityPriority(super, PRIO_MESSAGE);
     InitializeAnimation(super, 4);
     AddInteractableWhenBigObject(super);
-#ifndef EU
     SetInteractableObjectCollision(super, 0, 0, &gUnk_0810FDA0);
-#endif
     context = StartCutscene(super, &script_Stockwell);
     this->context = context;
 }
@@ -245,11 +239,9 @@ void sub_08065370(Entity* this, ScriptExecutionContext* context) {
         case ITEM_LARGE_QUIVER:
             localFlag = SHOP00_YAZUTSU;
             break;
-#ifndef EU
         case ITEM_BOMBBAG:
             localFlag = SHOP00_BOMBBAG;
             break;
-#endif
         case ITEM_SHELLS30:
             if (999 <= gSave.stats.shells) {
                 MessageNoOverlap(TEXT_INDEX(TEXT_STOCKWELL, 0xe), this);

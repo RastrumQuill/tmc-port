@@ -5,9 +5,7 @@ SCRIPT_START script_GuardWest
 	_0807E9D4
 	CallWithArg sub_0807F3D8, 0x00000008
 	Call GuardWithSpear_ResetLastSwordMove
-.ifndef EU
 	ClearLocalFlag MACHI_02_HEISHI_TALK
-.endif
 	EndBlock
 script_0800FF92:
 	EndBlock

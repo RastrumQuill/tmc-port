@@ -35,17 +35,7 @@ script_080120FC:
 	WaitUntilTextboxCloses
 	GivePlayerItem BOTTLE_CHARM_NAYRU
 	WaitPlayerGetItem
-.ifdef USA
 	Call sub_0807FC24
-.else
-.ifdef DEMO_USA
-	Call sub_0807FC24
-.else
-.ifdef DEMO_JP
-	Call sub_0807FC24
-.endif
-.endif
-.endif
 	Jump script_0801212A
 script_08012126:
 	MessageNoOverlap TEXT_GORMAN_ORACLES, 0x1b

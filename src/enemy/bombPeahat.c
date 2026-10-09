@@ -116,19 +116,14 @@ void sub_0802A924(BombPeahatEntity* this) {
     super->timer = 0;
     super->subtimer = 0;
     super->hitbox = (Hitbox*)&gUnk_080CD16C;
-#ifdef EU
-    super->collisionFlags |= 0x10;
-#endif
     super->z.HALF.HI = -0x30;
     this->unk_80 = Random() & 1;
     this->unk_82 = 0;
     this->unk_7b = 0;
     this->unk_81 = 0;
     this->unk_7a = 0;
-#ifndef EU
     this->unk_78 = 0;
     this->unk_79 = 0;
-#endif
     super->collisionLayer = 3;
     super->spriteOrientation.flipY = 1;
     super->spriteRendering.b3 = 1;
@@ -212,53 +207,21 @@ void sub_0802AAC0(BombPeahatEntity* this) {
         } else if (entity->next == NULL) {
             this->unk_81 = 0;
             super->child = NULL;
-#ifdef EU
-        } else if (entity->timer == 0) {
-            if (GetCollisionDataAtTilePos(COORD_TO_TILE(super), 1) == 0) {
-                if (EntityInRectRadius(super, &gPlayerEntity.base, 0x10, 0x10) && entity->subtimer <= 0x50) {
-                    this->unk_81 = 0;
-                }
-            } else if (entity->subtimer <= 0x13) {
-                this->unk_81 = 0;
-            }
-        }
-#else
         } else if ((entity->timer == 0) && (entity->subtimer <= 0x50)) {
             this->unk_81 = 0;
         }
-#endif
     } else {
         super->action = 4;
         super->timer = 192;
         super->subtimer = 4;
         this->unk_80 ^= 1;
-#ifndef EU
         this->unk_78 = 0;
         this->unk_79 = 4;
         super->direction = DIR_NONE;
-#endif
         InitializeAnimation(super, 0);
     }
 }
 
-#ifdef EU
-void sub_0802AB40(BombPeahatEntity* this) {
-    sub_0802AC40(this);
-    if (--super->timer == 0) {
-        if (this->unk_7a <= 4) {
-            super->action = 5;
-            super->speed = 0;
-            InitializeAnimation(super, super->type + 1);
-        } else {
-            super->timer = 192;
-            super->subtimer = 4;
-            this->unk_80 ^= 1;
-        }
-    } else if (--super->subtimer == 0) {
-        sub_0802ACDC(this, 4);
-    }
-}
-#else
 void sub_0802AB40(BombPeahatEntity* this) {
     sub_0802AC40(this);
     switch (this->unk_78) {
@@ -297,7 +260,6 @@ void sub_0802AB40(BombPeahatEntity* this) {
             break;
     }
 }
-#endif
 
 void sub_0802AC08(BombPeahatEntity* this) {
     if (super->frame & ANIM_DONE) {
@@ -318,7 +280,6 @@ void sub_0802AC40(BombPeahatEntity* this) {
         if (!sub_0802B234(this)) {
             this->unk_7a = 0;
             super->spritePriority.b1 = 0;
-#ifndef EU
         } else {
             if (super->z.HALF.HI == 0) {
                 if (super->spritePriority.b1 != 1) {
@@ -329,20 +290,15 @@ void sub_0802AC40(BombPeahatEntity* this) {
                     super->spritePriority.b1 = 3;
                 }
             }
-#endif
         }
     } else {
         if (sub_0802B234(this)) {
             this->unk_7a = 1;
-#ifndef EU
             if (super->z.HALF.HI == 0) {
                 super->spritePriority.b1 = 1;
             } else {
                 super->spritePriority.b1 = 3;
             }
-#else
-            super->spritePriority.b1 = 3;
-#endif
         }
     }
 }
@@ -401,9 +357,6 @@ void sub_0802ADDC(BombPeahatEntity* this) {
         entity->parent = super;
         super->child = entity;
         CopyPosition(super, entity);
-#ifdef EU
-        entity->z.HALF.HI += 8;
-#endif
         this->unk_81 = 1;
         if (super->type == 0) {
             this->unk_7a++;
@@ -424,32 +377,6 @@ void sub_0802AE24(BombPeahatEntity* this) {
     InitializeAnimation(super, 3);
 }
 
-#ifdef EU
-void sub_0802AE68(BombPeahatEntity* this) {
-    Entity* entity = super->parent;
-    if (entity == NULL) {
-        super->action = 3;
-        super->spriteSettings.draw = 1;
-        this->unk_80 = 1;
-    }
-
-    if (((BombPeahatEntity*)entity)->unk_81) {
-        CopyPosition(entity, super);
-        super->z.HALF.HI += 8;
-        super->spriteSettings.draw = 0;
-    } else {
-        super->action = 3;
-        this->unk_80 = 1;
-        super->spriteSettings.draw = 1;
-        if (sub_0802B234(this)) {
-            super->spritePriority.b1 = 3;
-        } else {
-            super->spritePriority.b1 = 0;
-        }
-        GetNextFrame(super);
-    }
-}
-#else
 void sub_0802AE68(BombPeahatEntity* this) {
     BombPeahatEntity* entity = sub_0802B250(this);
     if (entity == NULL) {
@@ -467,7 +394,6 @@ void sub_0802AE68(BombPeahatEntity* this) {
         }
     }
 }
-#endif
 
 void sub_0802AEBC(BombPeahatEntity* this) {
     gUnk_080CD158[super->subAction](this);
@@ -622,36 +548,6 @@ void sub_0802B1A0(BombPeahatEntity* this) {
     InitializeAnimation(super, 0);
 }
 
-#ifdef EU
-void sub_0802B1BC(BombPeahatEntity* this) {
-    Entity* entity;
-
-    if (super->timer != 0) {
-        super->timer--;
-    }
-
-    entity = super->parent;
-    if (entity == NULL) {
-        super->action = 2;
-        super->spriteSettings.draw = 1;
-    }
-
-    if (((BombPeahatEntity*)entity)->unk_81) {
-        CopyPosition(entity, super);
-        super->z.HALF.HI += 8;
-    } else {
-        super->action = 2;
-        super->spriteSettings.draw = 1;
-        if (sub_0802B234(this)) {
-            super->spritePriority.b1 = 3;
-        } else {
-            super->spritePriority.b1 = 0;
-        }
-
-        GetNextFrame(super);
-    }
-}
-#else
 void sub_0802B1BC(BombPeahatEntity* this) {
     BombPeahatEntity* entity;
 
@@ -672,7 +568,6 @@ void sub_0802B1BC(BombPeahatEntity* this) {
         }
     }
 }
-#endif
 
 void sub_0802B204(BombPeahatEntity* this) {
     if (BounceUpdate(super, Q_8_8(40.0)) == BOUNCE_INIT_NEXT) {
@@ -692,7 +587,6 @@ bool32 sub_0802B234(BombPeahatEntity* this) {
     return ret;
 }
 
-#ifndef EU
 BombPeahatEntity* sub_0802B250(BombPeahatEntity* this) {
     BombPeahatEntity* parent = (BombPeahatEntity*)super->parent;
     if ((parent != NULL) && (parent->base.next == NULL)) {
@@ -711,7 +605,6 @@ void sub_0802B264(BombPeahatEntity* this) {
     }
     GetNextFrame(super);
 }
-#endif
 
 // clang-format off
 void (*const BombPeahat_Functions[])(BombPeahatEntity*) = {
@@ -764,18 +657,9 @@ void (*const gUnk_080CD158[])(BombPeahatEntity*) = {
 };
 
 const Hitbox gUnk_080CD16C = {
-#ifdef EU
-    0x00, 0xFD, 0x05, 0x03, 0x03, 0x05, 0x06, 0x06,
-#else
     0x00, 0xFB, 0x05, 0x03, 0x03, 0x05, 0x06, 0x06,
-#endif
 };
 
-#ifdef EU
-const u8 unk_data[] = { // TODO
-    0x0c, 0x0, 0x0, 0x0
-};
-#endif
 
 const Hitbox gUnk_080CD174 = {
     0x00, 0x00, 0x06, 0x00, 0x00, 0x06, 0x04, 0x04,

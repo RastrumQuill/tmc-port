@@ -67,11 +67,7 @@ void VaatiBall(VaatiBallEntity* this) {
             ModHealth(-2);
         }
 
-#ifdef EU
-        if (super->health < 0xfa) {
-#else
         if (super->health < 0xfd) {
-#endif
             super->spriteSettings.draw = 0;
             COLLISION_OFF(super);
             super->health = -1;

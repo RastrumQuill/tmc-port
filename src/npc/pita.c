@@ -23,11 +23,7 @@ void Pita(PitaEntity* this) {
         0,
         2,
         { 0, 0, 0, 0 },
-#if EU
-        6,
-#else
         10,
-#endif
         18,
     };
     if (super->action == 0) {

@@ -83,37 +83,14 @@
 #define STATIC_AFTER_EXTERN static
 #endif
 
-#if NON_MATCHING
 #define ASM_FUNC(path, decl)
-#else
-#define ASM_FUNC(path, decl)    \
-    NAKED decl {                \
-        asm(".include " #path); \
-    }
-#endif
 
-#if NON_MATCHING
 #define NONMATCH(path, decl) decl
 #define END_NONMATCH
-#else
-#define NONMATCH(path, decl)    \
-    NAKED decl {                \
-        asm(".include " #path); \
-        if (0)
-#define END_NONMATCH }
-#endif
 
-#if NON_MATCHING
 #define FORCE_REGISTER(var, reg) var
-#else
-#define FORCE_REGISTER(var, reg) register var asm(#reg)
-#endif
 
-#if NON_MATCHING
 #define MEMORY_BARRIER
-#else
-#define MEMORY_BARRIER asm("" ::: "memory")
-#endif
 
 typedef union {
     s32 WORD;

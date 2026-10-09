@@ -41,11 +41,7 @@ void sub_08069FBC(DogEntity*);
 void sub_0806A080(DogEntity*);
 
 const SpriteLoadData gUnk_08111D58[] = {
-#ifdef EU
-    { 82, 67, 4 }, { 7250, 67, 4 }, { 0, 0, 0 }, { 64, 69, 4 }, { 7232, 69, 4 }, { 0, 0, 0 },
-#else
     { 82, 67, 4 }, { 7250, 67, 4 }, { 0, 0, 0 }, { 1, 69, 4 },  { 7169, 69, 4 }, { 0, 0, 0 },
-#endif
     { 4, 68, 4 },  { 7172, 68, 4 }, { 0, 0, 0 }, { 83, 69, 4 }, { 7251, 69, 4 }, { 0, 0, 0 },
 };
 
@@ -385,15 +381,7 @@ void sub_08069E50(DogEntity* this) {
 
 void sub_08069ECC(DogEntity* this) {
     if (UpdateFuseInteraction(super) != 0) {
-#ifdef EU
-        if (GetInventoryValue(ITEM_QST_DOGFOOD) != 2) {
-            super->action = 5;
-        } else {
-            super->action = 1;
-        }
-#else
         super->action = 1;
-#endif
     }
 }
 

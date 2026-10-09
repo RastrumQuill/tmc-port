@@ -174,11 +174,7 @@ static bool32 sub_0808E950(void) {
 void FileScreenObjects_Type24(FileScreenObjectsEntity* this) {
     if (super->action == 0) {
         super->action = 1;
-#ifdef EU
-        super->spriteIndex = 0x141;
-#else
         super->spriteIndex = 0x142;
-#endif
         super->type2 = 0xFF;
         LoadSwapGFX(super, 1, 3);
     }

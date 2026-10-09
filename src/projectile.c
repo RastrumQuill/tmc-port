@@ -36,11 +36,7 @@ const ProjectileDefinition gProjectileDefinitions[] = {
     MULTI_FORM(gProjectileDefinition_9),
     MULTI_FORM(gProjectileDefinition_A),
     { 0, 0, { &gHitbox_0 }, 0, 2, { 0, 1, 1, 1 }, 4, 0, 161, 11 }, // TODO sprite index too high
-#if defined(JP) || defined(EU)
-    { 32827, 1, { &gHitbox_0 }, SPRITE_SPECIALFX, 0, { 0, 1, 1, 1 }, 65, 0, 74, 3 },
-#else
     { 32827, 1, { &gHitbox_3 }, SPRITE_SPECIALFX, 0, { 0, 1, 1, 1 }, 65, 0, 74, 3 },
-#endif
     { 518, 1, { &gHitbox_0 }, SPRITE_ARROWPROJECTILE, 0, { 0, 1, 1, 1 }, 66, 768, 26, 11 },
     MULTI_FORM(gProjectileDefinition_E),
     MULTI_FORM(gProjectileDefinition_F),
@@ -53,11 +49,7 @@ const ProjectileDefinition gProjectileDefinitions[] = {
     { 0, 0, { (Hitbox*)&gHitbox_20 }, SPRITE_TORCHTRAPPROJECTILE_0, 0, { 0, 1, 1, 1 }, 66, 640, 146, 11 },
     { 399, 0, { (Hitbox*)&gHitbox_20 }, SPRITE_TORCHTRAPPROJECTILE_1, 0, { 0, 1, 1, 1 }, 65, 640, 10, 11 },
     { 405, 0, { &gHitbox_0 }, SPRITE_V1DARKMAGICPROJECTILE, 0, { 3, 1, 1, 1 }, 66, 256, 46, 15 },
-#ifdef EU
-    { 401, 112, { &gHitbox_1 }, 488, 0, { 1, 1, 1, 1 }, 65, 640, 162, 11 }, // TODO sprite index too high
-#else
     { 401, 112, { &gHitbox_1 }, 489, 0, { 1, 1, 1, 1 }, 65, 640, 162, 11 }, // TODO sprite index too high
-#endif
     { 175, 0, { &gHitbox_0 }, SPRITE_GLEEROK_1, 0, { 3, 1, 1, 0 }, 66, 512, 45, 11 },
     MULTI_FORM(gProjectileDefinition_1B),
     { 404, 0, { &gHitbox_0 }, SPRITE_V1EYELASER, 0, { 0, 1, 1, 0 }, 66, 512, 42, 11 },
@@ -116,17 +108,10 @@ const ProjectileDefinition gProjectileDefinition_10[] = {
     { 33008, 1, { (Hitbox*)&gUnk_080FD3FC }, 167, 1, { 0, 0, 1, 0 }, 65, 640, 110, 4 },
     { 366, 0, { (Hitbox*)&gUnk_080FD3FC }, SPRITE_FLYINGSKULL, 0, { 0, 0, 1, 0 }, 65, 640, 110, 4 },
 }; // TODO sprite index too high
-#ifdef EU
-const ProjectileDefinition gProjectileDefinition_14[] = {
-    { 387, 20, { &gHitbox_2 }, 486, 0, { 0, 1, 1, 1 }, 65, 640, 110, 12 },
-    { 387, 20, { (Hitbox*)&gUnk_080FD43C }, 486, 4, { 0, 1, 1, 1 }, 65, 640, 88, 5 },
-}; // TODO sprite index too high
-#else
 const ProjectileDefinition gProjectileDefinition_14[] = {
     { 387, 20, { &gHitbox_2 }, 487, 0, { 0, 1, 1, 1 }, 65, 640, 110, 12 },
     { 387, 20, { (Hitbox*)&gUnk_080FD43C }, 487, 4, { 0, 1, 1, 1 }, 65, 640, 88, 5 },
 }; // TODO sprite index too high
-#endif
 const ProjectileDefinition gProjectileDefinition_1B[] = {
     { 431, 0, { &gHitbox_1 }, SPRITE_CANNONBALLPROJECTILE, 0, { 1, 1, 1, 0 }, 65, 512, 158, 11 },
     { 432, 0, { &gHitbox_1 }, SPRITE_CANNONBALLPROJECTILE, 0, { 1, 1, 1, 0 }, 65, 512, 158, 11 },
@@ -161,17 +146,10 @@ const ProjectileDefinition gProjectileDefinition_1F[] = {
     { 32992, 5, { &gHitbox_0 }, SPRITE_POT, 0, { 3, 1, 1, 1 }, 66, 384, 157, 11 },
     { 382, 1, { &gHitbox_0 }, SPRITE_LAKITULIGHTNING, 0, { 1, 1, 1, 0 }, 66, 288, 52, 15 },
 };
-#ifdef EU
-const ProjectileDefinition gProjectileDefinition_22[] = {
-    { 492, 372, { &gHitbox_1 }, 497, 0, { 0, 0, 1, 1 }, 65, 640, 29, 11 },
-    { 491, 338, { (Hitbox*)&gHitbox_20 }, 496, 0, { 0, 1, 1, 1 }, 65, 640, 29, 11 },
-}; // TODO sprite index too high
-#else
 const ProjectileDefinition gProjectileDefinition_22[] = {
     { 492, 372, { &gHitbox_1 }, 498, 0, { 0, 0, 1, 1 }, 65, 640, 29, 11 },
     { 491, 338, { (Hitbox*)&gHitbox_20 }, 497, 0, { 0, 1, 1, 1 }, 65, 640, 29, 11 },
 }; // TODO sprite index too high
-#endif
 
 // TODO
 const u8 gUnk_081326EC[] = {

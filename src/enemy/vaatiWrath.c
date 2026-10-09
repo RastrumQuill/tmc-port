@@ -21,9 +21,7 @@
 #include "color.h"
 #include "fade.h"
 #include "projectile.h"
-#if defined USA || defined DEMO_USA || defined DEMO_JP
 #include "save.h"
-#endif
 
 void VaatiWrathType0PreAction(VaatiWrathEntity*);
 u32 sub_08041FCC(VaatiWrathEntity*);
@@ -128,9 +126,7 @@ void VaatiWrath(VaatiWrathEntity* this) {
 }
 
 void VaatiWrathType0(VaatiWrathEntity* this) {
-#if !(defined EU || defined JP)
     VaatiWrathType0PreAction(this);
-#endif
     vaatiWrathType0Actions[super->action](this);
 }
 
@@ -595,14 +591,12 @@ void sub_08041BE8(VaatiWrathEntity* this) {
         entity->myHeap = NULL;
         DeleteEntity(entity);
         ((VaatiWrathHeapStruct*)super->myHeap)->type3 = NULL;
-#ifndef EU
         entity = ((VaatiWrathHeapStruct*)super->myHeap)->object5b;
         entity->myHeap = NULL;
         DeleteEntity(entity);
         ((VaatiWrathHeapStruct*)super->myHeap)->object5b = NULL;
 
         gRoomControls.camera_target = &gPlayerEntity.base;
-#endif
         entity = ((VaatiWrathHeapStruct*)super->myHeap)->eyes[0];
         entity->myHeap = NULL;
         DeleteEntity(entity);
@@ -1006,7 +1000,6 @@ void sub_0804235C(VaatiWrathEntity* this) {
     InitializeAnimation(((VaatiWrathHeapStruct*)super->myHeap)->type3, 0x1b);
 }
 
-#if defined USA || defined DEMO_USA || defined DEMO_JP
 void VaatiWrathType0PreAction(VaatiWrathEntity* this) {
     int temp;
     if ((gRoomTransition.field_0x38 & 2) == 0) {
@@ -1030,7 +1023,6 @@ void VaatiWrathType0PreAction(VaatiWrathEntity* this) {
         }
     }
 }
-#endif
 
 void VaatiWrathType1(VaatiWrathEntity* this) {
     if (((VaatiWrathHeapStruct*)super->myHeap)->type0->next == NULL) {

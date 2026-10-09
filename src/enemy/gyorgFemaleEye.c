@@ -73,31 +73,25 @@ void GyorgFemaleEye_OnCollision(GyorgFemaleEyeEntity* this) {
     GyorgFemaleEntity* parent;
     if (super->health != 0xFF) {
         parent = (GyorgFemaleEntity*)super->parent;
-#ifndef EU
         if ((parent->eyesVulnerable >> super->type) & 1) {
-#endif
             parent->eyesHitFrame |= (1 << super->type);
-#ifndef EU
             switch (super->contactFlags & 0x7F) {
                 case 4 ... 6:
                 case 8 ... 13:
                 case 16 ... 18:
                 case 24 ... 26:
-#endif
                     (*(((GyorgHeap**)&parent->base.myHeap)))->unk_18[super->type] = super->contactedEntity;
                     (*(((GyorgHeap**)&parent->base.myHeap)))->reflectFxPos.HALF.x =
                         (gPlayerEntity.base.x.HALF.HI + super->x.HALF.HI) / 2;
                     (*(((GyorgHeap**)&parent->base.myHeap)))->reflectFxPos.HALF.y =
                         (gPlayerEntity.base.y.HALF.HI + super->y.HALF.HI) / 2;
                     (*(((GyorgHeap**)&parent->base.myHeap)))->unk_3c = (super->knockbackDirection ^= 0x10);
-#ifndef EU
                     break;
                 default:
                     ((GyorgHeap*)parent->base.myHeap)->unk_3c = 0xFF;
                     break;
             }
         }
-#endif
     }
     super->health = 0xFF;
     EnemyFunctionHandlerAfterCollision(super, (void (*const*)(Entity*))GyorgFemaleEye_Functions);

@@ -59,11 +59,7 @@ const struct_080FC3E4 gUnk_080FC3E4[] = {
     { 0, 0, 0, 1 },
     { 0, 0, 0, 1 },
     { 0, 0, 0, 1 },
-#ifdef EU
-    { 0, 0, 0, 1 },
-#else
     { 0, 0, 2, 1 },
-#endif
     { 0, 0, 0, 1 },
     { 0, 0, 0, 1 },
     { 0, 0, 0, 1 },
@@ -76,19 +72,11 @@ const struct_080FC3E4 gUnk_080FC3E4[] = {
     { 0, 0, 3, 1 },
     { 0, 0, 0, 1 },
     { 0, 0, 4, 1 },
-#ifdef EU
-    { 0, 0, 2, 1 },
-#else
     { 0, 0, 3, 1 },
-#endif
     { 0, 0, 0, 1 },
     { 0, 0, 0, 1 },
     { 0, 0, 0, 1 },
-#if defined(EU) || defined(JP)
-    { 0, 0x12, UNK_6_40, 1 },
-#else
     { 0, 5, UNK_6_20, 1 },
-#endif
     { 0, 0, 0, 1 },
     { FLAG_BANK_4, YAMADOUKUTU_0E_SENNIN, UNK_6_40, 1 },
     { 0, 0, 3, 1 },
@@ -131,11 +119,7 @@ const struct_080FC3E4 gUnk_080FC3E4[] = {
     { 0, 0, 6, 0 },
     { 0, 0, 0, 0 },
     { 0, 0, 7, 0 },
-#ifdef EU
-    { 0, 0, 0, 0 },
-#else
     { 0, 0, 2, 0 },
-#endif
     { 0, KINSTONE_33, UNK_6_10, 1 },
     { 0, 1, UNK_6_20, 0 },
     { 0, 0, 0, 2 },
@@ -154,13 +138,8 @@ const struct_080FC3E4 gUnk_080FC3E4[] = {
     { 0, 0, 3, 3 },
     { 0, 0, 7, 3 },
     { 0, 0, 0, 2 },
-#ifdef EU
-    { 0, 0, 3, 2 },
-    { 0, 0, 6, 2 },
-#else
     { 0, 0, 6, 2 },
     { 0, 0, 3, 2 },
-#endif
     { 0, 0, 5, 2 },
     { 0, 0, 0, 2 },
     { 0, 0, 0, 2 },
@@ -482,17 +461,10 @@ static void sub_0805066C(void) {
 
     if (loadNewPalette) {
         paletteOffset = &gGlobalGfxAndPalettes[gUnk_080FC8DE[gMapDataBottomSpecial.unk2]];
-#ifdef EU
-        LoadPalettes(&paletteOffset[0x11A60], 11, 1);
-        LoadPalettes(&paletteOffset[0x11B60], 12, 1);
-        LoadPalettes(&paletteOffset[0x11C60], 13, 1);
-        LoadPalettes(&paletteOffset[0x11D60], 14, 1);
-#else
         LoadPalettes(&paletteOffset[0x11AA0], 11, 1);
         LoadPalettes(&paletteOffset[0x11BA0], 12, 1);
         LoadPalettes(&paletteOffset[0x11CA0], 13, 1);
         LoadPalettes(&paletteOffset[0x11DA0], 14, 1);
-#endif
     }
 }
 
@@ -699,38 +671,22 @@ void sub_08050A64(u32 idx) {
     if (GetInventoryValue(ITEM_EARTH_ELEMENT)) {
         gOamCmd.x = 0xA2;
         gOamCmd.y = 0x36;
-#ifdef EU
-        DrawDirect(0x144, 0x24);
-#else
         DrawDirect(0x145, 0x24);
-#endif
     }
     if (GetInventoryValue(ITEM_FIRE_ELEMENT)) {
         gOamCmd.x = 0x96;
         gOamCmd.y = 0x3D;
-#ifdef EU
-        DrawDirect(0x144, 0x22);
-#else
         DrawDirect(0x145, 0x22);
-#endif
     }
     if (GetInventoryValue(ITEM_WATER_ELEMENT)) {
         gOamCmd.x = 0xAE;
         gOamCmd.y = 0x3D;
-#ifdef EU
-        DrawDirect(0x144, 0x23);
-#else
         DrawDirect(0x145, 0x23);
-#endif
     }
     if (GetInventoryValue(ITEM_WIND_ELEMENT)) {
         gOamCmd.x = 0xA2;
         gOamCmd.y = 0x44;
-#ifdef EU
-        DrawDirect(0x144, 0x21);
-#else
         DrawDirect(0x145, 0x21);
-#endif
     }
 }
 

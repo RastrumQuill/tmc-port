@@ -411,9 +411,7 @@ void CutsceneMiscObject_Type6(CutsceneMiscObjectEntity* this) {
                 RemoveInteractableObject(super);
                 gPlayerState.queued_action = PLAYER_EMPTYBOTTLE;
                 gPlayerState.field_0x38 = 54;
-#ifndef EU
                 SetPlayerControl(2);
-#endif
             }
             break;
         case 2:
@@ -425,25 +423,19 @@ void CutsceneMiscObject_Type6(CutsceneMiscObjectEntity* this) {
         case 3:
             if (gPlayerEntity.base.action != PLAYER_EMPTYBOTTLE) {
                 super->action = 4;
-#ifndef EU
                 if (!CheckGlobalFlag(BIN_DOGFOOD)) {
                     CreateItemEntity(ITEM_BOTTLE1, 0, 0);
                     SetGlobalFlag(BIN_DOGFOOD);
                     super->timer = 60;
                 }
-#else
-                CreateItemEntity(ITEM_BOTTLE1, 0, 0);
-#endif
             }
             break;
-#ifndef EU
         case 4:
             if (!--super->timer) {
                 super->action = 5;
                 SetPlayerControl(1);
             }
             break;
-#endif
     }
 }
 

@@ -75,11 +75,7 @@ typedef struct {
     s8 y;
 } PACKED xy;
 
-#ifdef EU
-const u8 gUnk_080D0ABC[] = { 0xf0, 0xd0, 0xb0 };
-#else
 const u8 gUnk_080D0ABC[] = { 0xf0, 0xd0, 0xc0 };
-#endif
 const u8 gUnk_080D0ABF[] = { 0x3c, 0x3c, 0x1e, 0x14, 0x14, 0x14, 0, 0, 0 };
 void (*const vaatiTransfiguredType0Actions[])(VaatiTransfiguredEntity*) = {
     VaatiTransfiguredType0Action0, VaatiTransfiguredType0Action1, VaatiTransfiguredType0Action2,
@@ -604,9 +600,7 @@ void VaatiTransfiguredType0Action7(VaatiTransfiguredEntity* this) {
             uVar4 = Random() & 0x3f3f;
             pEVar3->x.HALF.HI += (uVar4 & 0xff) - 0x20;
             pEVar3->y.HALF.HI += ((uVar4 >> 8) & 0xff) - 0x20;
-#ifndef EU
             pEVar3->spritePriority.b0 = 2;
-#endif
             SoundReq(SFX_16E);
         }
     }

@@ -56,11 +56,7 @@ bool32 sub_08041170(Enemy50Entity*);
 
 void Enemy50(Enemy50Entity* this) {
     if ((super->type == 1) && ((super->parent)->next == NULL)) {
-#ifdef EU
-        if (super->action == 8 || super->action == 9) {
-#else
         if (sub_08041300(this)) {
-#endif
             sub_0803F6EC(this);
         }
         CreateFx(super, FX_DEATH, 0);
@@ -422,7 +418,6 @@ void sub_0804122C(Enemy50Entity* this) {
     ResolveCollisionLayer(super);
 }
 
-#ifndef EU
 bool32 sub_08041300(Enemy50Entity* this) {
     if ((super->hitType == 0x25) && (super->contactFlags == CONTACT_NOW)) {
         return TRUE;
@@ -430,7 +425,6 @@ bool32 sub_08041300(Enemy50Entity* this) {
         return super->action == 8 || super->action == 9;
     }
 }
-#endif
 
 void (*const Enemy50_Functions[])(Enemy50Entity*) = {
     Enemy50_OnTick,     Enemy50_OnCollision, Enemy50_OnKnockback, (void (*)(Enemy50Entity*))GenericDeath,

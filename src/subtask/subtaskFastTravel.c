@@ -105,22 +105,6 @@ u32 sub_080A6D74(u32 param_1) {
 void Subtask_FastTravel_2(void) {
     u32 tmp;
     switch (sub_08056338()) {
-#ifdef EU
-        case 0:
-            gMenu.field_0x0 = 2;
-            break;
-        case 1:
-            gMenu.field_0x0 = 3;
-            tmp = 1;
-            break;
-        default:
-            return;
-    }
-
-    if (tmp) {
-        SetMenuType(3);
-    }
-#else
         case 0:
             gMenu.field_0x0 = 2;
             tmp = 3;
@@ -132,7 +116,6 @@ void Subtask_FastTravel_2(void) {
             return;
     }
     SetMenuType(tmp);
-#endif
 }
 
 void Subtask_FastTravel_3(void) {

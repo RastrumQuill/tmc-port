@@ -71,9 +71,7 @@ void VaatiProjectile_OnCollision(VaatiProjectileEntity* this) {
     Entity* entity;
 
     if (super->contactFlags == CONTACT_NOW) {
-#ifndef EU
         if (super->health != 0) {
-#endif
             super->action = 5;
             COLLISION_OFF(super);
             super->spritePriority.b1 = 0;
@@ -81,7 +79,6 @@ void VaatiProjectile_OnCollision(VaatiProjectileEntity* this) {
             gPlayerEntity.base.spriteOrientation.flipY = super->spriteOrientation.flipY;
             gPlayerEntity.base.spriteRendering.b3 = super->spriteRendering.b3;
             sub_0803E444(this);
-#ifndef EU
             SetPlayerControl(2);
             entity = super->parent;
             if (entity != NULL) {
@@ -92,7 +89,6 @@ void VaatiProjectile_OnCollision(VaatiProjectileEntity* this) {
             entity = &gPlayerEntity.base;
             entity->flags = gPlayerEntity.base.flags | ENT_COLLIDE;
         }
-#endif
     }
     EnemyFunctionHandlerAfterCollision(super, (EntityActionArray)VaatiProjectile_Functions);
 }
@@ -255,18 +251,6 @@ void sub_0803E480(VaatiProjectileEntity* this) {
 }
 
 bool32 sub_0803E4A0(VaatiProjectileEntity* this) {
-#ifdef EU
-    bool32 ret;
-    if (gRoomTransition.field_0x39 == 0) {
-        return TRUE;
-    } else {
-        if (super->parent == NULL) {
-            return FALSE;
-        }
-        ret = super->parent->next == NULL;
-    }
-    return ret;
-#else
     bool32 ret;
     if (gRoomTransition.field_0x39 != 0) {
         if (super->parent == NULL) {
@@ -281,7 +265,6 @@ bool32 sub_0803E4A0(VaatiProjectileEntity* this) {
         return TRUE;
     }
     return ret;
-#endif
 }
 
 void sub_0803E4D8(VaatiProjectileEntity* this) {

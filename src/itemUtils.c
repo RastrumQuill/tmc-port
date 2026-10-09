@@ -431,7 +431,6 @@ u32 CreateRandomItemDrop(Entity* arg0, u32 arg1) {
             case 1 ... 12:
                 ptr4 = &gEnemyDroptables[r3];
                 break;
-#ifndef EU
             case 24:
             case 25:
                 r0 = gRoomVars.needHealthDrop;
@@ -440,11 +439,7 @@ u32 CreateRandomItemDrop(Entity* arg0, u32 arg1) {
                     ptr4++;
                 }
                 break;
-#endif
             case 16 ... 23:
-#ifdef EU
-            case 24:
-#endif
                 ptr2 = &gObjectDroptables[r3 - 16];
             case 15:
                 ptr4 = &gRoomVars.currentAreaDroptable;
@@ -458,11 +453,7 @@ u32 CreateRandomItemDrop(Entity* arg0, u32 arg1) {
                 // nop
                 ptr3 = &gDroptableModifiers[DROPTABLE_NONE];
             } else {
-#ifdef EU
-                ptr3 = &gEnemyDroptables[r1 + 9];
-#else
                 ptr3 = &gEnemyDroptables[r1 + 6];
-#endif
             }
             // vector addition, s0 = ptr4 + ptr2 + ptr3
             SumDropProbabilities(droptable.a, ptr4->a, ptr2->a, ptr3->a);

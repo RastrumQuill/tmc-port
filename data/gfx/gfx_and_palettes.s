@@ -4743,12 +4743,10 @@ gPalette_2430::
 	.incbin "palettes/gPalette_2430.gbapal"
 gPalette_2431::
 	.incbin "palettes/gPalette_2431.gbapal"
-.ifndef EU
 gPalette_2432::
 	.incbin "palettes/gPalette_2432.gbapal"
 gPalette_2433::
 	.incbin "palettes/gPalette_2433.gbapal"
-.endif
 gFigurinePal1::
 	.incbin "palettes/gFigurinePal1.gbapal"
 gFigurinePal2::
@@ -6517,10 +6515,8 @@ fixedTypeGfx_421::
 	.incbin "gfx/fixedTypeGfx_421.4bpp"
 fixedTypeGfx_502::
 	.incbin "gfx/fixedTypeGfx_502.4bpp"
-.ifndef EU
 fixedTypeGfx_519::
 	.incbin "gfx/fixedTypeGfx_519.4bpp"
-.endif
 fixedTypeGfx_501::
 	.incbin "gfx/fixedTypeGfx_501.4bpp"
 fixedTypeGfx_62::
@@ -8116,22 +8112,18 @@ gGfx_15_4::
 	.incbin "gfx/gGfx_15_4.4bpp"
 gGfx_9_0_JP::
 	.incbin "assets/gGfx_9_0_JP.bin"
-.ifndef EU
 gGfx_10_0_JP::
 	.incbin "gfx/gGfx_10_0_JP.4bpp"
 gGfx_11_1_JP::
 	.incbin "gfx/gGfx_11_1_JP.4bpp"
-.endif
 gGfx_9_0::
 	.incbin "gfx/gGfx_9_0.4bpp"
 gGfx_10_0::
 	.incbin "gfx/gGfx_10_0.4bpp"
-.ifndef EU
 gGfx_11_1::
 	.incbin "gfx/gGfx_11_1.4bpp"
 gfx_unknown_10::
 	.incbin "assets/gfx_unknown_10.bin"
-.endif
 gGfx_88_0::
 	.incbin "gfx/gGfx_88_0.4bpp"
 gGfx_86_1::
@@ -8150,14 +8142,12 @@ gGfx_128_0::
 	.incbin "gfx/gGfx_128_0.4bpp"
 gGfx_128_1::
 	.incbin "gfx/gGfx_128_1.4bpp"
-.ifndef EU
 gGfx_127_1_JP::
 	.incbin "gfx/gGfx_127_1_JP.4bpp"
 gGfx_127_0_JP::
 	.incbin "gfx/gGfx_127_0_JP.4bpp"
 gGfx_128_0_JP::
 	.incbin "gfx/gGfx_128_0_JP.4bpp"
-.endif
 gGfx_89_1::
 	.incbin "gfx/gGfx_89_1.4bpp"
 gGfx_89_0_JP::

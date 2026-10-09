@@ -21,9 +21,7 @@
 #include "tiles.h"
 #include "subtask.h"
 #include "color.h"
-#ifndef EU
 #include "script.h"
-#endif
 
 typedef struct {
     /*0x00*/ Entity base;
@@ -31,25 +29,13 @@ typedef struct {
     /*0x78*/ u16 unk_78;
     /*0x7a*/ u8 unk_7a;
     /*0x7b*/ u8 unk_7b;
-#ifdef EU
-    /*0x7c*/ u8 unk_80;
-    /*0x7d*/ u8 unk_7c;
-    /*0x7e*/ u8 unk_7d;
-    /*0x7f*/ u8 unk_7e[2];
-#else
     /*0x7c*/ u8 unk_7c;
     /*0x7d*/ u8 unk_7d;
     /*0x7e*/ u8 unk_7e[2];
     /*0x80*/ u8 unk_80;
-#endif
     /*0x81*/ u8 shells;
-#ifdef EU
-    /*0x82*/ u8 prevChance;
-    /*0x83*/ u8 chance;
-#else
     /*0x82*/ s8 prevChance;
     /*0x83*/ s8 chance;
-#endif
 } FigurineDeviceEntity;
 
 extern void ModShells(s32);
@@ -222,11 +208,7 @@ void FigurineDevice_Action3(FigurineDeviceEntity* this) {
         default:
             if (!CheckRoomFlag(2)) {
                 super->spriteSettings.draw = 0;
-#ifdef EU
-                ClearRoomFlag(9);
-#else
                 ClearRoomFlag(4);
-#endif
                 DeleteThisEntity();
             }
             break;
@@ -264,17 +246,12 @@ void FigurineDevice_Action4(FigurineDeviceEntity* this) {
                 return;
             }
             old_81 = this->shells;
-#ifndef EU
             if ((gInput.heldKeys & R_BUTTON) != 0) {
                 tmp = 10;
             } else {
                 tmp = 1;
             }
-#ifdef JP
-            switch (gInput.menuScrollKeys) {
-#else
             switch (gInput.menuScrollKeys & ~R_BUTTON) {
-#endif
                 case DPAD_UP:
                     FigurineDevice_ChangeShellAmount(this, tmp);
                     break;
@@ -285,29 +262,14 @@ void FigurineDevice_Action4(FigurineDeviceEntity* this) {
             if (old_81 != this->shells) {
                 sub_080882A8(this);
             }
-#else
-            switch (gInput.menuScrollKeys) {
-                case DPAD_UP:
-                    FigurineDevice_ChangeShellAmount(this, 1);
-                    break;
-                case DPAD_DOWN:
-                    FigurineDevice_ChangeShellAmount(this, -1);
-                    break;
-            }
-            if (old_81 != this->shells) {
-                sub_080882A8(this);
-            }
-#endif
             break;
         case 2:
             this->unk_7a = 0;
             this->unk_7b = 4;
             SetRoomFlag(3);
             MessageFromTarget(TEXT_INDEX(TEXT_CARLOV, 0x1a));
-#ifndef EU
             gMessage.textWindowPosX = 1;
             gMessage.textWindowPosY = 0xc;
-#endif
             gMessage.rupees = this->shells;
             break;
     }
@@ -325,54 +287,6 @@ void sub_08087F58(FigurineDeviceEntity* this) {
 }
 
 void FigurineDevice_ChangeShellAmount(FigurineDeviceEntity* this, s32 shellDifference) {
-#ifdef EU
-    u32 newAmount;
-    u32 newChance;
-
-    newChance = this->chance + shellDifference;
-    if (CheckLocalFlag(SHOP07_COMPLETE)) {
-        FigurineDevice_PlayErrorSound(this);
-        return;
-    }
-
-    if (shellDifference < 0) {
-        if (newChance < this->prevChance) {
-            if (this->chance != this->prevChance) {
-                this->chance = this->prevChance;
-                this->shells = 1;
-                SoundReq(SFX_TEXTBOX_CHOICE);
-            } else {
-                FigurineDevice_PlayErrorSound(this);
-            }
-        } else {
-            this->chance = newChance;
-            this->shells += shellDifference;
-            SoundReq(SFX_TEXTBOX_CHOICE);
-        }
-        return;
-    }
-    newAmount = this->shells + shellDifference;
-    if (newAmount > gSave.stats.shells) {
-        if (gSave.stats.shells != this->shells) {
-            newAmount = gSave.stats.shells;
-            shellDifference = (gSave.stats.shells - this->shells);
-            newChance = this->chance + shellDifference;
-        } else {
-            FigurineDevice_PlayErrorSound(this);
-            return;
-        }
-    } else if (newChance > 100) {
-        if (this->chance == 100) {
-            FigurineDevice_PlayErrorSound(this);
-            return;
-        } else {
-            newChance = 100;
-            shellDifference = (newChance - this->chance);
-            newAmount = this->shells + shellDifference;
-        }
-    }
-
-#else
     s32 newAmount;
     s32 newChance;
     s32 prevChance, prevShells;
@@ -408,23 +322,12 @@ void FigurineDevice_ChangeShellAmount(FigurineDeviceEntity* this, s32 shellDiffe
             newAmount = gSave.stats.shells;
             shellDifference = (gSave.stats.shells - this->shells);
             newChance = prevChance + shellDifference;
-#ifdef JP
-            if (newChance > 100) {
-                newChance = 100;
-                shellDifference = (newChance - prevChance);
-                newAmount = prevShells + shellDifference;
-            }
-#endif
         } else {
             FigurineDevice_PlayErrorSound(this);
             return;
         }
     }
-#ifdef JP
-    else if (newChance > 100) {
-#else
     if (newChance > 100) {
-#endif
         if (this->chance == 100) {
             FigurineDevice_PlayErrorSound(this);
             return;
@@ -434,7 +337,6 @@ void FigurineDevice_ChangeShellAmount(FigurineDeviceEntity* this, s32 shellDiffe
             newAmount = prevShells + shellDifference;
         }
     }
-#endif
 
     this->chance = newChance;
     this->shells = newAmount;
@@ -499,9 +401,7 @@ void sub_080880D8(FigurineDeviceEntity* this) {
 bool32 sub_08088160(FigurineDeviceEntity* this, s32 param_2) {
     bool32 result;
     const struct_080FC3E4* ptr;
-#if !defined(JP) && !defined(EU)
     u8 kinstoneId;
-#endif
 
     ptr = &gUnk_080FC3E4[param_2];
     result = FALSE;
@@ -522,17 +422,6 @@ bool32 sub_08088160(FigurineDeviceEntity* this, s32 param_2) {
                 break;
             case 0x20:
                 switch (ptr->flag) {
-#if defined(JP) || defined(EU)
-                    case 0:
-                        if (CheckKinstoneFused(KINSTONE_20) || CheckKinstoneFused(KINSTONE_10) ||
-                            CheckKinstoneFused(KINSTONE_19))
-                            result = TRUE;
-                        break;
-                    case 1:
-                        if (this->unk_7c >= 5 && CheckKinstoneFused(KINSTONE_28))
-                            result = TRUE;
-                        break;
-#else
                     case 0:
                         if (CheckKinstoneFused(KINSTONE_20) || CheckKinstoneFused(KINSTONE_10)) {
                             result = TRUE;
@@ -549,7 +438,6 @@ bool32 sub_08088160(FigurineDeviceEntity* this, s32 param_2) {
                             goto backward_tail_merge;
                         }
                         break;
-#endif
                     case 2:
                         if (CheckKinstoneFused(KINSTONE_54) || CheckKinstoneFused(KINSTONE_56) ||
                             CheckKinstoneFused(KINSTONE_3D))
@@ -565,12 +453,10 @@ bool32 sub_08088160(FigurineDeviceEntity* this, s32 param_2) {
                             CheckKinstoneFused(KINSTONE_3C))
                             result = TRUE;
                         break;
-#if !defined(JP) && !defined(EU)
                     case 5:
                         if (this->unk_7c >= 2 && CheckGlobalFlag(MACHI_MACHIHOKORI))
                             result = TRUE;
                         break;
-#endif
                 }
         }
     }
@@ -589,21 +475,12 @@ void sub_0808826C(FigurineDeviceEntity* this) {
 }
 
 void sub_080882A8(FigurineDeviceEntity* this) {
-#ifdef EU
-    static const u8 gUnk_08120AB4[] = {
-        206, 79, 3, 2, 0, 208, 0, 6, 0, 13, 0, 2, 0, 0, 0, 0, 128, 240, 104, 56, 2, 0, 1, 0,
-    };
-    static const u8 gUnk_08120ACC[] = {
-        206, 79, 3, 2, 0, 208, 0, 6, 0, 13, 0, 2, 0, 0, 0, 0, 128, 240, 208, 59, 2, 0, 1, 0,
-    };
-#else
     static const u8 gUnk_08120AB4[] = {
         206, 79, 3, 2, 0, 208, 0, 6, 0, 13, 0, 2, 0, 0, 0, 0, 128, 240, 104, 136, 2, 0, 1, 0,
     };
     static const u8 gUnk_08120ACC[] = {
         206, 79, 3, 2, 0, 208, 0, 6, 0, 13, 0, 2, 0, 0, 0, 0, 128, 240, 208, 139, 2, 0, 1, 0,
     };
-#endif
     static const u16 gUnk_08120AE4[] = { TEXT_INDEX(TEXT_CARLOV, 0x18), TEXT_INDEX(TEXT_CARLOV, 0x19) };
     u8* ptr;
     sub_08050384();
@@ -728,9 +605,7 @@ void FigurineDevice_NoFigurinesLeftMessage(void) {
     if (isUnlucky) {
         gMessage.rupees = 5;
     }
-#ifndef EU
     gPlayerEntity.base.animationState = 6;
-#endif
 }
 
 void FigurineDevice_NothingNewToDrawMessage(void) {
@@ -765,11 +640,7 @@ void FigurineDevice_NewFigurinesMessage(void) {
 
 void FigurineDevice_TryAgainMessage(void) {
     u32 messageIndex;
-#ifdef EU
-    if (CheckRoomFlag(10)) {
-#else
     if (CheckRoomFlag(9)) {
-#endif
         if (CheckLocalFlag(SHOP07_COMPLETE)) {
             messageIndex = TEXT_INDEX(TEXT_CARLOV, 19); // ...already have all ... still want to have a try?
         } else {
@@ -801,21 +672,15 @@ void FigurineDevice_LostOrFinishedMessage(void) {
     ClearRoomFlag(7);
 }
 
-#ifndef EU
 void sub_0808861C(FigurineDeviceEntity* this, ScriptExecutionContext* context) {
     // If I understand this correctly then it checks if the player is at the lever
     context->condition = CheckPlayerInRegion(168, 84, 12, 8);
-#ifdef JP
-    if ((gPlayerEntity.base.animationState != 0)) {
-#else
     if ((gPlayerEntity.base.animationState != 0) || (gPlayerEntity.base.z.HALF.HI != 0)) {
-#endif
         context->condition = 0;
     }
     gActiveScriptInfo.flags |= 1;
 }
 
-#if !defined(JP)
 void sub_08088658(FigurineDeviceEntity* this, ScriptExecutionContext* context) {
     context->condition = CheckPlayerInRegion(120, 120, 16, 8); // And this is if the player is at the door
     if (gPlayerEntity.base.z.HALF.HI != 0) {
@@ -823,6 +688,4 @@ void sub_08088658(FigurineDeviceEntity* this, ScriptExecutionContext* context) {
     }
     gActiveScriptInfo.flags |= 1;
 }
-#endif
 
-#endif

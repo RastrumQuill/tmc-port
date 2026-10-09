@@ -23,15 +23,7 @@ gUnk_080B2A70:: @ 080B2A70
 
 unusedLabel_080B2AA8::
 @ TODO contains some pointers to iwram
-.ifdef EU
-	.incbin "data_080B2A70/unusedLabel_0B21D0_EU.bin"
-.else
-.ifdef DEMO_JP
-	.incbin "data_080B2A70/unusedLabel_0B21D0_1_DEMO_JP.bin"
-.else
 	.incbin "data_080B2A70/unusedLabel_0B21D0_2_USA-JP-DEMO_USA.bin"
-.endif
-.endif
 
 RAMFUNCS_END:: @ 080B2CD8
 

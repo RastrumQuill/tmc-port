@@ -520,13 +520,8 @@ const Transition gExitList_RoyalValley_Main[] = {
       1, TRANSITION_TYPE_NORMAL, 0x4, 0x0, 0x0, 0x0 },
     { WARP_TYPE_BORDER, 0x0, 0x0, 0x8, 0x50, TRANSITION_SHAPE_BORDER_EAST_SOUTH, AREA_HYRULE_FIELD, ROOM_HYRULE_FIELD_NORTH_HYRULE_FIELD,
       1, TRANSITION_TYPE_NORMAL, 0x2, 0x0, 0x0, 0x0 },
-#ifndef EU
     { WARP_TYPE_AREA, 0x78, 0x28c, 0x78, 0x18, TRANSITION_SHAPE_AREA_12x12, AREA_ROYAL_VALLEY, ROOM_ROYAL_VALLEY_FOREST_MAZE,
       1, TRANSITION_TYPE_NORMAL, 0x4, 0x0, 0x0, 0x0 },
-#else
-    { WARP_TYPE_AREA, 0x78, 0x288, 0x78, 0x18, TRANSITION_SHAPE_AREA_12x12, AREA_ROYAL_VALLEY, ROOM_ROYAL_VALLEY_FOREST_MAZE,
-      1, TRANSITION_TYPE_NORMAL, 0x4, 0x0, 0x0, 0x0 },
-#endif
     { WARP_TYPE_AREA, 0x78, 0x328, 0x78, 0x98, TRANSITION_SHAPE_AREA_12x12, AREA_ROYAL_VALLEY, ROOM_ROYAL_VALLEY_FOREST_MAZE,
       1, TRANSITION_TYPE_NORMAL, 0x0, 0x0, 0x0, 0x0 },
     TransitionListEnd,
@@ -2613,31 +2608,15 @@ const Transition gExitList_DeepwoodShrine_StairsToB1[] = {
     TransitionListEnd,
 };
 const Transition gExitList_DeepwoodShrine_BluePortal[] = {
-#ifdef EU
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0xfff, 0x38, TRANSITION_SHAPE_BORDER_SOUTH, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_BARREL,
-      1, TRANSITION_TYPE_NORMAL, 0x4, 0x0, 0x0, 0x0 },
-#endif
     TransitionListEnd,
 };
 const Transition gExitList_DeepwoodShrine_Map[] = {
-#ifdef EU
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0x18, 0xfff, TRANSITION_SHAPE_BORDER_EAST, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_BARREL,
-      1, TRANSITION_TYPE_NORMAL, 0x2, 0x0, 0x0, 0x0 },
-#endif
     TransitionListEnd,
 };
 const Transition gExitList_DeepwoodShrine_Button[] = {
-#ifdef EU
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0x1b8, 0xfff, TRANSITION_SHAPE_BORDER_WEST, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_BARREL,
-      1, TRANSITION_TYPE_NORMAL, 0x6, 0x0, 0x0, 0x0 },
-#endif
     TransitionListEnd,
 };
 const Transition gExitList_DeepwoodShrine_Lever[] = {
-#ifdef EU
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0xfff, 0x168, TRANSITION_SHAPE_BORDER_NORTH, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_BARREL,
-      1, TRANSITION_TYPE_NORMAL, 0x0, 0x0, 0x0, 0x0 },
-#endif
     TransitionListEnd,
 };
 const Transition gExitList_DeepwoodShrine_Barrel[] = {
@@ -2649,16 +2628,6 @@ const Transition gExitList_DeepwoodShrine_Barrel[] = {
       1, TRANSITION_TYPE_NORMAL, 0x0, 0x0, 0x0, 0x0 },
     { WARP_TYPE_AREA, 0x118, 0x108, 0xa0, 0x70, TRANSITION_SHAPE_AREA_12x12, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_INSIDE_BARREL,
       1, TRANSITION_TYPE_NORMAL, 0x0, 0x0, 0x0, 0x0 },
-#ifdef EU
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0xfff, 0xc8, TRANSITION_SHAPE_BORDER_NORTH, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_BLUE_PORTAL,
-      1, TRANSITION_TYPE_NORMAL, 0x0, 0x0, 0x0, 0x0 },
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0x28, 0xfff, TRANSITION_SHAPE_BORDER_EAST, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_BUTTON,
-      1, TRANSITION_TYPE_NORMAL, 0x2, 0x0, 0x0, 0x0 },
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0xfff, 0x38, TRANSITION_SHAPE_BORDER_SOUTH, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_LEVER,
-      1, TRANSITION_TYPE_NORMAL, 0x4, 0x0, 0x0, 0x0 },
-    { WARP_TYPE_BORDER, 0x0, 0x0, 0xe8, 0xfff, TRANSITION_SHAPE_BORDER_WEST, AREA_DEEPWOOD_SHRINE, ROOM_DEEPWOOD_SHRINE_MAP, 1,
-      TRANSITION_TYPE_NORMAL, 0x6, 0x0, 0x0, 0x0 },
-#endif
     TransitionListEnd,
 };
 const Transition gExitList_DeepwoodShrine_Entrance[] = {
@@ -3887,7 +3856,6 @@ const Transition* const* const gExitLists[] = {
     /*AREA_NULL_55*/ gExitLists_NoExit,
     /*AREA_NULL_56*/ gExitLists_NoExit,
     /*AREA_57*/ gExitLists_NoExit,
-#ifndef DEMO_USA
     /*AREA_FORTRESS_OF_WINDS*/ gExitLists_FortressOfWinds,
     /*AREA_FORTRESS_OF_WINDS_TOP*/ gExitLists_FortressOfWindsTop,
     /*AREA_INNER_MAZAAL*/ gExitLists_InnerMazaal,
@@ -3896,7 +3864,6 @@ const Transition* const* const gExitLists[] = {
     /*AREA_NULL_5D*/ gExitLists_NoExit,
     /*AREA_NULL_5E*/ gExitLists_NoExit,
     /*AREA_5F*/ gExitLists_NoExit,
-#endif
     /*AREA_TEMPLE_OF_DROPLETS*/ gExitLists_TempleOfDroplets,
     /*AREA_NULL_61*/ gExitLists_61,
     /*AREA_HYRULE_TOWN_MINISH_CAVES*/ gExitLists_HyruleTownMinishCaves,

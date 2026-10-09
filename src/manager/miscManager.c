@@ -20,9 +20,7 @@
 #include "tiles.h"
 #include "scroll.h"
 #include "subtask.h"
-#if defined(USA) || defined(DEMO_USA) || defined(DEMO_JP)
 #include "common.h"
-#endif
 
 void MiscManager_Type0(MiscManager*);
 void MiscManager_Type1(MiscManager*);
@@ -37,12 +35,8 @@ void MiscManager_TypeA(MiscManager*);
 void MiscManager_TypeB(MiscManager*);
 void MiscManager_TypeC(MiscManager*);
 void MiscManager_TypeD(MiscManager*);
-#ifndef EU
 void MiscManager_TypeE(MiscManager*);
-#endif
-#if defined(USA) || defined(DEMO_USA) || defined(DEMO_JP)
 void MiscManager_TypeF(MiscManager*);
-#endif
 
 // clang-format off
 void (*const MiscManager_Types[])(MiscManager*) = {
@@ -60,12 +54,8 @@ void (*const MiscManager_Types[])(MiscManager*) = {
     MiscManager_TypeB,
     MiscManager_TypeC,
     MiscManager_TypeD,
-#ifndef EU
     MiscManager_TypeE,
-#endif
-#if defined(USA) || defined(DEMO_USA) || defined(DEMO_JP)
     MiscManager_TypeF,
-#endif
 };
 // clang-format on
 
@@ -319,9 +309,7 @@ void MiscManager_Type9(MiscManager* this) {
         if (CheckFlags(this->flag2)) {
             sub_080592EC(this);
             sub_0805930C(this);
-#ifndef EU
             SoundReq(SFX_16E);
-#endif
             DeleteThisEntity();
         }
     }
@@ -333,11 +321,7 @@ void sub_080592EC(MiscManager* this) {
 
 void sub_0805930C(MiscManager* this) {
     Entity* tmp;
-#ifdef EU
-    tmp = CreateObject(SPECIAL_FX, FX_BIG_EXPLOSION2, 0x0);
-#else
     tmp = CreateObject(SPECIAL_FX, FX_BIG_EXPLOSION2, 0x40);
-#endif
     if (!tmp)
         return;
     tmp->x.HALF.HI = this->x + gRoomControls.origin_x;
@@ -408,7 +392,6 @@ void MiscManager_TypeD(MiscManager* this) {
     DeleteThisEntity();
 }
 
-#ifndef EU
 void MiscManager_TypeE(MiscManager* this) {
     switch (super->action) {
         case 0:
@@ -433,9 +416,7 @@ void MiscManager_TypeE(MiscManager* this) {
             }
     }
 }
-#endif
 
-#if defined(USA) || defined(DEMO_USA) || defined(DEMO_JP)
 void MiscManager_TypeF(MiscManager* this) {
     SetEntityPriority((Entity*)this, PRIO_PLAYER_EVENT);
     if (gPlayerEntity.base.action == PLAYER_TALKEZLO) {
@@ -443,4 +424,3 @@ void MiscManager_TypeF(MiscManager* this) {
     }
     gInput.heldKeys |= SELECT_BUTTON;
 }
-#endif

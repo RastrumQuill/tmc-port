@@ -79,7 +79,6 @@ void Subtask_FigurineMenu(void) {
         FigurineMenu1_Type2,
         FigurineMenu1_ExitMenu,
     };
-#if !(defined(DEMO_USA) || defined(DEMO_JP))
     FlushSprites();
     if (gUI.field_0x3 == 0xff) {
         figurineMenu0_Types[gMenu.menuType]();
@@ -93,7 +92,6 @@ void Subtask_FigurineMenu(void) {
     FigurineMenu_080A4978();
     CopyOAM();
     sub_080A4B44();
-#endif
 }
 
 void FigurineMenu_080A4608(void) {
@@ -304,11 +302,7 @@ typedef struct {
 
 extern const Figurine gFigurines[];
 
-#ifdef EU
-#define sub_080A4978_draw_constant 0x1fb
-#else
 #define sub_080A4978_draw_constant 0x1fc
-#endif
 void FigurineMenu_080A4978(void) {
     int r0, maxFigurines, r4, r6;
 

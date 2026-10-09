@@ -28,11 +28,7 @@ typedef enum {
     NUM_LANGUAGES,
 } Language;
 
-#ifdef ENGLISH
 #define GAME_LANGUAGE LANGUAGE_EN
-#else
-#define GAME_LANGUAGE LANGUAGE_JP
-#endif
 
 /** Program tasks. */
 typedef enum {
@@ -163,9 +159,6 @@ extern void GameOverTask(void);
 extern void StaffrollTask(void);
 extern void DebugTask(void);
 
-#ifdef DEMO_USA
-extern void DemoTask(void);
-#endif
 /// @}
 
 extern u8 gUnk_03003DE4[0xC];

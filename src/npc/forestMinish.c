@@ -196,7 +196,6 @@ const Dialog gUnk_08109DC8[][4] = {
           { TEXT_INDEX(TEXT_MINISH, 0x9), TEXT_INDEX(TEXT_MINISH, 0x5) } },
     },
     {
-#if defined(USA) || defined(DEMO_USA)
         { KINSTONE_3F,
           DIALOG_KINSTONE,
           DIALOG_CHECK_FLAG,
@@ -217,28 +216,6 @@ const Dialog gUnk_08109DC8[][4] = {
           DIALOG_CHECK_FLAG,
           1,
           { TEXT_INDEX(TEXT_MINISH, 0xe), TEXT_INDEX(TEXT_MINISH, 0xa) } },
-#else
-        { KINSTONE_22,
-          DIALOG_KINSTONE,
-          DIALOG_CHECK_FLAG,
-          1,
-          { TEXT_INDEX(TEXT_MINISH, 0xe), TEXT_INDEX(TEXT_MINISH, 0xa) } },
-        { KINSTONE_22,
-          DIALOG_KINSTONE,
-          DIALOG_CHECK_FLAG,
-          1,
-          { TEXT_INDEX(TEXT_MINISH, 0xe), TEXT_INDEX(TEXT_MINISH, 0xa) } },
-        { KINSTONE_22,
-          DIALOG_KINSTONE,
-          DIALOG_CHECK_FLAG,
-          1,
-          { TEXT_INDEX(TEXT_MINISH, 0xe), TEXT_INDEX(TEXT_MINISH, 0xa) } },
-        { KINSTONE_22,
-          DIALOG_KINSTONE,
-          DIALOG_CHECK_FLAG,
-          1,
-          { TEXT_INDEX(TEXT_MINISH, 0xe), TEXT_INDEX(TEXT_MINISH, 0xa) } },
-#endif
     },
     {
         { KINSTONE_2E,

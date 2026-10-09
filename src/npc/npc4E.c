@@ -255,9 +255,7 @@ const InteractCollisionData gNpc4ECollisionData[] = { //
     { 0, 0, 8, 8, 0x0E, 0, 0, 0 },   { 0, 0, 26, 8, 0x0E, 0, 0, 0 },  { 0, 0, 16, 4, 0x0E, 0, 0, 0 },
     { 0, 0, 10, 10, 0x00, 0, 0, 0 }, { 0, 0, 10, 10, 0x00, 0, 0, 0 }, { 0, 0, 6, 4, 0x0E, 0, 0, 0 },
     { 0, 8, 16, 4, 0x0E, 0, 0, 0 },  { 0, -8, 24, 8, 0x0E, 0, 0, 0 },
-#ifndef EU
     { 0, 0, 88, 8, 0x0E, 0, 0, 0 }
-#endif
 };
 
 // Array of pointers to Transition

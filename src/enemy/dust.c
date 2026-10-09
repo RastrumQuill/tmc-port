@@ -40,11 +40,7 @@ typedef struct {
 
 #define HEAP ((DustHeap*)super->myHeap)
 
-#ifdef EU
-#define DUST_SPRITE_INDEX 0x1ea
-#else
 #define DUST_SPRITE_INDEX 0x1eb
-#endif
 
 void Dust_OnTick(DustEntity*);
 void Dust_OnCollision(DustEntity*);

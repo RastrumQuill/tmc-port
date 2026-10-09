@@ -106,7 +106,6 @@ void Subtask_KinstoneMenu(void) {
         KinstoneMenu_Type0, KinstoneMenu_Type1, KinstoneMenu_Type2,
         KinstoneMenu_Type3, KinstoneMenu_Type4, KinstoneMenu_Type5,
     };
-#if !(defined(DEMO_USA) || defined(DEMO_JP))
     gRoomTransition.entity_update_type = 2;
     FlushSprites();
     kinstoneMenuTypes[gMenu.menuType]();
@@ -118,7 +117,6 @@ void Subtask_KinstoneMenu(void) {
     DrawEntities();
     CopyOAM();
     gRoomTransition.entity_update_type = 0;
-#endif
 }
 
 const u8 gUnk_081280DC[] = {
@@ -403,19 +401,11 @@ void KinstoneMenu_080A4080(void) {
     gOamCmd.y = 0x10 - gKinstoneMenu.unk2f;
     gOamCmd.x = 0x40;
     gOamCmd._8 = 0x400;
-#ifdef EU
-    DrawDirect(0x1fa, 0);
-#else
     DrawDirect(0x1fb, 0);
-#endif
     gOamCmd.y = 0x94;
     gOamCmd.x = 0x50;
     gOamCmd._8 = 0x480;
-#ifdef EU
-    t = 0x1f9;
-#else
     t = 0x1fa;
-#endif
     DrawDirect(t, 0);
     gOamCmd.x = 0xb8;
     gOamCmd._8 = 0x4a0;

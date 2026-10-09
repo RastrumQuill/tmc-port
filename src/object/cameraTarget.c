@@ -24,21 +24,12 @@ void CameraTarget_Init(Entity*);
 void CameraTarget_Action1(Entity*);
 void CameraTarget_Action2(Entity*);
 
-#ifdef EU
-static const s32 gUnk_0811F744[] = {
-    0x00027940,
-    0x00027B40,
-    0x00027D40,
-    0x00027F40,
-};
-#else
 static const s32 gUnk_0811F744[] = {
     0x00027980,
     0x00027B80,
     0x00027D80,
     0x00027F80,
 };
-#endif
 
 void CameraTarget(Entity* this) {
     static void (*const gUnk_0811F754[])(Entity*) = {
@@ -87,11 +78,7 @@ void CameraTarget_Init(Entity* this) {
     if (this->spriteAnimation[0] != 1) {
         LoadSwapGFX(this, 1, 1);
         this->spriteVramOffset -= 0x10;
-#ifdef EU
-        sub_080ADDD8(1, 0x10277e0);
-#else
         sub_080ADDD8(1, 0x1027820);
-#endif
         sub_080838DC(this);
     }
     this->action = 1;

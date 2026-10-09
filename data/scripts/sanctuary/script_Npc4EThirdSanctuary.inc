@@ -78,11 +78,9 @@ script_080138D0:
 	MessageFromTargetPos TEXT_ITEM_GET, 0x05, 0x000c
 	WaitUntilTextboxCloses
 	SetSyncFlag 0x00040000
-.ifndef EU
 	SetScrollSpeed 2
 	SetEntityPositionRelative 0x00e8, 0x00d8
 	CameraTargetEntity
-.endif
 	Call NPC4E_SaveEquippedItems
 	CallWithArg EquipItem, 0x00010001
 	CallWithArg SetPlayerMacro, gPlayerMacroSanctuary
@@ -90,9 +88,7 @@ script_080138D0:
 	CallWithArg SetPlayerMacro, 0
 	Call NPC4E_RestoreEquippedItems
 script_08013A8E:
-.ifndef EU
 	CheckRoomFlag 0x0004
 	JumpIfNot script_08013A8E
-.endif
 	CallWithArg CreateRepeatedSoundManager, 0x00000001
 	_0807F0C8 0xffff, 0x0000

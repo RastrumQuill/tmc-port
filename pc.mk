@@ -55,14 +55,8 @@ LIBS := $(SDL2_LIBS) -lm
 
 # ---- sources ----
 # Game objects in the same order as the GBA linker script (keeps data adjacency).
-LD_OBJS := $(shell grep -vE "\*\w+\.a" linker.ld | grep -oE "(\w|/)+\.o" | awk '!seen[$$0]++')
-# Hand written ARM assembly is replaced by C in port/src/asm.
-EXCLUDED_OBJS := asm/src/crt0.o asm/src/stack_check.o asm/src/veneer.o asm/src/code_08000E44.o \
-                 asm/lib/libgcc.o asm/src/code_08000F10.o asm/src/enemy.o asm/src/code_08001A7C.o \
-                 asm/src/code_08003FC4.o asm/src/code_080043E8.o asm/src/code_08007CAC.o asm/src/player.o \
-                 asm/src/script.o asm/src/projectileUpdate.o asm/src/intr.o asm/lib/libagbsyscall.o \
-                 asm/lib/m4a_asm.o src/eeprom.o
-GAME_OBJS := $(filter-out $(EXCLUDED_OBJS),$(LD_OBJS))
+# (The game's hand written ARM assembly is replaced by C in port/src/asm.)
+GAME_OBJS := $(shell grep -vE "\*\w+\.a" linker.ld | grep -oE "(\w|/)+\.o" | awk '!seen[$$0]++')
 GAME_C_OBJS := $(filter src/%,$(GAME_OBJS))
 GAME_S_OBJS := $(filter-out src/%,$(GAME_OBJS))
 

@@ -11,23 +11,8 @@
 #define room_flag(idx)              (idx & 0x3fff) | (2 << 14)
 #define room_flags(idx, length)     (idx & 0x3fff) | (2 << 14) | (((length - 1) & 0xf) << 6)
 
-@ define helper constants
-.ifdef JP
-EU_JP:
-.endif
-.ifdef DEMO_JP
-EU_JP:
+@ helper symbol of the decompilation (selected the USA and demo data); kept so the data layout stays the same
 USA_DEMOS:
-.endif
-.ifdef EU
-EU_JP:
-.endif
-.ifdef USA
-USA_DEMOS:
-.endif
-.ifdef DEMO_USA
-USA_DEMOS:
-.endif
 
 
 Area_MinishWoods:: @ 080D4150
@@ -1658,11 +1643,6 @@ Enemies_CrenelMinishPaths_CrenelWater:: @ 080D5A28
 	enemy_raw subtype=0x32, x=0xb8, y=0x178
 	enemy_raw subtype=0x32, x=0x48, y=0x128
 	enemy_raw subtype=0x32, x=0x88, y=0xc8
-.ifdef EU
-	enemy_raw subtype=0x21, x=0x38, y=0x1, paramB=0x652e0000
-	enemy_raw subtype=0x21, x=0xa8, y=0x1, paramA=0x1, paramB=0x652e0000
-	enemy_raw subtype=0x21, x=0x78, y=0x1, paramA=0x2, paramB=0x652e0000
-.endif
 	entity_list_end
 
 TileEntities_CrenelMinishPaths_CrenelWater:: @ 080D5A98
@@ -3552,18 +3532,10 @@ Entities_RoyalValley_Main_0:: @ 080D8FB8
 	object_raw subtype=0x3, x=0xd8, y=0x98, paramA=0x1, paramC=0x80000000
 	object_raw subtype=0x3, x=0xe8, y=0xa8, paramA=0x1, paramC=0x80010000
 	object_raw subtype=0x3, x=0x108, y=0xa8, paramA=0x1, paramC=0x80020000
-.ifdef EU_JP
-	manager subtype=0x11, paramC=0x88000054
-.else
 	manager subtype=0x11, paramC=0x88000056
-.endif
 	object_raw subtype=0x19, x=0x1a0, y=0x1a2, pool=0x4f, collision=1, paramA=0x1, paramB=0x3, paramC=script_GraveyardHouseDoor
 	npc_raw subtype=0x21, x=0x88, y=0x118, script=script_GhostBrothers
-.ifdef EU_JP
-	ezlo_hint x=0x38, y=0x4a, rx=0x1, ry=0x4, msg=0xb1d, flag=0x58
-.else
 	ezlo_hint x=0x38, y=0x4a, rx=0x1, ry=0x4, msg=0xb1d, flag=0x5a
-.endif
 	entity_list_end
 
 
@@ -3586,16 +3558,6 @@ gUnk_080D9108:: @ 080D9108
 	entity_list_end
 
 Entities_RoyalValley_Main_1:: @ 080D9128
-.ifdef EU_JP
-	object_raw subtype=0x71, x=0xf0, y=0x28, paramC=0x540000
-	object_raw subtype=0x71, x=0x58, y=0x88, paramA=0x1, paramB=0x1, paramC=0x560000
-	object_raw subtype=0x71, x=0x88, y=0xc8, paramA=0x1
-	object_raw subtype=0x71, x=0xc8, y=0xc8, paramA=0x1
-	object_raw subtype=0x71, x=0x108, y=0xc8, paramA=0x1
-	object_raw subtype=0x71, x=0x148, y=0xc8, paramA=0x1
-	object_raw subtype=0x71, x=0x188, y=0xc8, paramA=0x1
-	object_raw subtype=0x71, x=0xe8, y=0xf8, paramA=0x1, paramB=0x1, paramC=0x570000
-.else
 	object_raw subtype=0x71, x=0xf0, y=0x28, paramC=0x560000
 	object_raw subtype=0x71, x=0x58, y=0x88, paramA=0x1, paramB=0x1, paramC=0x580000
 	object_raw subtype=0x71, x=0x88, y=0xc8, paramA=0x1
@@ -3604,7 +3566,6 @@ Entities_RoyalValley_Main_1:: @ 080D9128
 	object_raw subtype=0x71, x=0x148, y=0xc8, paramA=0x1
 	object_raw subtype=0x71, x=0x188, y=0xc8, paramA=0x1
 	object_raw subtype=0x71, x=0xe8, y=0xf8, paramA=0x1, paramB=0x1, paramC=0x590000
-.endif
 	object_raw subtype=0x71, x=0x68, y=0x118, paramA=0x1
 	object_raw subtype=0x71, x=0xa8, y=0x118, paramA=0x1
 	object_raw subtype=0x71, x=0x128, y=0x118, paramA=0x1
@@ -3623,11 +3584,7 @@ Enemies_RoyalValley_Main:: @ 080D91E8
 
 TileEntities_RoyalValley_Main:: @ 080D9278
 	tile_entity type=0x9
-.ifdef EU_JP
-	tile_entity type=0x4, paramA=0x59, paramB=0x1, paramC=0x198, paramD=0x2a8
-.else
 	tile_entity type=0x4, paramA=0x5b, paramB=0x1, paramC=0x198, paramD=0x2a8
-.endif
 	tile_entity_list_end
 
 Room_RoyalValley_Main:: @ 080D9290
@@ -3659,11 +3616,7 @@ TileEntities_RoyalValley_ForestMaze:: @ 080D92E0
 	tile_entity_list_end
 
 gUnk_080D9328:: @ 080D9328
-.ifdef EU_JP
-	tile_entity type=0x2, paramA=0x5a, paramB=0xc83f, paramC=0x107
-.else
 	tile_entity type=0x2, paramA=0x5c, paramB=0xc83f, paramC=0x107
-.endif
 	tile_entity_list_end
 
 gUnk_080D9338:: @ 080D9338
@@ -3905,29 +3858,6 @@ Room_MinishRafters_Bakery:: @ 080D9AB8
 Entities_CastorWilds_Main_0:: @ 080D9AD8
 	object_raw subtype=0x5e, x=0x158, y=0xb8
 	object_raw subtype=0x5e, x=0x398, y=0x308
-.ifdef EU_JP
-	manager subtype=0x20, x=0x218, y=0x328, paramB=0x12182e00, paramC=0x161318
-	manager subtype=0x20, x=0x2b8, y=0x398, paramB=0x12a82e00, paramC=0x171398
-	object_raw subtype=0x69, x=0x68, y=0x380, pool=0x4f, paramC=script_CutsceneOrchestrator
-	npc_raw subtype=0x2b, x=0x28, y=0x3a8, paramA=0x1, script=script_CastorWildsStatueRock
-	npc_raw subtype=0x2b, x=0x40, y=0x354, script=script_CastorWildsStatueLeft
-	npc_raw subtype=0x2b, x=0x70, y=0x354, script=script_CastorWildsStatueMiddle
-	npc_raw subtype=0x2b, x=0xa0, y=0x354, script=script_CastorWildsStatueRight
-	object_raw subtype=0x71, x=0x38, y=0x2d8, paramA=0x1, paramB=0x1, paramC=0x200000
-	manager subtype=0x4
-	manager subtype=0x20, x=0x2b8, y=0x148, paramB=0x12b82e00, paramC=0x1f1158
-	manager subtype=0xe, pool=0x1f, paramA=0x10, paramC=0xc0000
-	ezlo_hint x=0x72, y=0x36, rx=0x2, ry=0xa, msg=0xb2e, flag=0x1b
-	ezlo_hint x=0x74, y=0x2a, rx=0x4, ry=0x5, msg=0xb2f, flag=0x1d
-	ezlo_hint x=0x2a, y=0x54, rx=0x4, ry=0x2, msg=0xb2f, flag=0x1d
-	ezlo_hint x=0x4c, y=0x6e, rx=0x4, ry=0x3, msg=0xb2f, flag=0x1d
-.ifndef EU
-	ezlo_hint x=0x30, y=0x12, rx=0x3, ry=0x4, msg=0xb2f, flag=0x1d
-.endif
-	object_raw subtype=0x0, x=0x3d8, y=0x268, collision=1, paramA=0x5c, paramB=0x86e, paramC=0x220000
-	object_raw subtype=0x0, x=0x3d8, y=0x288, collision=1, paramA=0x5c, paramB=0x86f, paramC=0x230000
-	object_raw subtype=0x0, x=0x3d8, y=0x2a8, collision=1, paramA=0x5c, paramB=0x870, paramC=0x240000
-.else
 	manager subtype=0x20, x=0x218, y=0x328, paramB=0x12182e00, paramC=0x151318
 	manager subtype=0x20, x=0x2b8, y=0x398, paramB=0x12a82e00, paramC=0x161398
 	object_raw subtype=0x69, x=0x68, y=0x380, pool=0x4f, paramC=script_CutsceneOrchestrator
@@ -3947,7 +3877,6 @@ Entities_CastorWilds_Main_0:: @ 080D9AD8
 	object_raw subtype=0x0, x=0x3d8, y=0x268, collision=1, paramA=0x5c, paramB=0x86e, paramC=0x200000
 	object_raw subtype=0x0, x=0x3d8, y=0x288, collision=1, paramA=0x5c, paramB=0x86f, paramC=0x210000
 	object_raw subtype=0x0, x=0x3d8, y=0x2a8, collision=1, paramA=0x5c, paramB=0x870, paramC=0x220000
-.endif
 	entity_list_end
 
 gUnk_080D9C38:: @ 080D9C38
@@ -3960,11 +3889,7 @@ gUnk_080D9C38:: @ 080D9C38
 	entity_list_end
 
 gUnk_additional_13_CastorWilds_Main:: @ 080D9CA8
-.ifdef EU_JP
-	ezlo_hint x=0x70, y=0x3c, rx=0x5, ry=0x7, msg=0xb66, flag=0x1c
-.else
 	ezlo_hint x=0x70, y=0x3c, rx=0x5, ry=0x7, msg=0xb66, flag=0x1b
-.endif
 	entity_list_end
 
 gUnk_080D9CC8:: @ 080D9CC8
@@ -4003,11 +3928,7 @@ gUnk_additional_10_CastorWilds_Main:: @ 080D9E28
 	entity_list_end
 
 TileEntities_CastorWilds_Main:: @ 080D9E58
-.ifdef EU_JP
-	tile_entity type=0x2, paramA=0xc, paramB=0x715c, paramC=0x6cd
-.else
 	tile_entity type=0x2, paramA=0x23, paramB=0x715c, paramC=0x6cd
-.endif
 	tile_entity_list_end
 
 gUnk_additional_8_CastorWilds_Main:: @ 080D9E68
@@ -4344,9 +4265,7 @@ Entities_GardenFountains_West_0:: @ 080DA534
 	object_raw subtype=0x40, x=0x78, y=0x38, paramA=0x60, paramB=0x1
 	object_raw subtype=0x40, x=0x68, y=0x48, paramA=0x60, paramB=0x1
 	object_raw subtype=0x40, x=0x98, y=0x48, paramA=0x60, paramB=0x1
-.ifndef EU_JP
 	manager subtype=0x1e, x=0x60, y=0x60, paramB=0x300030, paramC=0xc80000
-.endif
 	entity_list_end
 
 Enemies_GardenFountains_West:: @ 080DA584
@@ -6242,11 +6161,7 @@ Room_MelarisMine_Main:: @ 080DD31C
 	.4byte gUnk_additional_9_MelarisMine_Main
 
 Entities_CloudTops_House_0:: @ 080DD344
-.ifdef EU_JP
-	ezlo_hint x=0x38, y=0x2e, rx=0x5, ry=0x2, msg=0xb22, flag=0xd9
-.else
 	ezlo_hint x=0x38, y=0x2e, rx=0x5, ry=0x2, msg=0xb22, flag=0xdc
-.endif
 	entity_list_end
 
 gUnk_080DD364:: @ 080DD364
@@ -6277,16 +6192,6 @@ Room_CloudTops_House:: @ 080DD3EC
 	.4byte sub_StateChange_CloudTops_House
 
 Entities_CloudTops_Middle_0:: @ 080DD40C
-.ifdef EU_JP
-	object_raw subtype=0x0, x=0x38, y=0x28, collision=1, paramA=0x5c, paramB=0x773, paramC=0xe20000
-	object_raw subtype=0x0, x=0x3c8, y=0x38, collision=1, paramA=0x5c, paramB=0x76f, paramC=0xe30000
-	object_raw subtype=0x0, x=0x188, y=0x288, collision=1, paramA=0x5c, paramB=0x771, paramC=0xe40000
-	object_raw subtype=0x0, x=0x3c8, y=0x2b8, collision=1, paramA=0x5c, paramB=0x774, paramC=0xe50000
-	object_raw subtype=0x0, x=0x28, y=0x388, collision=1, paramA=0x5c, paramB=0x775, paramC=0xe60000
-	object_raw subtype=0x0, x=0x2e8, y=0x388, collision=1, paramA=0x5c, paramB=0x76e, paramC=0xe70000
-	object_raw subtype=0x0, x=0x3a8, y=0x378, collision=1, paramA=0x5c, paramB=0x772, paramC=0xe80000
-	ezlo_hint x=0x2a, y=0x2e, rx=0x10, ry=0x2, msg=0xb22, flag=0xda
-.else
 	object_raw subtype=0x0, x=0x38, y=0x28, collision=1, paramA=0x5c, paramB=0x773, paramC=0xe50000
 	object_raw subtype=0x0, x=0x3c8, y=0x38, collision=1, paramA=0x5c, paramB=0x76f, paramC=0xe60000
 	object_raw subtype=0x0, x=0x188, y=0x288, collision=1, paramA=0x5c, paramB=0x771, paramC=0xe70000
@@ -6295,7 +6200,6 @@ Entities_CloudTops_Middle_0:: @ 080DD40C
 	object_raw subtype=0x0, x=0x2e8, y=0x388, collision=1, paramA=0x5c, paramB=0x76e, paramC=0xea0000
 	object_raw subtype=0x0, x=0x3a8, y=0x378, collision=1, paramA=0x5c, paramB=0x772, paramC=0xeb0000
 	ezlo_hint x=0x2a, y=0x2e, rx=0x10, ry=0x2, msg=0xb22, flag=0xdd
-.endif
 	entity_list_end
 
 Entities_CloudTops_Middle_1:: @ 080DD49C
@@ -6340,15 +6244,6 @@ Enemies_CloudTops_Middle:: @ 080DD6BC
 	entity_list_end
 
 TileEntities_CloudTops_Middle:: @ 080DD6CC
-.ifdef EU_JP
-	tile_entity type=0x2, paramA=0xdb, paramB=0x655c, paramC=0x73b
-	tile_entity type=0x2, paramA=0xdc, paramB=0x675c, paramC=0xa94
-	tile_entity type=0x2, paramA=0xdd, paramB=0x675c, paramC=0x305
-	tile_entity type=0x2, paramA=0xde, paramB=0x323f, paramC=0x85
-	tile_entity type=0x2, paramA=0xdf, paramB=0x323f, paramC=0x89
-	tile_entity type=0x2, paramA=0xe0, paramB=0x323f, paramC=0xcc7
-	tile_entity type=0x2, paramA=0xe1, paramB=0x323f, paramC=0xaa1
-.else
 	tile_entity type=0x2, paramA=0xde, paramB=0x655c, paramC=0x73b
 	tile_entity type=0x2, paramA=0xdf, paramB=0x675c, paramC=0xa94
 	tile_entity type=0x2, paramA=0xe0, paramB=0x675c, paramC=0x305
@@ -6356,7 +6251,6 @@ TileEntities_CloudTops_Middle:: @ 080DD6CC
 	tile_entity type=0x2, paramA=0xe2, paramB=0x323f, paramC=0x89
 	tile_entity type=0x2, paramA=0xe3, paramB=0x323f, paramC=0xcc7
 	tile_entity type=0x2, paramA=0xe4, paramB=0x323f, paramC=0xaa1
-.endif
 	tile_entity_list_end
 
 Room_CloudTops_Middle:: @ 080DD70C
@@ -6382,26 +6276,15 @@ gUnk_080DD750:: @ 080DD750
 
 Entities_CloudTops_Bottom_0:: @ 080DD790
 	manager subtype=0x16, paramA=0x9, paramB=0x18
-.ifdef EU_JP
-	manager subtype=0x17, x=0x208, y=0x38, paramA=0x5c, paramB=0x10466, paramC=0xf000f1
-	manager subtype=0x17, x=0x238, y=0x2e8, paramA=0x5c, paramB=0x10466, paramC=0xf200f3
-	ezlo_hint x=0x30, y=0x3a, rx=0x2, ry=0x3, msg=0xb21, flag=0xea
-.else
 	manager subtype=0x17, x=0x208, y=0x38, paramA=0x5c, paramB=0x10466, paramC=0xf300f4
 	manager subtype=0x17, x=0x238, y=0x2e8, paramA=0x5c, paramB=0x10466, paramC=0xf500f6
 	ezlo_hint x=0x30, y=0x3a, rx=0x2, ry=0x3, msg=0xb21, flag=0xed
-.endif
 	entity_list_end
 
 gUnk_080DD7E0:: @ 080DD7E0
 	manager subtype=0xb, pool=0x0, paramB=0xa, paramC=0x80000000
-.ifdef EU_JP
-	object_raw subtype=0xa3, x=0x208, y=0x38, paramB=0xf0
-	manager subtype=0xe, pool=0x1f, paramA=0xc, paramC=0xf00000
-.else
 	object_raw subtype=0xa3, x=0x208, y=0x38, paramB=0xf3
 	manager subtype=0xe, pool=0x1f, paramA=0xc, paramC=0xf30000
-.endif
 	entity_list_end
 
 gUnk_additional_c_CloudTops_Bottom:: @ 080DD820
@@ -6409,17 +6292,10 @@ gUnk_additional_c_CloudTops_Bottom:: @ 080DD820
 	entity_list_end
 
 gUnk_080DD840:: @ 080DD840
-.ifdef EU_JP
-	manager subtype=0xb, pool=0x0, paramB=0xb, paramC=0x80080000
-	object_raw subtype=0xa3, x=0x238, y=0x2e8, paramB=0x8f2
-	manager subtype=0xe, pool=0x1f, paramA=0xd, paramC=0xf00000
-	entity_list_end
-.else
 	manager subtype=0xb, pool=0x0, paramB=0xb, paramC=0x80080000
 	object_raw subtype=0xa3, x=0x238, y=0x2e8, paramB=0x8f5
 	manager subtype=0xe, pool=0x1f, paramA=0xd, paramC=0xf30000
 	entity_list_end
-.endif
 
 gUnk_additional_d_CloudTops_Bottom:: @ 080DD880
 	object_raw subtype=0xf, x=0x268, y=0x2d8, paramA=0x43, paramB=0x40
@@ -6433,32 +6309,6 @@ Entities_CloudTops_Bottom_1:: @ 080DD8A0
 	entity_list_end
 
 gUnk_additional_8_CloudTops_Bottom:: @ 080DD8F0
-.ifdef EU
-	delayed_entity_raw subtype=0x5e, x=0x308, y=0x198, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x48, y=0x148, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x338, y=0x48, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x388, y=0x118, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0xe8, y=0x368, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x178, y=0x2c8, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x188, y=0x388, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x1e8, y=0x398, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x338, y=0x2e8, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x378, y=0x398, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x398, y=0x1a8, layer=1, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x248, y=0x48, layer=1, paramB=0x1, paramC=script_HiddenWhirlwind1, conditions=0xffff
-	delayed_entity_raw subtype=0x5e, x=0x268, y=0x2d8, layer=1, paramB=0x1, paramC=script_HiddenWhirlwind2, conditions=0xffff
-	delayed_entity_raw subtype=0x6a, x=0x3a8, y=0x40, layer=1, paramA=0x12, paramB=0x1, paramC=script_CutsceneMiscObjectMysteriousCloud, paramD=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x6a, x=0x138, y=0x2c0, layer=1, paramA=0x12, paramB=0x2, paramC=script_CutsceneMiscObjectMysteriousCloud, paramD=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x6a, x=0x48, y=0x30, layer=1, paramA=0x12, paramB=0x3, paramC=script_CutsceneMiscObjectMysteriousCloud, paramD=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x6a, x=0x2f8, y=0x1d0, layer=1, paramA=0x12, paramB=0x4, paramC=script_CutsceneMiscObjectMysteriousCloud, paramD=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0x6a, x=0x3a8, y=0x2d0, layer=1, paramA=0x12, paramB=0x5, paramC=script_CutsceneMiscObjectMysteriousCloud, paramD=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0xbe, x=0x228, y=0x1a0, layer=2, conditions=0xffff
-	delayed_entity_raw subtype=0xbe, x=0x1c8, y=0x1e0, layer=2, paramB=0x1, conditions=0xffff
-	delayed_entity_raw subtype=0xbe, x=0x1b8, y=0x1a0, layer=2, paramB=0x2, conditions=0xffff
-	delayed_entity_raw subtype=0xbe, x=0x218, y=0x1c0, layer=2, paramB=0x3, conditions=0xffff
-	delayed_entity_raw subtype=0xbe, x=0x228, y=0x1e0, layer=2, paramB=0x4, conditions=0xffff
-	entity_list_end
-.else
 	delayed_entity_raw subtype=0x5e, x=0x308, y=0x198, layer=1, paramB=0x1, conditions=0xffff
 	delayed_entity_raw subtype=0x5e, x=0x48, y=0x148, layer=1, paramB=0x1, conditions=0xffff
 	delayed_entity_raw subtype=0x5e, x=0x338, y=0x48, layer=1, paramB=0x1, conditions=0xffff
@@ -6483,7 +6333,6 @@ gUnk_additional_8_CloudTops_Bottom:: @ 080DD8F0
 	delayed_entity_raw subtype=0xbe, x=0x218, y=0x1c0, layer=2, paramB=0x3, conditions=0xffff
 	delayed_entity_raw subtype=0xbe, x=0x228, y=0x1e0, layer=2, paramB=0x4, conditions=0xffff
 	entity_list_end
-.endif
 
 gUnk_additional_9_CloudTops_Bottom:: @ 080DDA70
 	delayed_entity_raw subtype=0x4e, x=0x3a8, y=0x48, layer=1, paramA=0x1, paramC=script_Npc4EFirstCloud, conditions=0xffff
@@ -6534,11 +6383,7 @@ Room_CloudTops_Bottom:: @ 080DDBC8
 	.4byte gUnk_additional_d_CloudTops_Bottom
 
 Entities_Ruins_Entrance_0:: @ 080DDC00
-.ifdef EU_JP
-	manager subtype=0x20, x=0xb8, y=0x1e8, paramB=0x10a82e00, paramC=0x2611e8
-.else
 	manager subtype=0x20, x=0xb8, y=0x1e8, paramB=0x10a82e00, paramC=0x2511e8
-.endif
 	entity_list_end
 
 Entities_Ruins_Entrance_1:: @ 080DDC20
@@ -6557,11 +6402,7 @@ Enemies_Ruins_Entrance:: @ 080DDC50
 	entity_list_end
 
 TileEntities_Ruins_Entrance:: @ 080DDCD0
-.ifdef EU_JP
-	tile_entity type=0x4, paramA=0x27, paramB=0x1, paramC=0xc8, paramD=0x38
-.else
 	tile_entity type=0x4, paramA=0x26, paramB=0x1, paramC=0xc8, paramD=0x38
-.endif
 	tile_entity_list_end
 
 gUnk_additional_8_Ruins_Entrance:: @ 080DDCE0
@@ -6599,11 +6440,7 @@ Entities_Ruins_Beanstalk_0:: @ 080DDD74
 	entity_list_end
 
 Entities_Ruins_Beanstalk_1:: @ 080DDD84
-.ifdef EU_JP
-	object_raw subtype=0x2c, x=0x48, y=0x48, paramA=0x7, paramB=0xaf00
-.else
 	object_raw subtype=0x2c, x=0x48, y=0x48, paramA=0x7, paramB=0xb100
-.endif
 	manager subtype=0x6, paramA=0x8
 	entity_list_end
 
@@ -6636,15 +6473,9 @@ Room_Ruins_Beanstalk:: @ 080DDE20
 	.4byte gUnk_additional_9_Ruins_Beanstalk
 
 Entities_Ruins_TripleTektites_0:: @ 080DDE48
-.ifdef EU_JP
-	manager subtype=0xb, pool=0x0, paramB=0xa, paramC=0x280000
-	manager subtype=0x2e, pool=0x0, paramC=0x280000
-	manager subtype=0xf, x=0x58, y=0x28, paramA=0x9, paramC=0x280000
-.else
 	manager subtype=0xb, pool=0x0, paramB=0xa, paramC=0x270000
 	manager subtype=0x2e, pool=0x0, paramC=0x270000
 	manager subtype=0xf, x=0x58, y=0x28, paramA=0x9, paramC=0x270000
-.endif
 	entity_list_end
 
 gUnk_080DDE88:: @ 080DDE88
@@ -6712,11 +6543,7 @@ Room_Ruins_LadderToTektites:: @ 080DDFC8
 	.4byte sub_StateChange_Ruins_LadderToTektites
 
 Entities_Ruins_FortressEntrance_0:: @ 080DDFE8
-.ifdef EU_JP
-	manager subtype=0x20, x=0x88, y=0x58, paramB=0x10782e00, paramC=0x2b1058
-.else
 	manager subtype=0x20, x=0x88, y=0x58, paramB=0x10782e00, paramC=0x2a1058
-.endif
 	entity_list_end
 
 gUnk_080DE008:: @ 080DE008
@@ -6740,19 +6567,11 @@ Enemies_Ruins_FortressEntrance:: @ 080DE048
 	entity_list_end
 
 TileEntities_Ruins_FortressEntrance:: @ 080DE0E8
-.ifdef EU_JP
-	tile_entity type=0xa, paramA=0x1, paramB=0x2c, paramC=0x183, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x2d, paramC=0x204, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x2e, paramC=0x283, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x2f, paramC=0x2c8, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x30, paramC=0x344, paramD=0x1d
-.else
 	tile_entity type=0xa, paramA=0x1, paramB=0x2b, paramC=0x183, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x2c, paramC=0x204, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x2d, paramC=0x283, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x2e, paramC=0x2c8, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x2f, paramC=0x344, paramD=0x1d
-.endif
 	tile_entity_list_end
 
 gUnk_additional_8_Ruins_FortressEntrance:: @ 080DE118
@@ -6770,16 +6589,6 @@ Room_Ruins_FortressEntrance:: @ 080DE12C
 	.4byte gUnk_additional_8_Ruins_FortressEntrance
 
 Entities_Ruins_Armos_0:: @ 080DE150
-.ifdef EU_JP
-	manager subtype=0x2e, pool=0x0, paramB=0x3c00, paramC=0x800000f9
-	manager subtype=0x35, x=0x160, y=0x48, paramB=0x781400, paramC=0xf90031
-	manager subtype=0xf, x=0x158, y=0x48, paramA=0x9, paramC=0x310000
-	manager subtype=0xf, x=0x168, y=0x48, paramA=0x9, paramC=0x310000
-	manager subtype=0x2e, pool=0x0, paramB=0x3c00, paramC=0x800100fa
-	manager subtype=0x35, x=0x1c0, y=0x18, paramB=0x781400, paramC=0xfa0032
-	manager subtype=0xf, x=0x1b8, y=0x18, paramA=0x9, paramC=0x320000
-	manager subtype=0xf, x=0x1c8, y=0x18, paramA=0x9, paramC=0x320000
-.else
 	manager subtype=0x2e, pool=0x0, paramB=0x3c00, paramC=0x80000032
 	manager subtype=0x35, x=0x160, y=0x48, paramB=0x781400, paramC=0x320030
 	manager subtype=0xf, x=0x158, y=0x48, paramA=0x9, paramC=0x300000
@@ -6788,7 +6597,6 @@ Entities_Ruins_Armos_0:: @ 080DE150
 	manager subtype=0x35, x=0x1c0, y=0x18, paramB=0x781400, paramC=0x330031
 	manager subtype=0xf, x=0x1b8, y=0x18, paramA=0x9, paramC=0x310000
 	manager subtype=0xf, x=0x1c8, y=0x18, paramA=0x9, paramC=0x310000
-.endif
 	entity_list_end
 
 gUnk_080DE1E0:: @ 080DE1E0
@@ -6824,17 +6632,8 @@ gUnk_additional_e_Ruins_Armos:: @ 080DE2B0
 	entity_list_end
 
 TileEntities_Ruins_Armos:: @ 080DE320
-.ifdef EU_JP
-	.ifdef EU
-	tile_entity type=0x2, paramA=0x33, paramB=0x58, paramC=0x55
-	.else
-	tile_entity type=0x2, paramA=0x33, paramB=0x57, paramC=0x55
-	.endif
-	tile_entity type=0x2, paramA=0x34, paramB=0x323f, paramC=0x56
-.else
 	tile_entity type=0x2, paramA=0x34, paramB=0x57, paramC=0x55
 	tile_entity type=0x2, paramA=0x35, paramB=0x323f, paramC=0x56
-.endif
 	tile_entity_list_end
 
 gUnk_additional_8_Ruins_Armos:: @ 080DE338
@@ -7379,25 +7178,6 @@ Room_DeepwoodShrine_BossKey:: @ 080DF46C
 	.4byte sub_StateChange_DeepwoodShrine_BossKey
 
 Entities_DeepwoodShrine_Compass_0:: @ 080DF48C
-.ifdef EU_JP
-	object_raw subtype=0x3, x=0x48, y=0x48, paramA=0x1, paramC=0x430000
-	object_raw subtype=0xc, x=0x48, y=0x78, paramA=0x1, paramC=0x430000
-	object_raw subtype=0x5, x=0x38, y=0x38
-	object_raw subtype=0x5, x=0x38, y=0x48
-	object_raw subtype=0x5, x=0x38, y=0x58
-	object_raw subtype=0x5, x=0x48, y=0x38
-	object_raw subtype=0x5, x=0x48, y=0x58
-	object_raw subtype=0x5, x=0x58, y=0x38
-	object_raw subtype=0x5, x=0x58, y=0x58
-	manager subtype=0x20, x=0x58, y=0x48, paramB=0x10480500, paramC=0x431048
-	object_raw subtype=0xc, x=0x100, y=0x38, paramA=0x4, paramB=0x42
-	object_raw subtype=0x14, x=0xa8, y=0x88, paramA=0x1, paramB=0x40
-	manager subtype=0x1e, x=0xf0, y=0xd0, paramB=0x200040, paramC=0x440000
-	.ifdef DEMO_JP
-	ezlo_hint x=0x14, y=0x6, rx=0x3, ry=0x4, msg=0xb6f, flag=0x56, flag2=0x43
-	.endif
-	entity_list_end
-.else
 	object_raw subtype=0x3, x=0x48, y=0x48, paramA=0x1, paramC=0x430000
 	object_raw subtype=0xc, x=0x48, y=0x78, paramA=0x1, paramC=0x430000
 	object_raw subtype=0x5, x=0x38, y=0x38
@@ -7413,7 +7193,6 @@ Entities_DeepwoodShrine_Compass_0:: @ 080DF48C
 	manager subtype=0x1e, x=0xf0, y=0xd0, paramB=0x200040, paramC=0x440000
 	ezlo_hint x=0x14, y=0x6, rx=0x3, ry=0x4, msg=0xb6f, flag=0x56, flag2=0x43
 	entity_list_end
-.endif
 
 Enemies_DeepwoodShrine_Compass:: @ 080DF57C
 	enemy_raw subtype=0x11, x=0x78, y=0x78, paramB=0x1
@@ -7487,26 +7266,6 @@ Room_DeepwoodShrine_LilyPadWest:: @ 080DF70C
 	.4byte sub_StateChange_DeepwoodShrine_LilyPadWest
 
 Entities_DeepwoodShrine_LilyPadEast_0:: @ 080DF72C
-.ifdef EU_JP
-	manager subtype=0x20, x=0x48, y=0x18, paramB=0x20680500, paramC=0x442038
-	object_raw subtype=0x3, x=0x68, y=0x38, paramA=0x1, paramC=0x80000000
-	object_raw subtype=0x33, x=0xb8, y=0x48, paramC=0x80000000
-	object_raw subtype=0x33, x=0xc8, y=0x48, paramC=0x80000000
-	object_raw subtype=0x33, x=0xd8, y=0x48, paramC=0x80000000
-	object_raw subtype=0x33, x=0xe8, y=0x48, paramC=0x80000000
-	manager subtype=0x2e, pool=0x0, paramA=0x1, paramB=0xa00, paramC=0x80000000
-	object_raw subtype=0x5, x=0x18, y=0x18, paramA=0x5f
-	object_raw subtype=0x5, x=0x18, y=0x28, paramA=0x5f
-	object_raw subtype=0x5, x=0x18, y=0x38
-	object_raw subtype=0x5, x=0x28, y=0x18
-	object_raw subtype=0x5, x=0x28, y=0x28
-	object_raw subtype=0x5, x=0x28, y=0x38
-	object_raw subtype=0x5, x=0x38, y=0x18
-	object_raw subtype=0x5, x=0x38, y=0x28
-	.ifdef DEMO_JP
-	manager subtype=0x1e, x=0xb0, paramB=0x100040, paramC=0x560000
-	.endif
-.else
 	manager subtype=0x20, x=0x48, y=0x18, paramB=0x20680500, paramC=0x442038
 	object_raw subtype=0x3, x=0x68, y=0x38, paramA=0x1, paramC=0x80000000
 	object_raw subtype=0x33, x=0xb8, y=0x48, paramC=0x80000000
@@ -7523,7 +7282,6 @@ Entities_DeepwoodShrine_LilyPadEast_0:: @ 080DF72C
 	object_raw subtype=0x5, x=0x38, y=0x18
 	object_raw subtype=0x5, x=0x38, y=0x28
 	manager subtype=0x1e, x=0xb0, paramB=0x400040, paramC=0x560000
-.endif
 	entity_list_end
 	
 Enemies_DeepwoodShrine_LilyPadEast:: @ 080DF83C
@@ -9099,10 +8857,8 @@ Entities_FortressOfWinds_EntranceMoleMitts_0:: @ 080E2D84
 	enemy_raw subtype=0x43, x=0xc8, y=0x78, paramA=0x1
 	enemy_raw subtype=0x43, x=0xd8, y=0x78, paramA=0x1
 	enemy_raw subtype=0x43, x=0xc8, y=0x88, paramB=0x5e
-.ifdef USA_DEMOS
 	enemy_raw subtype=0x43, x=0x78, y=0x28
 	enemy_raw subtype=0x43, x=0x98, y=0x28
-.endif
 	entity_list_end
 
 Enemies_FortressOfWinds_EntranceMoleMitts:: @ 080E2E34
@@ -12745,20 +12501,6 @@ Room_PalaceOfWinds_SpikeBarSmallKey:: @ 080E9F20
 	.4byte gUnk_additional_a_PalaceOfWinds_SpikeBarSmallKey
 
 Entities_PalaceOfWinds_RocCape_0:: @ 080E9F4C
-.ifdef EU
-	manager subtype=0x19, pool=0x8
-	object_raw subtype=0x9d, x=0x128, y=0x168, paramC=0x800a0000
-	manager subtype=0x5, x=0x7, y=0x15, paramB=0x8, paramC=0x800a0001
-	manager subtype=0x5, x=0x17, y=0x12, paramB=0xe, paramC=0x800a0001
-	manager subtype=0x5, x=0xa, y=0x19, paramB=0x10d, paramC=0x800a0001
-	object_raw subtype=0x33, x=0x68, y=0x118, paramA=0x5, paramB=0x1, paramC=0x80000000
-	object_raw subtype=0x33, x=0x78, y=0x118, paramA=0x5, paramB=0x1, paramC=0x80000000
-	object_raw subtype=0x33, x=0x88, y=0x118, paramA=0x5, paramB=0x1, paramC=0x80000000
-	object_raw subtype=0xc, x=0x78, y=0xd8, paramA=0x2, paramB=0x74, paramC=0x700000
-	object_raw subtype=0x29, x=0x140, y=0xe0, paramA=0x8
-	manager subtype=0x2c, x=0x140, paramB=0x4012170, paramC=0xe00140
-	ezlo_hint x=0x26, y=0x1a, rx=0x4, ry=0x4, msg=0xb47, flag=0x75
-.else
 	object_raw subtype=0x29, x=0x140, y=0xe0, paramA=0x8
 	manager subtype=0x2c, x=0x140, paramB=0x4012170, paramC=0xe00140
 	manager subtype=0x19, pool=0x8
@@ -12771,7 +12513,6 @@ Entities_PalaceOfWinds_RocCape_0:: @ 080E9F4C
 	object_raw subtype=0x33, x=0x88, y=0x118, paramA=0x5, paramB=0x1, paramC=0x80000000
 	object_raw subtype=0xc, x=0x78, y=0xd8, paramA=0x2, paramB=0x74, paramC=0x700000
 	ezlo_hint x=0x26, y=0x1a, rx=0x4, ry=0x4, msg=0xb47, flag=0x75
-.endif
 	object_raw subtype=0x5, x=0x168, y=0xb8
 	object_raw subtype=0x5, x=0x178, y=0xb8, paramA=0x5e
 	enemy_raw subtype=0x43, x=0x68, y=0x188
@@ -13158,9 +12899,7 @@ Room_DarkHyruleCastleBridge_Main:: @ 080EAC40
 
 Entities_VaatisArms_First_0:: @ 080EAC60
 	enemy_raw subtype=0x25, x=0x98, y=0x68
-.ifdef USA_DEMOS
 	ezlo_hint type=0x3, x=0x0, y=0x0, rx=0x3f, ry=0x3f, msg=0xb0d, flag=0x0
-.endif
 	entity_list_end
 
 Enemies_VaatisArms_First:: @ 080EAC90
@@ -13181,9 +12920,7 @@ Room_VaatisArms_First:: @ 080EACA8
 
 Entities_VaatisArms_Second_0:: @ 080EACC8
 	enemy_raw subtype=0x25, x=0x98, y=0x68
-.ifdef USA_DEMOS
 	ezlo_hint type=0x3, x=0x0, y=0x0, rx=0x3f, ry=0x3f, msg=0xb0d, flag=0x0
-.endif
 	entity_list_end
 
 Enemies_VaatisArms_Second:: @ 080EACF8
@@ -13250,9 +12987,7 @@ gUnk_080EAE60:: @ 080EAE60
 	npc_raw subtype=0x15, x=0x68, y=0x118, paramB=0x24, script=script_GuardStone1
 	npc_raw subtype=0x15, x=0x88, y=0x180, paramB=0x25, script=script_GuardStone2
 	ezlo_hint x=0x4, y=0x1e, rx=0xd, ry=0x9, msg=0xb25, flag=0x85
-.ifndef EU
 	manager subtype=0xf, paramA=0xe
-.endif
 	entity_list_end
 
 gUnk_080EAEC0:: @ 080EAEC0
@@ -13673,12 +13408,10 @@ gUnk_080EB9F4:: @ 080EB9F4
 	manager subtype=0xb, pool=0x0, paramB=0x8, paramC=0x80028001
 	manager subtype=0x35, x=0xa8, y=0x28, paramB=0x3c1e00, paramC=0x80028003
 	object_raw subtype=0x8, x=0xa8, y=0x28, paramC=0x8003ffff
-.ifndef EU
 	object_raw subtype=0x5, x=0x38, y=0x38, paramA=0x5f
 	object_raw subtype=0x5, x=0x118, y=0x38, paramA=0x5f
 	object_raw subtype=0x5, x=0x38, y=0xc8, paramA=0x5f
 	object_raw subtype=0x5, x=0x118, y=0xc8, paramA=0x5f
-.endif
 	entity_list_end
 
 gUnk_080EBAA4:: @ 080EBAA4
@@ -13696,12 +13429,10 @@ gUnk_080EBAF4:: @ 080EBAF4
 
 Enemies_DarkHyruleCastle_3FTripleDarknut:: @ 080EBB34
 	enemy_raw subtype=0x4a, x=0xa8, y=0x58, paramB=0x10120000, paramC=0x380050
-.ifndef EU
 	object_raw subtype=0x5, x=0x38, y=0x38, paramA=0x5f
 	object_raw subtype=0x5, x=0x118, y=0x38, paramA=0x5f
 	object_raw subtype=0x5, x=0x38, y=0xc8, paramA=0x5e
 	object_raw subtype=0x5, x=0x118, y=0xc8, paramA=0x60
-.endif
 	ezlo_hint type=0x3, x=0x0, y=0x0, rx=0x3f, ry=0x3f, msg=0xb0b, flag=0x0
 	entity_list_end
 
@@ -15319,11 +15050,7 @@ Room_DarkHyruleCastle_B2Dropdown:: @ 080EE7EC
 
 Entities_HyruleTown_0_0:: @ 080EE80C
 	object_raw subtype=0x77, x=0x1f8, y=0x128
-.ifdef EU_JP
-	object_raw subtype=0x4c, x=0x138, y=0x138, collision=1, paramA=0x1, paramB=0xf001, paramC=0xc70000
-.else
 	object_raw subtype=0x4c, x=0x138, y=0x138, collision=1, paramA=0x1, paramB=0xf001, paramC=0xca0000
-.endif
 	enemy_raw subtype=0x41, x=0x388, y=0x3a8
 	object_raw subtype=0xb7, x=0x2f8, y=0x278
 	manager subtype=0x1a, pool=0x8, paramA=0x3c
@@ -15409,13 +15136,8 @@ Entities_HyruleTown_0_1:: @ 080EEADC
 	manager subtype=0x6, paramA=0xd
 	manager subtype=0x21, paramA=0xe
 	object_raw subtype=0x19, paramB=0xc00
-.ifdef EU_JP
-	object_raw subtype=0x38, x=0x170, y=0x3e, pool=0x0, paramA=0xc5
-	object_raw subtype=0x38, x=0x2b0, y=0x3e, pool=0x0, paramA=0xc6, paramB=0x1
-.else
 	object_raw subtype=0x38, x=0x170, y=0x3e, pool=0x0, paramA=0xc8
 	object_raw subtype=0x38, x=0x2b0, y=0x3e, pool=0x0, paramA=0xc9, paramB=0x1
-.endif
 	entity_list_end
 
 gUnk_080EEB6C:: @ 080EEB6C
@@ -15445,13 +15167,8 @@ Entities_HyruleTown_1_1:: @ 080EEC4C
 	manager subtype=0x13
 	object_raw subtype=0x19, paramB=0x800
 	object_raw subtype=0x77, x=0xc8, y=0x128
-.ifdef EU_JP
-	object_raw subtype=0x38, x=0x40, y=0x3e, pool=0x0, paramA=0xc5
-	object_raw subtype=0x38, x=0x180, y=0x3e, pool=0x0, paramA=0xc6, paramB=0x1
-.else
 	object_raw subtype=0x38, x=0x40, y=0x3e, pool=0x0, paramA=0xc8
 	object_raw subtype=0x38, x=0x180, y=0x3e, pool=0x0, paramA=0xc9, paramB=0x1
-.endif
 	entity_list_end 
 gUnk_080EECBC:: @ 080EECBC
 	enemy_raw subtype=0x53, x=0x220, y=0x250
@@ -15464,17 +15181,9 @@ TileEntities_HyruleTown_0:: @ 080EECDC
 	tile_entity type=0x5, paramB=0x800, paramC=0xbca, paramD=0x608
 	tile_entity type=0x5, paramB=0x1200, paramC=0x302, paramD=0x612
 	tile_entity type=0x5, paramB=0x100, paramC=0x18a, paramD=0x601
-.ifdef EU_JP
-.ifdef DEMO_JP
-	tile_entity type=0x5, paramB=0x2000, paramC=0x66b, paramD=0x620
-.endif
-	tile_entity type=0x2, paramA=0xc8, paramB=0x6f5c, paramC=0x836, paramD=0x1
-	tile_entity type=0x2, paramA=0xc9, paramB=0x6e5c, paramC=0x16d, paramD=0x1
-.else
 	tile_entity type=0x5, paramB=0x2000, paramC=0x66b, paramD=0x620
 	tile_entity type=0x2, paramA=0xcb, paramB=0x6f5c, paramC=0x836, paramD=0x1
 	tile_entity type=0x2, paramA=0xcc, paramB=0x6e5c, paramC=0x16d, paramD=0x1
-.endif
 	tile_entity_list_end
 
 gUnk_080EED2C:: @ 080EED2C
@@ -16075,11 +15784,7 @@ Enemies_HyruleTownMinishCaves_WestChest:: @ 080F00D4
 	entity_list_end
 
 TileEntities_HyruleTownMinishCaves_WestChest:: @ 080F00E4
-.ifdef EU
-	tile_entity type=0x2, paramA=0x10, paramB=0x59, paramC=0x1c7
-.else
 	tile_entity type=0x2, paramA=0x10, paramB=0x58, paramC=0x1c7
-.endif
 	tile_entity_list_end
 
 Room_HyruleTownMinishCaves_WestChest:: @ 080F00F4
@@ -16097,9 +15802,7 @@ Entities_HyruleTownMinishCaves_Flippers_0:: @ 080F0114
 	manager subtype=0x1e, x=0x90, y=0x70, paramB=0x400090, paramC=0x110000
 	manager subtype=0xb, pool=0x0, paramB=0x8, paramC=0x120011
 	object_raw subtype=0xc, x=0xd8, y=0x28, paramA=0x2, paramB=0x14, paramC=0x120000
-.ifndef EU
 	ezlo_hint x=0x12, y=0xa, rx=0x9, ry=0x4, msg=0xb6d, flag=0xc7, flag2=0x14
-.endif
 	object_raw subtype=0x0, x=0x60, y=0x28, collision=1, paramA=0x57, paramB=0x800, paramC=0x130000
 	entity_list_end
 
@@ -16299,11 +16002,7 @@ Room_HyruleTownUnderground_Well:: @ 080F0610
 	.4byte sub_StateChange_HyruleTownUnderground_Well
 
 Entities_CastleGarden_Main_0:: @ 080F0630
-.ifdef EU_JP
-	ezlo_hint x=0x3c, y=0x6, rx=0x3, ry=0x1, msg=0xb58, flag=0x14
-.else
 	ezlo_hint x=0x3c, y=0x6, rx=0x3, ry=0x1, msg=0xb58, flag=0x13
-.endif
 	entity_list_end
 
 gUnk_080F0650:: @ 080F0650
@@ -16375,48 +16074,22 @@ gUnk_080F0920:: @ 080F0920
 
 Entities_CastleGarden_Main_1:: @ 080F0940
 	manager subtype=0x6, paramA=0x8
-.ifdef EU_JP
-	object_raw subtype=0x57, x=0x68, y=0x68, paramC=0xd0000
-	object_raw subtype=0x57, x=0x3a8, y=0x178, paramC=0xf0000
-	object_raw subtype=0x9c, x=0x348, y=0xe0, paramC=0x100000
-.else
 	object_raw subtype=0x57, x=0x68, y=0x68, paramC=0xc0000
 	object_raw subtype=0x57, x=0x3a8, y=0x178, paramC=0xe0000
 	object_raw subtype=0x9c, x=0x348, y=0xe0, paramC=0xf0000
-.endif
 	manager subtype=0x3, x=0x348, y=0xf0, pool=0x0, paramB=0x102
 	entity_list_end
 
 gUnk_080F09A0:: @ 080F09A0
-.ifdef JP
-    @ TODO only small differences
-	.incbin "data_080D5360/gUnk_080F09A0_JP.bin"
-.else
-.ifdef DEMO_JP
-    @ TODO only small differences
-	.incbin "data_080D5360/gUnk_080F09A0_1_DEMO_JP.bin"
-.else
-.ifdef EU
-	.incbin "data_080D5360/gUnk_080F09A0_2_EU.bin"
-.else
 	.incbin "data_080D5360/gUnk_080F09A0_3_USA-DEMO_USA.bin"
-.endif
-.endif
-.endif
 
 Enemies_CastleGarden_Main:: @ 080F0A00
 	entity_list_end
 
 TileEntities_CastleGarden_Main:: @ 080F0A10
-.ifdef EU_JP
-	tile_entity type=0xa, paramA=0x1, paramB=0xe, paramC=0x179, paramD=0x168
-	tile_entity type=0x2, paramA=0x12, paramB=0x643f, paramC=0x782
-	tile_entity type=0x2, paramA=0x13, paramB=0x59, paramC=0x78a
-.else
 	tile_entity type=0xa, paramA=0x1, paramB=0xd, paramC=0x179, paramD=0x168
 	tile_entity type=0x2, paramA=0x11, paramB=0x643f, paramC=0x782
 	tile_entity type=0x2, paramA=0x12, paramB=0x59, paramC=0x78a
-.endif
 	tile_entity_list_end
 
 gUnk_additional_8_CastleGarden_Main:: @ 080F0A30
@@ -17176,9 +16849,7 @@ Entities_HouseInteriors2_Cucco_0:: @ 080F2B9C
 	enemy_raw subtype=0xc, x=0x88, y=0x50
 	enemy_raw subtype=0xc, x=0x70, y=0x70
 	enemy_raw subtype=0xc, x=0xa0, y=0x40
-.ifndef EU_JP
 	manager subtype=0x1e, x=0x10, y=0x40, paramB=0x300030, paramC=0xd20000
-.endif
 	entity_list_end
 
 	npc_raw subtype=0x45, x=0x98, y=0x38, script=script_AnjuInside
@@ -17783,11 +17454,7 @@ Entities_LakeHylia_Beanstalk_0:: @ 080F40AC
 	entity_list_end
 
 Entities_LakeHylia_Beanstalk_1:: @ 080F40BC
-.ifdef EU_JP
-	object_raw subtype=0x2c, x=0x228, y=0x58, paramA=0x7, paramB=0xae00
-.else
 	object_raw subtype=0x2c, x=0x228, y=0x58, paramA=0x7, paramB=0xb000
-.endif
 	manager subtype=0x6, paramA=0x8
 	entity_list_end
 
@@ -18229,25 +17896,8 @@ Room_OuterFortressOfWinds_SmallKey:: @ 080F4CDC
 Entities_MinishWoods_Main_0:: @ 080F4D00
 	object_minish_lilypad x=0x1F8, y=0x3D8, room_property=0x12
 	object_minish_lilypad x=0x1A8, y=0x3B8, room_property=0x13
-.ifdef JP
-	object_item x=0xC8, y=0x134, item=0x63, flag=0x3B, collision=1
-	object_item x=0x198, y=0x2B4, item=0x63, flag=0x3C, collision=1
-.else
-.ifdef EU
-	object_item x=0xC8, y=0x134, item=0x63, flag=0x3B, collision=1
-	object_item x=0x198, y=0x2B4, item=0x63, flag=0x3C, collision=1
-.else
-.ifdef DEMO_JP
-	object_item x=0xC8, y=0x134, item=0x63, flag=0x3B, collision=1
-	object_item x=0x198, y=0x2B4, item=0x63, flag=0x3C, collision=1
-	object_raw subtype=0x2e, x=0x198, y=0x338
-	object_raw subtype=0x2e, x=0x368, y=0x3b8
-.else
 	object_item x=0xC8, y=0x134, item=0x63, flag=0x3C, collision=1
 	object_item x=0x198, y=0x2B4, item=0x63, flag=0x3D, collision=1
-.endif
-.endif
-.endif
 	entity_list_end
 
 gUnk_080F4D50:: @ 080F4D50
@@ -18366,19 +18016,6 @@ gUnk_additional_10_MinishWoods_Main:: @ 080F51F0
 	.incbin "data_080D5360/gUnk_additional_10_MinishWoods_Main.bin"
 
 TileEntities_MinishWoods_Main:: @ 080F5220
-.ifdef EU_JP
-	tile_entity type=0xa, paramA=0x1, paramB=0x35, paramC=0x80a, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x36, paramC=0x80b, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x37, paramC=0xd83, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x38, paramC=0xd84, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x39, paramC=0xd85, paramD=0x1d
-	tile_entity type=0x5, paramB=0x500, paramC=0x16a, paramD=0x605
-.ifdef DEMO_JP
-	tile_entity type=0x5, paramB=0x1f00, paramC=0x3db, paramD=0x61f
-.else
-	tile_entity type=0x5, paramB=0x1700, paramC=0x3db, paramD=0x617
-.endif
-.else
 	tile_entity type=0xa, paramA=0x1, paramB=0x36, paramC=0x80a, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x37, paramC=0x80b, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x38, paramC=0xd83, paramD=0x1d
@@ -18386,7 +18023,6 @@ TileEntities_MinishWoods_Main:: @ 080F5220
 	tile_entity type=0xa, paramA=0x1, paramB=0x3a, paramC=0xd85, paramD=0x1d
 	tile_entity type=0x5, paramB=0x500, paramC=0x16a, paramD=0x605
 	tile_entity type=0x5, paramB=0x1f00, paramC=0x3db, paramD=0x61f
-.endif
 	tile_entity_list_end
 
 Room_MinishWoods_Main:: @ 080F5260
@@ -18469,9 +18105,7 @@ Room_SanctuaryEntrance_Main:: @ 080F53C0
 
 Entities_Sanctuary_Hall_0:: @ 080F53E0
 	object_raw subtype=0x3e, x=0xc8, y=0x200, paramA=0x8, paramB=0x1
-.ifndef EU
 	manager subtype=0xf, paramA=0xe
-.endif
 	entity_list_end
 
 Enemies_Sanctuary_Hall:: @ 080F5410
@@ -18499,9 +18133,7 @@ Entities_Sanctuary_Main_0:: @ 080F5448
 	object_raw subtype=0x3, x=0xc8, y=0x228, paramA=0x1, paramC=0x80010000
 	object_raw subtype=0x3, x=0x108, y=0x228, paramA=0x1, paramC=0x80020000
 	manager subtype=0x11, paramC=0x84018000
-.ifndef EU
 	manager subtype=0xf, paramA=0xe
-.endif
 	entity_list_end
 
 gUnk_080F54E8:: @ 080F54E8
@@ -18554,10 +18186,8 @@ Room_Sanctuary_Main:: @ 080F5610
 	.4byte sub_StateChange_Sanctuary_Main
 
 Entities_Sanctuary_StainedGlass_0:: @ 080F5630
-.ifndef EU
 	npc_raw subtype=0x4e, x=0x98, y=0x38, script=script_Npc4ELookAtPictureAgain
 	manager subtype=0xf, paramA=0xe
-.endif
 	entity_list_end
 
 gUnk_080F5660:: @ 080F5660
@@ -18635,11 +18265,9 @@ gUnk_080F5888:: @ 080F5888
 	object_raw subtype=0x2, x=0x64, y=0x40, paramA=0xb
 	entity_list_end
 
-.ifndef EU
 gUnk_080F58A8:: @ 080F58A8
 	object_raw subtype=0x2, x=0x64, y=0x40, paramA=0x65
 	entity_list_end
-.endif
 
 Entities_HouseInteriors3_StockwellShop_1:: @ 080F58C8
 	object_raw subtype=0x4f, x=0x78, y=0xc8, paramA=0x2, paramB=0x2
@@ -18727,10 +18355,8 @@ Entities_HouseInteriors3_RemShoeShop_0:: @ 080F5B0C
 	entity_list_end
 
 gUnk_080F5B3C:: @ 080F5B3C
-.ifndef EU
 	ezlo_hint x=0x10, y=0x2, rx=0x2, ry=0x8, msg=0xb6e, flag=0xce
 	entity_list_end
-.endif
 
 Entities_HouseInteriors3_RemShoeShop_1:: @ 080F5B5C
 	object_raw subtype=0x4f, x=0xe8, y=0x58, paramA=0x2, paramB=0x1
@@ -18745,10 +18371,6 @@ Enemies_HouseInteriors3_RemShoeShop:: @ 080F5BAC
 TileEntities_HouseInteriors3_RemShoeShop:: @ 080F5BBC
 	tile_entity_list_end
 
-.ifdef EU
-gUnk_080F5168::
-	.incbin "data_080D5360/gUnk_080F5168_EU.bin"
-.endif
 
 gUnk_additional_8_HouseInteriors3_RemShoeShop:: @ 080F5BC4
 	exit_region_raw centerX=0x74, centerY=0x58, halfWidth=0x4, halfHeight=0x4, exitIndex=0x9, bitfield=0x1
@@ -18768,9 +18390,6 @@ Room_HouseInteriors3_RemShoeShop:: @ 080F5BE8
 	.4byte sub_StateChange_HouseInteriors3_RemShoeShop
 	.4byte gUnk_additional_8_HouseInteriors3_RemShoeShop
 	.4byte gUnk_additional_9_HouseInteriors3_RemShoeShop
-.ifdef EU
-	.4byte gUnk_080F5168
-.endif
 
 Entities_HouseInteriors3_Bakery_0:: @ 080F5C10
 	npc_raw subtype=0xd, x=0xa8, y=0x5c, script=script_Wheaton
@@ -19483,22 +19102,14 @@ Entities_HyruleField_WesternWoodSouth_0:: @ 080F6F1C
 	entity_list_end
 
 Entities_HyruleField_WesternWoodSouth_1:: @ 080F6F2C
-.ifdef EU_JP
-	object_raw subtype=0x2c, x=0x38, y=0x38, paramA=0x7, paramB=0xb100
-.else
 	object_raw subtype=0x2c, x=0x38, y=0x38, paramA=0x7, paramB=0xb300
-.endif
 	manager subtype=0x18
 	manager subtype=0x3, x=0x78, y=0x80, pool=0x0, paramB=0x102
 	manager subtype=0x6, paramA=0x8
 	entity_list_end
 
 Enemies_HyruleField_WesternWoodSouth:: @ 080F6F7C
-.ifdef EU
-	enemy_raw subtype=0x15, x=0x38, y=0x58, paramB=0xe180000, paramC=0x200010
-.else
 	enemy_raw subtype=0x46, x=0x38, y=0x58, paramB=0xe180000, paramC=0x200010
-.endif
 	enemy_raw subtype=0x46, x=0x148, y=0x68, paramB=0xe140000, paramC=0x200110
 	enemy_raw subtype=0x65, x=0x180, y=0x70
 	entity_list_end
@@ -19550,11 +19161,7 @@ gUnk_080F70D8:: @ 080F70D8
 
 Entities_HyruleField_SouthHyruleField_1:: @ 080F70F8
 	object_raw subtype=0x19, x=0x290, y=0x193, collision=1, paramA=0x3, paramB=0x2
-.ifdef EU_JP
-	object_raw subtype=0x9c, x=0x58, y=0x210, paramC=0x6a0000
-.else	
 	object_raw subtype=0x9c, x=0x58, y=0x210, paramC=0x6c0000
-.endif
 	manager subtype=0x3, x=0x58, y=0x220, pool=0x0, paramB=0x102
 	manager subtype=0x18
 	object_raw subtype=0x2d, x=0x2d0, y=0x148
@@ -19576,22 +19183,6 @@ Enemies_HyruleField_SouthHyruleField:: @ 080F7158
 
 TileEntities_HyruleField_SouthHyruleField:: @ 080F7218
 	tile_entity type=0xc, paramA=0xb
-.ifdef EU_JP
-	tile_entity type=0x4, paramA=0x69, paramB=0x1, paramC=0x118, paramD=0xa8
-	tile_entity type=0xa, paramA=0x1, paramB=0x5c, paramC=0x151, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x5d, paramC=0x190, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x5e, paramC=0x1d1, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x5f, paramC=0x99a, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x60, paramC=0x9d9, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x61, paramC=0xa1a, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x62, paramC=0x8ee, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x63, paramC=0x92f, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x64, paramC=0x96e, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x65, paramC=0x164, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x66, paramC=0x1a5, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x67, paramC=0x1e4, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x68, paramC=0x1e5, paramD=0x1f
-.else
 	tile_entity type=0x4, paramA=0x6b, paramB=0x1, paramC=0x118, paramD=0xa8
 	tile_entity type=0xa, paramA=0x1, paramB=0x5e, paramC=0x151, paramD=0x1f
 	tile_entity type=0xa, paramA=0x1, paramB=0x5f, paramC=0x190, paramD=0x1f
@@ -19606,7 +19197,6 @@ TileEntities_HyruleField_SouthHyruleField:: @ 080F7218
 	tile_entity type=0xa, paramA=0x1, paramB=0x68, paramC=0x1a5, paramD=0x1f
 	tile_entity type=0xa, paramA=0x1, paramB=0x69, paramC=0x1e4, paramD=0x1f
 	tile_entity type=0xa, paramA=0x1, paramB=0x6a, paramC=0x1e5, paramD=0x1f
-.endif
 	tile_entity type=0x5, paramB=0x700, paramC=0x15c, paramD=0x607
 	tile_entity_list_end
 
@@ -19646,13 +19236,8 @@ Enemies_HyruleField_EasternHillsSouth:: @ 080F734C
 
 TileEntities_HyruleField_EasternHillsSouth:: @ 080F738C
 	tile_entity type=0xc, paramA=0xf
-.ifdef EU_JP
-	tile_entity type=0xa, paramA=0x1, paramB=0x6c, paramC=0x149, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x6d, paramC=0x14a, paramD=0x1d
-.else
 	tile_entity type=0xa, paramA=0x1, paramB=0x6e, paramC=0x149, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x6f, paramC=0x14a, paramD=0x1d
-.endif
 	tile_entity_list_end
 
 Room_HyruleField_EasternHillsSouth:: @ 080F73AC
@@ -19669,11 +19254,7 @@ Entities_HyruleField_EasternHillsCenter_0:: @ 080F73CC
 	entity_list_end
 
 Entities_HyruleField_EasternHillsCenter_1:: @ 080F73DC
-.ifdef EU_JP
-	object_raw subtype=0x2c, x=0x48, y=0x38, paramA=0x7, paramB=0xb000
-.else
 	object_raw subtype=0x2c, x=0x48, y=0x38, paramA=0x7, paramB=0xb200
-.endif
 	manager subtype=0x18
 	manager subtype=0x6, paramA=0x8
 	entity_list_end
@@ -19689,11 +19270,7 @@ Enemies_HyruleField_EasternHillsCenter:: @ 080F741C
 
 TileEntities_HyruleField_EasternHillsCenter:: @ 080F748C
 	tile_entity type=0xc, paramA=0xf
-.ifdef EU_JP
-	tile_entity type=0x4, paramA=0x6e, paramB=0x1, paramC=0xa8, paramD=0x98
-.else
 	tile_entity type=0x4, paramA=0x70, paramB=0x1, paramC=0xa8, paramD=0x98
-.endif
 	tile_entity_list_end
 
 gUnk_additional_8_HyruleField_EasternHillsCenter:: @ 080F74A4
@@ -19759,17 +19336,10 @@ gUnk_080F7680:: @ 080F7680
 
 TileEntities_HyruleField_EasternHillsNorth:: @ 080F76C0
 	tile_entity type=0xc, paramA=0xf
-.ifdef EU_JP
-	tile_entity type=0xa, paramA=0x1, paramB=0x6f, paramC=0x6d0, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x70, paramC=0x710, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x71, paramC=0x711, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x72, paramC=0x751, paramD=0x1d
-.else
 	tile_entity type=0xa, paramA=0x1, paramB=0x71, paramC=0x6d0, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x72, paramC=0x710, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x73, paramC=0x711, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x74, paramC=0x751, paramD=0x1d
-.endif
 	tile_entity type=0x5, paramB=0x200, paramC=0x617, paramD=0x602
 	tile_entity_list_end
 
@@ -19787,15 +19357,9 @@ Room_HyruleField_EasternHillsNorth:: @ 080F76F8
 
 Entities_HyruleField_LonLonRanch_0:: @ 080F7720
 	manager subtype=0x16, paramA=0xb
-.ifdef EU_JP
-	object_raw subtype=0x0, x=0x218, y=0x74, collision=1, paramA=0x63, paramB=0x400, paramC=0x7c0000
-	object_raw subtype=0x0, x=0x138, y=0x108, collision=1, paramA=0x57, paramB=0x700, paramC=0x7d0000
-	ezlo_hint x=0x2c, y=0x36, rx=0x3, ry=0x2, msg=0xb59, flag=0x7e
-.else
 	object_raw subtype=0x0, x=0x218, y=0x74, collision=1, paramA=0x63, paramB=0x400, paramC=0x7e0000
 	object_raw subtype=0x0, x=0x138, y=0x108, collision=1, paramA=0x57, paramB=0x700, paramC=0x7f0000
 	ezlo_hint x=0x2c, y=0x36, rx=0x3, ry=0x2, msg=0xb59, flag=0x80
-.endif
 	entity_list_end
 
 gUnk_additional_b_HyruleField_LonLonRanch:: @ 080F7770
@@ -19832,11 +19396,7 @@ gUnk_additional_d_HyruleField_LonLonRanch:: @ 080F7880
 	entity_list_end
 
 gUnk_080F78A0:: @ 080F78A0
-.ifdef EU
-	manager subtype=0x16, paramA=0x12, paramB=0xe
-.else
 	manager subtype=0x16, paramA=0x12, paramB=0xf
-.endif
 	entity_list_end
 
 gUnk_additional_12_HyruleField_LonLonRanch:: @ 080F78C0
@@ -19845,17 +19405,6 @@ gUnk_additional_12_HyruleField_LonLonRanch:: @ 080F78C0
 
 Entities_HyruleField_LonLonRanch_1:: @ 080F78E0
 	manager subtype=0x16, paramA=0xe, paramB=0x10a
-.ifdef EU_JP
-	manager subtype=0x20, x=0xb8, y=0xc8, paramB=0x10a82e00, paramC=0x7810c8
-	manager subtype=0x20, x=0x1e8, y=0x388, paramB=0x11d82e00, paramC=0x791388
-	manager subtype=0x20, x=0xd8, y=0x388, paramB=0x10e82e00, paramC=0x7a1388
-	manager subtype=0x6, paramA=0x8
-	object_raw subtype=0x4e, x=0x13c, y=0x278, collision=1, paramB=0xa00
-	object_raw subtype=0x4e, x=0x1b4, y=0x278, collision=1, paramB=0x1000
-	manager subtype=0x3, x=0x158, y=0x220, pool=0x0, paramB=0x103
-	manager subtype=0x3, x=0x118, y=0x30, pool=0x0, paramB=0x101
-	object_raw subtype=0x9c, x=0x138, y=0x160, paramC=0x7b0000
-.else
 	manager subtype=0x20, x=0xb8, y=0xc8, paramB=0x10a82e00, paramC=0x7a10c8
 	manager subtype=0x20, x=0x1e8, y=0x388, paramB=0x11d82e00, paramC=0x7b1388
 	manager subtype=0x20, x=0xd8, y=0x388, paramB=0x10e82e00, paramC=0x7c1388
@@ -19865,7 +19414,6 @@ Entities_HyruleField_LonLonRanch_1:: @ 080F78E0
 	manager subtype=0x3, x=0x158, y=0x220, pool=0x0, paramB=0x103
 	manager subtype=0x3, x=0x118, y=0x30, pool=0x0, paramB=0x101
 	object_raw subtype=0x9c, x=0x138, y=0x160, paramC=0x7d0000
-.endif
 	manager subtype=0x3, x=0x138, y=0x170, pool=0x0, paramB=0x102
 	object_raw subtype=0x19, paramB=0x1100
 	manager subtype=0x4
@@ -19876,9 +19424,7 @@ gUnk_additional_e_HyruleField_LonLonRanch:: @ 080F79D0
 	delayed_entity_raw subtype=0x5e, x=0x188, y=0x78, layer=1, conditions=0xffff
 	delayed_entity_raw subtype=0x5e, x=0x268, y=0x188, layer=1, conditions=0xffff
 	delayed_entity_raw subtype=0x5e, x=0x198, y=0x358, layer=1, conditions=0xffff
-.ifndef EU
 	delayed_entity_raw subtype=0x5e, x=0x108, y=0x328, layer=1, conditions=0xffff
-.endif
 	entity_list_end
 
 gUnk_additional_11_HyruleField_LonLonRanch:: @ 080F7A20
@@ -19901,19 +19447,11 @@ Enemies_HyruleField_LonLonRanch:: @ 080F7A44
 
 TileEntities_HyruleField_LonLonRanch:: @ 080F7AF4
 	tile_entity type=0xc, paramA=0xe
-.ifdef EU_JP
-	tile_entity type=0xa, paramA=0x1, paramB=0x73, paramC=0x842, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x74, paramC=0x883, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x75, paramC=0x8c3, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x76, paramC=0x902, paramD=0x1d
-	tile_entity type=0x4, paramA=0x77, paramB=0x1, paramC=0x88, paramD=0x358
-.else
 	tile_entity type=0xa, paramA=0x1, paramB=0x75, paramC=0x842, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x76, paramC=0x883, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x77, paramC=0x8c3, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x78, paramC=0x902, paramD=0x1d
 	tile_entity type=0x4, paramA=0x79, paramB=0x1, paramC=0x88, paramD=0x358
-.endif
 	tile_entity type=0x5, paramB=0xb00, paramC=0x2c8, paramD=0x60b
 	tile_entity type=0x5, paramB=0x1300, paramC=0x6a8, paramD=0x613
 	tile_entity_list_end
@@ -19962,19 +19500,11 @@ Entities_HyruleField_OutsideCastle_0:: @ 080F7BF0
 Entities_HyruleField_OutsideCastle_1:: @ 080F7C00
 	manager subtype=0x6, paramA=0x8
 	object_raw subtype=0x2f, x=0x38, y=0x1c8, paramC=0x80640000
-.ifdef EU_JP
-	object_raw subtype=0x9c, x=0x328, y=0x200, paramC=0x8b0000
-	manager subtype=0x3, x=0x328, y=0x210, pool=0x0, paramB=0x102
-	manager subtype=0x18
-	object_raw subtype=0x57, x=0x1f8, y=0x148, paramC=0x40570000
-	object_raw subtype=0x0, x=0x178, y=0x1d8, collision=1, paramA=0x57, paramB=0x700, paramC=0x8d0000
-.else
 	object_raw subtype=0x9c, x=0x328, y=0x200, paramC=0x8d0000
 	manager subtype=0x3, x=0x328, y=0x210, pool=0x0, paramB=0x102
 	manager subtype=0x18
 	object_raw subtype=0x57, x=0x1f8, y=0x148, paramC=0x40570000
 	object_raw subtype=0x0, x=0x178, y=0x1d8, collision=1, paramA=0x57, paramB=0x700, paramC=0x8f0000
-.endif
 	entity_list_end
 
 gUnk_080F7C80:: @ 080F7C80
@@ -20035,22 +19565,6 @@ Enemies_HyruleField_OutsideCastle:: @ 080F7E20
 	entity_list_end
 
 TileEntities_HyruleField_OutsideCastle:: @ 080F7F10
-.ifdef EU_JP
-	tile_entity type=0xc, paramA=0x9
-	tile_entity type=0xa, paramA=0x1, paramB=0x7f, paramC=0x9bb, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x80, paramC=0x9fb, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x81, paramC=0xa3b, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x82, paramC=0xa7b, paramD=0x1f
-	tile_entity type=0xa, paramA=0x1, paramB=0x83, paramC=0x2b7, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x84, paramC=0x2b8, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x85, paramC=0x450, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x86, paramC=0x451, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x87, paramC=0x415, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x88, paramC=0x63c, paramD=0x168
-	tile_entity type=0x5, paramB=0xe00, paramC=0xa1c, paramD=0x60e
-	tile_entity type=0x5, paramB=0x1500, paramC=0x3d6, paramD=0x615
-	tile_entity_list_end
-.else
 	tile_entity type=0xc, paramA=0x9
 	tile_entity type=0xa, paramA=0x1, paramB=0x81, paramC=0x9bb, paramD=0x1f
 	tile_entity type=0xa, paramA=0x1, paramB=0x82, paramC=0x9fb, paramD=0x1f
@@ -20065,7 +19579,6 @@ TileEntities_HyruleField_OutsideCastle:: @ 080F7F10
 	tile_entity type=0x5, paramB=0xe00, paramC=0xa1c, paramD=0x60e
 	tile_entity type=0x5, paramB=0x1500, paramC=0x3d6, paramD=0x615
 	tile_entity_list_end
-.endif
 
 gUnk_additional_8_HyruleField_OutsideCastle:: @ 080F7F80
 	exit_region_raw centerX=0x3c8, centerY=0x188, halfWidth=0x3, halfHeight=0x3, exitIndex=0x9, bitfield=0x1
@@ -20109,21 +19622,12 @@ gUnk_080F806C:: @ 080F806C
 	entity_list_end
 
 Entities_HyruleField_OutsideCastle_1West:: @ 080F808C
-.ifdef EU_JP
-	manager subtype=0x18
-	manager subtype=0x4
-	manager subtype=0x6, paramA=0x8
-	manager subtype=0x3, x=0x38, y=0xa0, pool=0x0, paramB=0x102
-	manager subtype=0x20, x=0x158, y=0x298, paramB=0x11582e00, paramC=0x901288
-	entity_list_end
-.else
 	manager subtype=0x18
 	manager subtype=0x4
 	manager subtype=0x6, paramA=0x8
 	manager subtype=0x3, x=0x38, y=0xa0, pool=0x0, paramB=0x102
 	manager subtype=0x20, x=0x158, y=0x298, paramB=0x11582e00, paramC=0x921288
 	entity_list_end
-.endif
 
 Enemies_HyruleField_TrilbyHighlands:: @ 080F80EC
 	enemy_raw subtype=0x0, x=0x168, y=0x78, paramB=0x80c0000, paramC=0x400130
@@ -20139,19 +19643,11 @@ Enemies_HyruleField_TrilbyHighlands:: @ 080F80EC
 	entity_list_end
 
 TileEntities_HyruleField_TrilbyHighlands:: @ 080F819C
-.ifdef EU_JP
-	tile_entity type=0xc, paramA=0x6
-	tile_entity type=0x4, paramA=0x8e, paramB=0x1, paramC=0x88, paramD=0x228
-	tile_entity type=0x4, paramA=0x8f, paramB=0x1, paramC=0x198, paramD=0x2b8
-	tile_entity type=0x5, paramB=0x900, paramC=0x514, paramD=0x609
-	tile_entity_list_end
-.else
 	tile_entity type=0xc, paramA=0x6
 	tile_entity type=0x4, paramA=0x90, paramB=0x1, paramC=0x88, paramD=0x228
 	tile_entity type=0x4, paramA=0x91, paramB=0x1, paramC=0x198, paramD=0x2b8
 	tile_entity type=0x5, paramB=0x900, paramC=0x514, paramD=0x609
 	tile_entity_list_end
-.endif
 
 gUnk_additional_8_HyruleField_TrilbyHighlands:: @ 080F81C4
 	exit_region_raw centerX=0x28, centerY=0x52, halfWidth=0x4, halfHeight=0x2, exitIndex=0x9, bitfield=0x1
@@ -20173,19 +19669,6 @@ Room_HyruleField_TrilbyHighlands:: @ 080F81E8
 	.4byte gUnk_additional_9_HyruleField_TrilbyHighlands
 
 Entities_HyruleField_WesternWoodsNorth_0:: @ 080F8210
-.ifdef EU_JP
-	manager subtype=0x20, x=0x198, y=0x1a8, paramB=0x11a82e00, paramC=0x9211a8
-	object_raw subtype=0x0, x=0xb8, y=0x28, collision=1, paramA=0x57, paramB=0x700, paramC=0x930000
-	object_raw subtype=0x0, x=0xb8, y=0x38, collision=1, paramA=0x57, paramB=0x700, paramC=0x940000
-	object_raw subtype=0x0, x=0xc8, y=0x28, collision=1, paramA=0x57, paramB=0x700, paramC=0x950000
-	object_raw subtype=0x0, x=0xc8, y=0x38, collision=1, paramA=0x57, paramB=0x700, paramC=0x960000
-	object_raw subtype=0x0, x=0xd8, y=0x28, collision=1, paramA=0x57, paramB=0x700, paramC=0x970000
-	object_raw subtype=0x0, x=0xd8, y=0x38, collision=1, paramA=0x57, paramB=0x700, paramC=0x980000
-	object_raw subtype=0x0, x=0x198, y=0x208, collision=1, paramA=0x59, paramB=0x700, paramC=0x990000
-	object_raw subtype=0x0, x=0x1a8, y=0x208, collision=1, paramA=0x59, paramB=0x700, paramC=0x9a0000
-	manager subtype=0xf, paramA=0xa, paramC=0x401e060a
-	entity_list_end
-.else
 	manager subtype=0x20, x=0x198, y=0x1a8, paramB=0x11a82e00, paramC=0x9311a8
 	object_raw subtype=0x0, x=0xb8, y=0x28, collision=1, paramA=0x57, paramB=0x700, paramC=0x940000
 	object_raw subtype=0x0, x=0xb8, y=0x38, collision=1, paramA=0x57, paramB=0x700, paramC=0x950000
@@ -20199,7 +19682,6 @@ Entities_HyruleField_WesternWoodsNorth_0:: @ 080F8210
 	manager subtype=0x1e, x=0xa0, y=0x20, paramB=0x500030, paramC=0xfb0000
 	manager subtype=0x1e, x=0x180, y=0x1f0, paramB=0x400030, paramC=0xfc0000
 	entity_list_end
-.endif
 
 gUnk_080F82E0:: @ 080F82E0
 	object_raw subtype=0x69, pool=0x4f, paramC=script_CutsceneOrchestratorTakeover
@@ -20224,17 +19706,10 @@ Enemies_HyruleField_WesternWoodsNorth:: @ 080F8320
 	entity_list_end
 
 TileEntities_HyruleField_WesternWoodsNorth:: @ 080F83E0
-.ifdef EU_JP
-	tile_entity type=0xc, paramA=0x7
-	tile_entity type=0x2, paramA=0x9c, paramB=0x643f, paramC=0x3ce
-	tile_entity type=0x5, paramB=0xa00, paramC=0x684, paramD=0x60a
-	tile_entity_list_end
-.else
 	tile_entity type=0xc, paramA=0x7
 	tile_entity type=0x2, paramA=0x9d, paramB=0x643f, paramC=0x3ce
 	tile_entity type=0x5, paramB=0xa00, paramC=0x684, paramD=0x60a
 	tile_entity_list_end
-.endif
 
 Room_HyruleField_WesternWoodsNorth:: @ 080F8400
 	.4byte Entities_HyruleField_WesternWoodsNorth_0
@@ -20259,15 +19734,9 @@ Entities_HyruleField_WesternWoodsCenter_1:: @ 080F8450
 	entity_list_end
 
 Enemies_HyruleField_WesternWoodsCenter:: @ 080F8480
-.ifdef EU
-	enemy_raw subtype=0x15, x=0x108, y=0x68, paramB=0xc180000, paramC=0x2000f0
-	enemy_raw subtype=0x46, x=0x1a8, y=0x78, paramB=0xc180000, paramC=0x2000f0
-	entity_list_end
-.else
 	enemy_raw subtype=0x46, x=0x108, y=0x68, paramB=0xc180000, paramC=0x2000f0
 	enemy_raw subtype=0x46, x=0x1a8, y=0x78, paramB=0xc180000, paramC=0x2000f0
 	entity_list_end
-.endif
 
 TileEntities_HyruleField_WesternWoodsCenter:: @ 080F84B0
 	tile_entity type=0xc, paramA=0x7
@@ -20660,24 +20129,6 @@ Room_Caves_LonLonRanchWallet:: @ 080F8CD4
 	.4byte sub_StateChange_Caves_LonLonRanchWallet
 
 Entities_Caves_SouthHyruleFieldRupee_0:: @ 080F8CF4
-.ifdef EU_JP
-	object_raw subtype=0x0, x=0x58, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x150000
-	object_raw subtype=0x0, x=0x68, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x160000
-	object_raw subtype=0x0, x=0x78, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x170000
-	object_raw subtype=0x0, x=0x88, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x180000
-	object_raw subtype=0x0, x=0x98, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x190000
-	object_raw subtype=0x0, x=0x58, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x1a0000
-	object_raw subtype=0x0, x=0x68, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x1b0000
-	object_raw subtype=0x0, x=0x78, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x1c0000
-	object_raw subtype=0x0, x=0x88, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x1d0000
-	object_raw subtype=0x0, x=0x98, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x1e0000
-	object_raw subtype=0x0, x=0x58, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x1f0000
-	object_raw subtype=0x0, x=0x68, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x200000
-	object_raw subtype=0x0, x=0x78, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x210000
-	object_raw subtype=0x0, x=0x88, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x220000
-	object_raw subtype=0x0, x=0x98, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x230000
-	entity_list_end
-.else
 	object_raw subtype=0x0, x=0x58, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x150000
 	object_raw subtype=0x0, x=0x68, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x160000
 	object_raw subtype=0x0, x=0x78, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x170000
@@ -20695,7 +20146,6 @@ Entities_Caves_SouthHyruleFieldRupee_0:: @ 080F8CF4
 	object_raw subtype=0x0, x=0x98, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x230000
 	manager subtype=0x1e, x=0x50, y=0x30, paramB=0x400030, paramC=0x8c0000
 	entity_list_end
-.endif
 
 Enemies_Caves_SouthHyruleFieldRupee:: @ 080F8E04
 	entity_list_end
@@ -20714,24 +20164,6 @@ Room_Caves_SouthHyruleFieldRupee:: @ 080F8E1C
 	.4byte sub_StateChange_Caves_SouthHyruleFieldRupee
 
 Entities_Caves_TrilbyRupee_0:: @ 080F8E3C
-.ifdef EU_JP
-	object_raw subtype=0x0, x=0x58, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x240000
-	object_raw subtype=0x0, x=0x68, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x250000
-	object_raw subtype=0x0, x=0x78, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x260000
-	object_raw subtype=0x0, x=0x88, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x270000
-	object_raw subtype=0x0, x=0x98, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x280000
-	object_raw subtype=0x0, x=0x58, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x290000
-	object_raw subtype=0x0, x=0x68, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x2a0000
-	object_raw subtype=0x0, x=0x78, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x2b0000
-	object_raw subtype=0x0, x=0x88, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x2c0000
-	object_raw subtype=0x0, x=0x98, y=0x48, collision=1, paramA=0x55, paramB=0x400, paramC=0x2d0000
-	object_raw subtype=0x0, x=0x58, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x2e0000
-	object_raw subtype=0x0, x=0x68, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x2f0000
-	object_raw subtype=0x0, x=0x78, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x300000
-	object_raw subtype=0x0, x=0x88, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x310000
-	object_raw subtype=0x0, x=0x98, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x320000
-	entity_list_end
-.else
 	object_raw subtype=0x0, x=0x58, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x240000
 	object_raw subtype=0x0, x=0x68, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x250000
 	object_raw subtype=0x0, x=0x78, y=0x38, collision=1, paramA=0x55, paramB=0x400, paramC=0x260000
@@ -20749,7 +20181,6 @@ Entities_Caves_TrilbyRupee_0:: @ 080F8E3C
 	object_raw subtype=0x0, x=0x98, y=0x58, collision=1, paramA=0x55, paramB=0x400, paramC=0x320000
 	manager subtype=0x1e, x=0x50, y=0x30, paramB=0x400030, paramC=0x8b0000
 	entity_list_end
-.endif
 
 Enemies_Caves_TrilbyRupee:: @ 080F8F4C
 	entity_list_end
@@ -20768,20 +20199,12 @@ Room_Caves_TrilbyRupee:: @ 080F8F64
 	.4byte sub_StateChange_Caves_TrilbyRupee
 
 Entities_Caves_TrilbyMittsFairyFountain_0:: @ 080F8F84
-.ifdef EU_JP
-	object_raw subtype=0x41, x=0xb8, y=0x18
-	object_raw subtype=0x40, x=0x58, y=0x38, paramA=0x60, paramB=0x1
-	object_raw subtype=0x40, x=0x48, y=0x58, paramA=0x60, paramB=0x1
-	object_raw subtype=0x40, x=0x68, y=0x58, paramA=0x60, paramB=0x1
-	entity_list_end
-.else
 	object_raw subtype=0x41, x=0xb8, y=0x18
 	object_raw subtype=0x40, x=0x58, y=0x38, paramA=0x60, paramB=0x1
 	object_raw subtype=0x40, x=0x48, y=0x58, paramA=0x60, paramB=0x1
 	object_raw subtype=0x40, x=0x68, y=0x58, paramA=0x60, paramB=0x1
 	manager subtype=0x1e, x=0xa0, y=0x10, paramB=0x300030, paramC=0x890000
 	entity_list_end
-.endif
 
 Enemies_Caves_TrilbyMittsFairyFountain:: @ 080F8FE4
 	entity_list_end
@@ -20866,18 +20289,11 @@ Room_Caves_HeartPieceHallway:: @ 080F9154
 	.4byte sub_StateChange_Caves_HeartPieceHallway
 
 Entities_Caves_NorthHyruleFieldFairyFountain_0:: @ 080F9174
-.ifdef EU_JP
-	object_raw subtype=0x40, x=0x48, y=0x38, paramA=0x60, paramB=0x1
-	object_raw subtype=0x40, x=0x38, y=0x58, paramA=0x60, paramB=0x1
-	object_raw subtype=0x40, x=0x68, y=0x58, paramA=0x60, paramB=0x1
-	entity_list_end
-.else
 	object_raw subtype=0x40, x=0x48, y=0x38, paramA=0x60, paramB=0x1
 	object_raw subtype=0x40, x=0x38, y=0x58, paramA=0x60, paramB=0x1
 	object_raw subtype=0x40, x=0x68, y=0x58, paramA=0x60, paramB=0x1
 	manager subtype=0x1e, x=0x60, y=0x60, paramB=0x300030, paramC=0x8a0000
 	entity_list_end
-.endif
 
 Enemies_Caves_NorthHyruleFieldFairyFountain:: @ 080F91C4
 	entity_list_end
@@ -20918,18 +20334,6 @@ Room_Caves_KinstoneBusinessScrub:: @ 080F9244
 	.4byte sub_StateChange_Caves_KinstoneBusinessScrub
 
 Entities_VeilFalls_Main_0:: @ 080F9264
-.ifdef EU_JP
-	manager subtype=0x4
-	object_raw subtype=0x0, x=0x98, y=0x25c, collision=1, paramA=0x63, paramB=0x400, paramC=0xa00000
-	object_raw subtype=0x0, x=0x198, y=0x3b4, collision=1, paramA=0x63, paramB=0x400, paramC=0xa90000
-	object_raw subtype=0x0, x=0x168, y=0x268, collision=1, paramA=0x56, paramB=0x400, paramC=0xa20000
-	object_raw subtype=0x0, x=0x168, y=0x278, collision=1, paramA=0x56, paramB=0x400, paramC=0xa30000
-	object_raw subtype=0x0, x=0x178, y=0x278, collision=1, paramA=0x56, paramB=0x400, paramC=0xa40000
-	object_raw subtype=0x0, x=0x148, y=0xb8, collision=1, paramA=0x57, paramB=0x700, paramC=0xa70000
-	object_raw subtype=0x0, x=0x138, y=0x308, collision=1, paramA=0x57, paramB=0x700, paramC=0xf70000
-	ezlo_hint x=0x4, y=0x40, rx=0x3, ry=0x3, msg=0xb1e, flag=0xa5
-	entity_list_end
-.else
 	manager subtype=0x4
 	object_raw subtype=0x0, x=0x98, y=0x25c, collision=1, paramA=0x63, paramB=0x400, paramC=0xa10000
 	object_raw subtype=0x0, x=0x198, y=0x3b4, collision=1, paramA=0x63, paramB=0x400, paramC=0xab0000
@@ -20940,7 +20344,6 @@ Entities_VeilFalls_Main_0:: @ 080F9264
 	object_raw subtype=0x0, x=0x138, y=0x308, collision=1, paramA=0x57, paramB=0x700, paramC=0xaa0000
 	ezlo_hint x=0x4, y=0x40, rx=0x3, ry=0x3, msg=0xb1e, flag=0xa6
 	entity_list_end
-.endif
 
 gUnk_080F9304:: @ 080F9304
 	object_raw subtype=0xbb, x=0xf8, y=0xf8, pool=0x4f, paramB=0x1, paramC=script_Windcrest
@@ -20972,13 +20375,8 @@ Enemies_VeilFalls_Main:: @ 080F9354
 	entity_list_end
 
 TileEntities_VeilFalls_Main:: @ 080F9474
-.ifdef EU_JP
-	tile_entity type=0x2, paramA=0xa1, paramB=0x643f, paramC=0x58c
-	tile_entity_list_end
-.else
 	tile_entity type=0x2, paramA=0xa2, paramB=0x643f, paramC=0x58c
 	tile_entity_list_end
-.endif
 
 gUnk_additional_8_VeilFalls_Main:: @ 080F9484
 	exit_region_raw centerX=0xf8, centerY=0x348, halfWidth=0x8, halfHeight=0x8, exitIndex=0x9, bitfield=0x11
@@ -21265,17 +20663,10 @@ Entities_VeilFallsTop_Main_0:: @ 080F9B78
 	entity_list_end
 
 gUnk_080F9BF8:: @ 080F9BF8
-.ifdef EU_JP
-	ezlo_hint x=0xe, y=0x6, rx=0x2, ry=0x2, msg=0xb20, flag=0xaa
-	object_raw subtype=0x82, x=0x58, y=0x38, paramB=0x1
-	npc_raw subtype=0x4c, x=0x140, y=0xf8, script=script_BigGoronHiding
-	entity_list_end
-.else
 	ezlo_hint x=0xe, y=0x6, rx=0x2, ry=0x2, msg=0xb20, flag=0xac
 	object_raw subtype=0x82, x=0x58, y=0x38, paramB=0x1
 	npc_raw subtype=0x4c, x=0x140, y=0xf8, script=script_BigGoronHiding
 	entity_list_end
-.endif
 
 gUnk_080F9C38:: @ 080F9C38
 	object_raw subtype=0x6a, x=0x108, y=0x88, pool=0x4f, paramA=0x29, paramC=script_CutsceneMiscObjectVeilFallsTop
@@ -22094,32 +21485,17 @@ Room_TreeInteriors_UnusedHeartContainer:: @ 080FAC08
 	.4byte sub_StateChange_TreeInteriors_UnusedHeartContainer
 
 Entities_MtCrenel_MountainTop_0:: @ 080FAC28
-.ifdef EU_JP
-	object_raw subtype=0x32, x=0x198, y=0x48
-	object_raw subtype=0x32, x=0x248, y=0x48
-	manager subtype=0x20, x=0x2f8, y=0x58, paramB=0x12e82e00, paramC=0x3e1058
-	manager subtype=0x20, x=0x3b8, y=0x88, paramB=0x12c82e00, paramC=0x3f1018
-	object_raw subtype=0x2e, x=0x2d8, y=0x18
-	entity_list_end
-.else
 	object_raw subtype=0x32, x=0x198, y=0x48
 	object_raw subtype=0x32, x=0x248, y=0x48
 	manager subtype=0x20, x=0x2f8, y=0x58, paramB=0x12e82e00, paramC=0x3f1058
 	manager subtype=0x20, x=0x3b8, y=0x88, paramB=0x12c82e00, paramC=0x401018
 	object_raw subtype=0x2e, x=0x2d8, y=0x18
 	entity_list_end
-.endif
 
 Entities_MtCrenel_MountainTop_1:: @ 080FAC88
-.ifdef EU_JP
-	object_raw subtype=0x2c, x=0x98, y=0x28, paramA=0x7, paramB=0xad00
-	manager subtype=0x1b, pool=0x8
-	entity_list_end
-.else
 	object_raw subtype=0x2c, x=0x98, y=0x28, paramA=0x7, paramB=0xaf00
 	manager subtype=0x1b, pool=0x8
 	entity_list_end
-.endif
 
 gUnk_080FACB8:: @ 080FACB8
 	manager subtype=0x10
@@ -22201,15 +21577,9 @@ Enemies_MtCrenel_WallClimb:: @ 080FAEBC
 	entity_list_end
 
 TileEntities_MtCrenel_WallClimb:: @ 080FAF9C
-.ifdef EU_JP
-	tile_entity type=0x4, paramA=0x40, paramB=0x1, paramC=0x148, paramD=0x1e8
-	tile_entity type=0x5, paramB=0x600, paramC=0x7d2, paramD=0x606
-	tile_entity_list_end
-.else
 	tile_entity type=0x4, paramA=0x41, paramB=0x1, paramC=0x148, paramD=0x1e8
 	tile_entity type=0x5, paramB=0x600, paramC=0x7d2, paramD=0x606
 	tile_entity_list_end
-.endif
 
 Room_MtCrenel_WallClimb:: @ 080FAFB4
 	.4byte Entities_MtCrenel_WallClimb_0
@@ -22266,17 +21636,10 @@ Enemies_MtCrenel_CaveOfFlamesEntrance:: @ 080FB104
 	entity_list_end
 
 TileEntities_MtCrenel_CaveOfFlamesEntrance:: @ 080FB1F4
-.ifdef EU_JP
-	tile_entity type=0x5, paramB=0x1000, paramC=0x747, paramD=0x610
-	tile_entity type=0x5, paramB=0x1100, paramC=0x7a1, paramD=0x611
-	tile_entity type=0x4, paramA=0x41, paramB=0x1, paramC=0x1e8, paramD=0x1d8
-	tile_entity_list_end
-.else
 	tile_entity type=0x5, paramB=0x1000, paramC=0x747, paramD=0x610
 	tile_entity type=0x5, paramB=0x1100, paramC=0x7a1, paramD=0x611
 	tile_entity type=0x4, paramA=0x42, paramB=0x1, paramC=0x1e8, paramD=0x1d8
 	tile_entity_list_end
-.endif
 
 gUnk_additional_8_MtCrenel_CaveOfFlamesEntrance:: @ 080FB214
 	exit_region_raw centerX=0xd2, centerY=0x108, halfWidth=0x4, halfHeight=0x8, exitIndex=0x9, bitfield=0x1
@@ -22335,18 +21698,6 @@ Enemies_MtCrenel_GustJarShortcut:: @ 080FB2E0
 	entity_list_end
 
 TileEntities_MtCrenel_GustJarShortcut:: @ 080FB410
-.ifdef EU_JP
-	tile_entity type=0x5, paramB=0x300, paramC=0x146, paramD=0x603
-	tile_entity type=0x5, paramB=0xc00, paramC=0x38f, paramD=0x60c
-	tile_entity type=0x5, paramB=0xd00, paramC=0xdd, paramD=0x60d
-	tile_entity type=0x4, paramA=0x42, paramB=0x1, paramC=0xa8, paramD=0x48
-	tile_entity type=0x4, paramA=0x43, paramB=0x1, paramC=0x348, paramD=0x58
-	tile_entity type=0x4, paramA=0x44, paramB=0x1, paramC=0x38, paramD=0x108
-	tile_entity type=0xa, paramA=0x1, paramB=0x45, paramC=0x4c3, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x46, paramC=0xc3, paramD=0x1d
-	tile_entity type=0xa, paramA=0x1, paramB=0x47, paramC=0x103, paramD=0x1d
-	tile_entity_list_end
-.else
 	tile_entity type=0x5, paramB=0x300, paramC=0x146, paramD=0x603
 	tile_entity type=0x5, paramB=0xc00, paramC=0x38f, paramD=0x60c
 	tile_entity type=0x5, paramB=0xd00, paramC=0xdd, paramD=0x60d
@@ -22357,7 +21708,6 @@ TileEntities_MtCrenel_GustJarShortcut:: @ 080FB410
 	tile_entity type=0xa, paramA=0x1, paramB=0x47, paramC=0xc3, paramD=0x1d
 	tile_entity type=0xa, paramA=0x1, paramB=0x48, paramC=0x103, paramD=0x1d
 	tile_entity_list_end
-.endif
 
 Room_MtCrenel_GustJarShortcut:: @ 080FB460
 	.4byte Entities_MtCrenel_GustJarShortcut_0
@@ -22370,29 +21720,6 @@ Room_MtCrenel_GustJarShortcut:: @ 080FB460
 	.4byte sub_StateChange_MtCrenel_GustJarShortcut
 
 Entities_MtCrenel_Entrance_0:: @ 080FB480
-.ifdef EU_JP
-	object_raw subtype=0x6b, x=0x118, y=0x28, paramB=0x4c
-	object_raw subtype=0x6b, x=0x388, y=0x178, paramA=0x2, paramB=0x4d
-	projectile_raw subtype=0x14, x=0x108, y=0xb8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x118, y=0xb8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x128, y=0xb8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x108, y=0xc8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x118, y=0xc8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x128, y=0xc8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x108, y=0xd8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x118, y=0xd8, pool=0xf, paramC=0x510000
-	projectile_raw subtype=0x14, x=0x128, y=0xd8, pool=0xf, paramC=0x510000
-	manager subtype=0x2e, pool=0x0, paramB=0x3c00, paramC=0x510051
-	projectile_raw subtype=0x14, x=0x158, y=0x58, pool=0xf, paramC=0x520000
-	manager subtype=0x2e, pool=0x0, paramB=0x3c00, paramC=0x520052
-	object_raw subtype=0x5e, x=0x178, y=0x178
-	object_raw subtype=0x5e, x=0x128, y=0x160
-	object_raw subtype=0x0, x=0x318, y=0x164, collision=1, paramA=0x56, paramB=0x400, paramC=0x490000
-	ezlo_hint x=0x2c, y=0x26, rx=0x4, ry=0x2, msg=0xb2a, flag=0x48
-	ezlo_hint type=0x2, x=0x22, y=0x1a, rx=0x2, ry=0x2, msg=0xb23, flag=0xf8
-	ezlo_hint type=0x2, x=0x5c, y=0x1c, rx=0x2, ry=0x2, msg=0xb23, flag=0xf8
-	entity_list_end
-.else
 	object_raw subtype=0x6b, x=0x118, y=0x28, paramB=0x4e
 	object_raw subtype=0x6b, x=0x388, y=0x178, paramA=0x2, paramB=0x4f
 	projectile_raw subtype=0x14, x=0x108, y=0xb8, pool=0xf, paramC=0x530000
@@ -22414,7 +21741,6 @@ Entities_MtCrenel_Entrance_0:: @ 080FB480
 	ezlo_hint type=0x2, x=0x22, y=0x1a, rx=0x2, ry=0x2, msg=0xb23, flag=0x4a
 	ezlo_hint type=0x2, x=0x5c, y=0x1c, rx=0x2, ry=0x2, msg=0xb23, flag=0x4a
 	entity_list_end
-.endif
 
 Entities_MtCrenel_Entrance_1:: @ 080FB5D0
 	manager subtype=0x6, paramA=0x8
@@ -22440,19 +21766,6 @@ Enemies_MtCrenel_Entrance:: @ 080FB600
 	entity_list_end
 
 TileEntities_MtCrenel_Entrance:: @ 080FB700
-.ifdef EU_JP
-	tile_entity type=0xc, paramA=0x2
-	tile_entity type=0x5, paramB=0x400, paramC=0xf9, paramD=0x604
-.ifdef DEMO_JP
-	tile_entity type=0x5, paramB=0x2100, paramC=0x66f, paramD=0x621
-.endif
-	tile_entity type=0x4, paramA=0x4e, paramB=0x1, paramC=0x298, paramD=0x28
-	tile_entity type=0x4, paramA=0x4f, paramB=0x1, paramC=0x138, paramD=0x138
-	tile_entity type=0x4, paramA=0x50, paramB=0x1, paramC=0x2d8, paramD=0x188
-	tile_entity type=0x4, paramA=0x53, paramB=0x1, paramC=0x3b8, paramD=0x168
-	tile_entity type=0xa, paramA=0x1, paramB=0x4b, paramC=0x3b3, paramD=0x1d
-	tile_entity_list_end
-.else
 	tile_entity type=0xc, paramA=0x2
 	tile_entity type=0x5, paramB=0x400, paramC=0xf9, paramD=0x604
 	tile_entity type=0x5, paramB=0x2100, paramC=0x66f, paramD=0x621
@@ -22462,7 +21775,6 @@ TileEntities_MtCrenel_Entrance:: @ 080FB700
 	tile_entity type=0x4, paramA=0x55, paramB=0x1, paramC=0x3b8, paramD=0x168
 	tile_entity type=0xa, paramA=0x1, paramB=0x4d, paramC=0x3b3, paramD=0x1d
 	tile_entity_list_end
-.endif
 
 gUnk_additional_8_MtCrenel_Entrance:: @ 080FB748
 	exit_region_raw centerX=0xd2, centerY=0x5c, halfWidth=0x3, halfHeight=0x2, exitIndex=0x9, bitfield=0x1

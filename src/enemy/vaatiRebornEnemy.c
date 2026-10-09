@@ -86,11 +86,7 @@ const Coords gUnk_080D04AC[] = { { .HALF = { 0x58, 0x60 } },
                                  { .HALF = { 0xd8, 0x90 } } };
 const u8 gUnk_080D04C0[] = { 2, 0, 0, 2, 2, 2, 4, 4 };
 const xy gUnk_080D04C8[] = { { 10, -29 }, { -10, -29 }, { 15, -21 }, { -15, -21 } };
-#ifdef EU
-const u8 gUnk_080D04D0[] = { -12, -20, -32 };
-#else
 const u8 gUnk_080D04D0[] = { -24, -40, -48 };
-#endif
 const u8 gUnk_080D04D3[] = { 0, 1, 0, -1 };
 
 void VaatiRebornEnemy(VaatiRebornEnemyEntity* this) {
@@ -506,9 +502,7 @@ void VaatiRebornEnemyType0Action7(VaatiRebornEnemyEntity* this) {
                     tmp = Random() & 0x3f3f;
                     fx->x.HALF.HI = ((tmp & 0xff) - 0x20) + fx->x.HALF.HI;
                     fx->y.HALF.HI = ((tmp >> 8) & 0xff) - 0x20 + fx->y.HALF.HI;
-#ifndef EU
                     fx->spritePriority.b0 = 2;
-#endif
                 }
             }
         }

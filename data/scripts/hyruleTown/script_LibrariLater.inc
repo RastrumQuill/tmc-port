@@ -19,13 +19,7 @@ script_08012440:
 	SetLocalFlag KHOUSE23_TALK1ST
 	GivePlayerItem ITEM_HEART_CONTAINER
 	WaitPlayerGetItem
-.ifdef USA
 	SetLocalFlag 0x00d0
-.else
-.ifdef DEMO_USA
-	SetLocalFlag 0x00d0
-.endif
-.endif
 script_08012474:
 	EnablePlayerControl
 	SetAnimation 0x0000

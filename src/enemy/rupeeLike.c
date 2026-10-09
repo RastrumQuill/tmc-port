@@ -292,11 +292,7 @@ void sub_080297F0(RupeeLikeEntity* this) {
     super->spriteSettings.draw = TRUE;
     super->hitType = 0x8e;
     UnloadGFXSlots(super);
-#ifdef EU
-    super->spriteIndex = 0x142;
-#else
     super->spriteIndex = 0x143;
-#endif
     temp = gUnk_080CCC47[super->type];
     super->palette.b.b0 = temp;
     super->spriteVramOffset = 9;

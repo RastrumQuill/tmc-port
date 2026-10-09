@@ -35,12 +35,8 @@ script_080160E0:
 	Jump script_08016132
 script_0801610C:
 	WaitPlayerGetItem
-.ifndef EU
 	FaceAwayFromPlayer
 	MessageFromTarget TEXT_SYRUP, 0x0d
-.else
-	MessageFromTarget TEXT_SYRUP, 0x08
-.endif
 	WaitUntilTextboxCloses
 	Jump script_08016132
 script_0801611A:

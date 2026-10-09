@@ -3,11 +3,7 @@
 #include "message.h"
 #include "sound.h"
 
-#ifdef EU
-#define OVERWORLD_FLAGS AR_IS_OVERWORLD
-#else
 #define OVERWORLD_FLAGS AR_IS_OVERWORLD | AR_ALLOWS_WARP
-#endif
 
 const AreaHeader gAreaMetadata[] = {
     { OVERWORLD_FLAGS, 18, LOCAL_BANK_1, BGM_MINISH_WOODS },

@@ -56,9 +56,6 @@ Entity* LoadRoomEntity(const EntityData* dat) {
     Entity* entity;
 
 // r4/r5 regalloc
-#ifndef NON_MATCHING
-    asm("" ::: "r5");
-#endif
 
     kind = dat->kind & 0xF;
     if ((dat->flags & 0xF0) == 0x50 && DeepFindEntityByID(kind, dat->id))
