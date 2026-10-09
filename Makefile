@@ -20,6 +20,11 @@ eu jp usa demo_jp demo_usa: tools
 custom: tools
 	@$(MAKE) GAME_VERSION=USA CUSTOM=1
 
+# Native PC port (see PC_PORT.md)
+.PHONY: pc
+pc: tools
+	@$(MAKE) -f pc.mk
+
 .PHONY: extract_assets
 extract_assets: tools
 	@$(MAKE) -f GBA.mk extract_assets

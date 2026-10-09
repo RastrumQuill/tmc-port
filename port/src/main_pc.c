@@ -324,6 +324,7 @@ static void Usage(const char* argv0) {
            "  --keys SPEC              scripted input, e.g. 100-110:START,200-260:RIGHT+B,300-900/30:A\n"
            "  --shot FRAME             save shot_FRAME.bmp (repeatable)\n"
            "  --warp AREA,ROOM,X,Y     warp once in game (testing)\n"
+           "  --wav FILE               record the audio (testing)\n"
            "In game: F1 toggles the extended view, +/- (or mouse wheel) zoom,\n"
            "F11 fullscreen, Tab fast forward.\n",
            argv0);
@@ -361,7 +362,10 @@ static void ParseArgs(int argc, char** argv) {
             gPortConfig.headless = true;
         else if (strcmp(a, "--frames") == 0 && next)
             gPortConfig.frameSkipLimit = atoi(argv[++i]);
-        else if (strcmp(a, "--warp") == 0 && next)
+        else if (strcmp(a, "--wav") == 0 && next) {
+            extern void Audio_StartDump(const char* path);
+            Audio_StartDump(argv[++i]);
+        } else if (strcmp(a, "--warp") == 0 && next)
             ParseWarp(argv[++i]);
         else if (strcmp(a, "--keys") == 0 && next)
             ParseScript(argv[++i]);
@@ -702,6 +706,8 @@ void ram_IntrMain(void) {
 }
 
 void Port_Shutdown(void) {
+    extern void Audio_StopDump(void);
+    Audio_StopDump();
     Save_Flush();
     if (!gPortConfig.headless) {
         SaveConfig(sConfigPath);

@@ -20,6 +20,43 @@ bool M4a_TakeMixedBlock(const s8** samples, int* count, int* freq);
 #define OUT_RATE 48000
 
 static SDL_AudioDeviceID sDevice;
+static FILE* sWav;
+static uint32_t sWavSamples;
+static int sWavRate;
+
+static void WavHeader(FILE* f, uint32_t samples, int rate) {
+    uint32_t data = samples * 2;
+    uint8_t h[44] = { 'R', 'I', 'F', 'F', 0, 0, 0, 0, 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ', 16, 0, 0, 0, 1, 0, 1, 0 };
+    uint32_t v;
+    v = 36 + data;
+    memcpy(h + 4, &v, 4);
+    v = rate;
+    memcpy(h + 24, &v, 4);
+    v = rate * 2;
+    memcpy(h + 28, &v, 4);
+    h[32] = 2;
+    h[34] = 16;
+    memcpy(h + 36, "data", 4);
+    memcpy(h + 40, &data, 4);
+    fseek(f, 0, SEEK_SET);
+    fwrite(h, 1, 44, f);
+    fseek(f, 0, SEEK_END);
+}
+
+/** Record the game audio into a WAV file (testing aid, --wav). */
+void Audio_StartDump(const char* path) {
+    sWav = fopen(path, "wb");
+    if (sWav != NULL)
+        WavHeader(sWav, 0, 15768);
+}
+
+void Audio_StopDump(void) {
+    if (sWav == NULL)
+        return;
+    WavHeader(sWav, sWavSamples, sWavRate ? sWavRate : 15768);
+    fclose(sWav);
+    sWav = NULL;
+}
 static SDL_AudioStream* sStream;
 static int sStreamRate;
 
@@ -354,5 +391,10 @@ void Audio_Frame(void) {
     if (rate <= 0 || n <= 0 || n > (int)(sizeof(mixed) / sizeof(mixed[0])))
         return;
     RenderFrame(block, n, rate, mixed);
+    if (sWav != NULL) {
+        fwrite(mixed, 2, n, sWav);
+        sWavSamples += n;
+        sWavRate = rate;
+    }
     Submit(mixed, n, rate);
 }

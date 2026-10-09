@@ -9,6 +9,7 @@
  */
 #include "port.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "global.h"
@@ -129,7 +130,8 @@ static u8 ReadByte(MusicPlayerTrack* track) {
 
 void ply_fine(MusicPlayerInfo* info, MusicPlayerTrack* track) {
     SoundChannel* chan = track->chan;
-    (void)info;
+    if (getenv("TMC_SOUND_LOG"))
+        Port_Log("ply_fine: player %p track %p at %p", (void*)info, (void*)track, (void*)track->cmdPtr);
     while (chan != NULL) {
         if (chan->statusFlags & CHN_ACTIVE)
             chan->statusFlags |= CHN_STOP;
@@ -553,6 +555,9 @@ void MPlayMain(MusicPlayerInfo* info) {
         }
         info->clock++;
         if (active == 0) {
+            if (getenv("TMC_SOUND_LOG"))
+                Port_Log("player %p song %p finished after %u ticks", (void*)info, (void*)info->songHeader,
+                         (unsigned)info->clock);
             info->status = 0x80000000;
             goto done;
         }
