@@ -11,6 +11,7 @@
 #include "port.h"
 
 #include <SDL.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "global.h"

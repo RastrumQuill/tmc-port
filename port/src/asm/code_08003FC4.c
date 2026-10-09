@@ -31,7 +31,10 @@ u32 GravityUpdate(Entity* this, u32 gravity) {
 }
 
 static u32 CheckEntityPickup(Entity* this, Entity* other, u32 radiusX, u32 radiusY) {
-    Hitbox* hb = other->hitbox;
+    /* entities without a hitbox read the BIOS area on the GBA (open bus 0xE3A02004);
+     * use those bytes explicitly so the result doesn't depend on the platform */
+    static const Hitbox sOpenBusHitbox = { 0x04, 0x20, { 0xA0, 0xE3, 0x04, 0x20 }, 0xA0, 0xE3 };
+    const Hitbox* hb = other->hitbox != NULL ? other->hitbox : &sOpenBusHitbox;
     s32 offsetX = hb->offset_x;
     s32 ox, oy;
     radiusX += hb->width;

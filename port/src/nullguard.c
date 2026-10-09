@@ -125,7 +125,7 @@ static void OnSegv(int sig, siginfo_t* info, void* ctx) {
             sGuard.pending = true;
             g[sGregIndex[r]] = (greg_t)sGuard.moved;
             g[REG_EFL] |= 0x100; /* single step */
-            if (sGuardCount++ < 8)
+            if (sGuardCount++ < 8 || getenv("TMC_NULL_LOG"))
                 Port_Log("emulated BIOS area access at 0x%04X (eip 0x%08X)", addr, (uint32_t)g[REG_EIP]);
             return;
         }

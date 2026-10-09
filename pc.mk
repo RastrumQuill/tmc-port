@@ -7,7 +7,8 @@
 # ROM (baserom.gba for USA) to extract the assets from. See PC_PORT.md.
 
 GAME_VERSION ?= USA
-BUILD_DIR := build/pc-$(GAME_VERSION)
+PC_CC ?= gcc
+BUILD_DIR := build/pc-$(GAME_VERSION)$(if $(findstring mingw,$(PC_CC)),-win)
 
 ifeq ($(GAME_VERSION), EU)
 BUILD_NAME    := tmc_eu
@@ -27,7 +28,7 @@ endif
 REVISION := 0
 
 EXE_NAME ?= tmc_pc
-ifeq ($(OS),Windows_NT)
+ifneq ($(OS)$(findstring mingw,$(PC_CC)),)
 EXE := $(EXE_NAME).exe
 else
 EXE := $(EXE_NAME)
@@ -36,14 +37,15 @@ endif
 # ---- toolchain ----
 # Default: native gcc in 32-bit mode. For Windows cross builds use e.g.
 #   make -f pc.mk PC_CC=i686-w64-mingw32-gcc PC_AS=i686-w64-mingw32-as
-PC_CC ?= gcc
 PC_AS ?= as
 PYTHON ?= python3
 SDL2_CFLAGS ?= $(shell sdl2-config --cflags 2>/dev/null)
 SDL2_LIBS ?= $(shell sdl2-config --libs 2>/dev/null || echo -lSDL2)
 
-M32 := $(if $(findstring mingw,$(PC_CC)),,-m32)
+MINGW := $(findstring mingw,$(PC_CC))
+M32 := $(if $(MINGW),-mno-ms-bitfields,-m32)
 ASM32 := $(if $(findstring mingw,$(PC_AS)),,--32)
+PC_OBJCOPY ?= $(if $(MINGW),$(subst gcc,objcopy,$(PC_CC)),objcopy)
 
 PREPROC := tools/bin/preproc
 ASSET_PROCESSOR := tools/bin/asset_processor
@@ -64,7 +66,9 @@ CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -fno-top
 PORT_CFLAGS := $(M32) $(OPT) -g -funsigned-char -fwrapv -fno-strict-aliasing -fno-pie -Wall -Wno-unused-function
 ASFLAGS := $(ASM32) --divide --defsym $(GAME_VERSION)=1 --defsym REVISION=$(REVISION) --defsym $(GAME_LANGUAGE)=1 --defsym PC=1 \
            -I . -I $(ASSETS_DIR) -I $(ENUM_DIR)
-LDFLAGS := $(M32) -no-pie
+# The GBA memory map (0x02000000-0x07FFFFFF) must stay free: move the Windows image above it.
+WIN_LDFLAGS := -Wl,--image-base=0x10000000
+LDFLAGS := $(M32) $(if $(MINGW),$(WIN_LDFLAGS),-no-pie)
 LIBS := $(SDL2_LIBS) -lm
 
 # ---- sources ----
@@ -133,6 +137,10 @@ $(BUILD_DIR)/%.o: %.s $(ENUM_ASM_HEADERS) $(BUILD_DIR)/extracted_assets port/too
 	$(PREPROC) $(BUILD_NAME) $< -- -I $(ASSETS_DIR) -I $(ENUM_DIR) | \
 	  $(PYTHON) port/tools/asfilter.py -I $(ASSETS_DIR) -I $(ENUM_DIR) > $(BUILD_DIR)/$*.pc.s
 	$(PC_AS) $(ASFLAGS) -o $@ $(BUILD_DIR)/$*.pc.s
+ifneq ($(MINGW),)
+	@# PE/COFF C symbols have a leading underscore, the assembly data does not
+	$(PC_OBJCOPY) --prefix-symbols=_ $@
+endif
 
 # ---- link ----
 $(BUILD_DIR)/linker.i: linker.ld
@@ -140,7 +148,7 @@ $(BUILD_DIR)/linker.i: linker.ld
 	$(PC_CC) -E -P -x c $(DEFINES) $< -o $@
 
 $(BUILD_DIR)/ram_symbols.ld: $(BUILD_DIR)/linker.i port/tools/gen_ram_syms.py
-	$(PYTHON) port/tools/gen_ram_syms.py $< $@
+	$(PYTHON) port/tools/gen_ram_syms.py $< $@ $(if $(MINGW),--prefix _)
 
 $(EXE): $(OBJS) $(BUILD_DIR)/ram_symbols.ld
 	$(PC_CC) $(LDFLAGS) -o $@ $(OBJS) $(BUILD_DIR)/ram_symbols.ld $(LIBS)
