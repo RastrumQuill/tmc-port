@@ -102,7 +102,3 @@ tmc_pc.ini
 /tools/lib/
 /tools/share/
 /tools/agbcc/
-/dist/
-/SDL2.dll
-tmc_state*.bin
-shot_*.bmp

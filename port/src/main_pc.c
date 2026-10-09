@@ -253,7 +253,7 @@ void Port_Fatal(const char* fmt, ...) {
     vsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
     fprintf(stderr, "tmc: fatal: %s\n", buf);
-    if (!gPortConfig.headless)
+    if (sWindow != NULL)
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "The Minish Cap", buf, sWindow);
     exit(1);
 }
@@ -286,8 +286,6 @@ static void SetOption(const char* key, const char* value) {
         gPortConfig.hudAnchor = ParseBool(value);
     else if (strcmp(key, "save") == 0)
         snprintf(gPortConfig.savePath, sizeof(gPortConfig.savePath), "%s", value);
-    else if (strcmp(key, "rom") == 0)
-        snprintf(gPortConfig.romPath, sizeof(gPortConfig.romPath), "%s", value);
     else
         Port_Log("unknown option '%s'", key);
 }
@@ -340,8 +338,6 @@ static void SaveConfig(const char* path) {
     fprintf(f, "# 1 = keep the HUD in the corners of the extended view\n");
     fprintf(f, "hud_corners = %d\n", gPortConfig.hudAnchor);
     fprintf(f, "save = %s\n", gPortConfig.savePath);
-    if (gPortConfig.romPath[0])
-        fprintf(f, "rom = %s\n", gPortConfig.romPath);
     fclose(f);
 }
 
@@ -353,7 +349,6 @@ static void Usage(const char* argv0) {
            "  --fullscreen\n"
            "  --config FILE            settings file (default tmc_pc.ini)\n"
            "  --save FILE              save file (default tmc.sav, emulator .sav files work)\n"
-           "  --rom FILE               your The Minish Cap (USA) ROM (default baserom.gba)\n"
            "  --no-audio\n"
            "  --headless --frames N    run without a window for N frames (testing)\n"
            "  --keys SPEC              scripted input, e.g. 100-110:START,200-260:RIGHT+B,300-900/30:A\n"
@@ -396,8 +391,6 @@ static void ParseArgs(int argc, char** argv) {
             gPortConfig.audio = false;
         else if (strcmp(a, "--save") == 0 && next)
             snprintf(gPortConfig.savePath, sizeof(gPortConfig.savePath), "%s", argv[++i]);
-        else if (strcmp(a, "--rom") == 0 && next)
-            snprintf(gPortConfig.romPath, sizeof(gPortConfig.romPath), "%s", argv[++i]);
         else if (strcmp(a, "--headless") == 0)
             gPortConfig.headless = true;
         else if (strcmp(a, "--frames") == 0 && next)
@@ -799,7 +792,6 @@ int main(int argc, char** argv) {
     if (getenv("TMC_NO_NULLGUARD") == NULL) /* lets a debugger use SIGTRAP */
         Port_InstallNullGuard();
     ParseArgs(argc, argv);
-    Port_LoadRomAssets(gPortConfig.romPath, sizeof(gPortConfig.romPath));
     sFrame = calloc(PORT_MAX_VIEW_WIDTH * PORT_MAX_VIEW_HEIGHT, sizeof(uint32_t));
     if (!gPortConfig.headless) {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) != 0)
