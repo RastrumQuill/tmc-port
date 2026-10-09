@@ -32,6 +32,7 @@ PortConfig gPortConfig = {
     .vsync = true,
     .audio = true,
     .hudAnchor = true,
+    .autoZoom = true,
     .frameSkipLimit = 0,
     .headless = false,
     .savePath = "tmc.sav",
@@ -292,6 +293,8 @@ static void SetOption(const char* key, const char* value) {
         gPortConfig.audio = ParseBool(value);
     else if (strcmp(key, "hud_corners") == 0)
         gPortConfig.hudAnchor = ParseBool(value);
+    else if (strcmp(key, "auto_zoom") == 0)
+        gPortConfig.autoZoom = ParseBool(value);
     else if (strcmp(key, "save") == 0)
         snprintf(gPortConfig.savePath, sizeof(gPortConfig.savePath), "%s", value);
     else if (strcmp(key, "rom") == 0)
@@ -349,6 +352,8 @@ static void SaveConfig(const char* path) {
     fprintf(f, "audio = %d\n", gPortConfig.audio);
     fprintf(f, "# 1 = keep the HUD in the corners of the extended view\n");
     fprintf(f, "hud_corners = %d\n", gPortConfig.hudAnchor);
+    fprintf(f, "# 1 = zoom in on rooms smaller than the view, so they fill the window\n");
+    fprintf(f, "auto_zoom = %d\n", gPortConfig.autoZoom);
     fprintf(f, "save = %s\n", gPortConfig.savePath);
     fprintf(f, "data = %s\n", gPortConfig.dataPath);
     if (gPortConfig.romPath[0])
@@ -472,6 +477,24 @@ void Port_UpdateViewSize(void) {
     }
     outW = sOutputW > 0 ? sOutputW : gPortConfig.windowWidth;
     outH = sOutputH > 0 ? sOutputH : gPortConfig.windowHeight;
+    /*
+     * One scale for both axes, so the picture keeps its aspect ratio when it fills
+     * the window: zoomed in until a small room fills the window, but never showing
+     * less than the GBA's 240x160 nor more than the largest view.
+     */
+    if (gPortConfig.autoZoom) {
+        float fit = View_RoomFitScale(outW, outH);
+        if (fit > scale)
+            scale = fit;
+    }
+    if (scale > (float)outW / GBA_WIDTH)
+        scale = (float)outW / GBA_WIDTH;
+    if (scale > (float)outH / GBA_HEIGHT)
+        scale = (float)outH / GBA_HEIGHT;
+    if (scale < (float)outW / PORT_MAX_VIEW_WIDTH)
+        scale = (float)outW / PORT_MAX_VIEW_WIDTH;
+    if (scale < (float)outH / PORT_MAX_VIEW_HEIGHT)
+        scale = (float)outH / PORT_MAX_VIEW_HEIGHT;
     w = (int)(outW / scale + 0.5f);
     h = (int)(outH / scale + 0.5f);
     if (w < GBA_WIDTH)

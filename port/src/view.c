@@ -136,6 +136,22 @@ static void SetupOverride(MapLayer* layer, const u16* specialMap) {
     gPpuBgMode[bg] = PPU_BG_OVERRIDE;
 }
 
+float View_RoomFitScale(int outW, int outH) {
+    float sx, sy, fit;
+    if (gRoomControls.width <= 0 || gRoomControls.height <= 0)
+        return 0;
+    sx = (float)outW / gRoomControls.width;
+    sy = (float)outH / gRoomControls.height;
+    /* the whole room, as large as it fits */
+    fit = sx < sy ? sx : sy;
+    /* corridors no wider (taller) than the GBA screen fill that side, as on the GBA */
+    if (gRoomControls.width <= GBA_WIDTH && sx > fit)
+        fit = sx;
+    if (gRoomControls.height <= GBA_HEIGHT && sy > fit)
+        fit = sy;
+    return fit;
+}
+
 void View_PrepareFrame(void) {
     int i;
     for (i = 0; i < 4; i++) {
@@ -196,7 +212,16 @@ void View_PrepareFrame(void) {
                 Port_Log("  bg%d override scroll %d,%d tiles %dx%d", i, gPpuBgOverride[i].scrollX,
                          gPpuBgOverride[i].scrollY, gPpuBgOverride[i].widthTiles, gPpuBgOverride[i].heightTiles);
     }
-    /* BG3 is used for (repeating) backgrounds like clouds or the sky */
-    if (gPpuBgMode[3] == PPU_BG_CLASSIC_ONLY)
-        gPpuBgMode[3] = PPU_BG_WRAP;
+    /*
+     * BG1-BG3 layers that are not a room map are repeating layers: sky, clouds,
+     * fog, light rays, darkness, or the clover border of the Minish paths. They
+     * repeat over the view (clipped to the room by the renderer).
+     */
+    {
+        int bg;
+        for (bg = 1; bg < 4; bg++) {
+            if (gPpuBgMode[bg] == PPU_BG_CLASSIC_ONLY)
+                gPpuBgMode[bg] = PPU_BG_WRAP;
+        }
+    }
 }

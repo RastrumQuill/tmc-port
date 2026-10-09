@@ -59,6 +59,7 @@ typedef struct {
     bool vsync;
     bool audio;
     bool hudAnchor;       /**< move the HUD to the corners of the extended view */
+    bool autoZoom;        /**< zoom in on rooms smaller than the view, so they fill the window */
     int frameSkipLimit;   /**< headless/testing: exit after this many frames (0 = never) */
     bool headless;        /**< no window, no audio (smoke tests) */
     char savePath[512];
@@ -248,6 +249,8 @@ uint16_t Input_GetKeys(void); /**< GBA KEYINPUT bits, 1 = pressed */
 void View_PrepareFrame(void);
 /** True while the game is in a state where showing more than 240x160 is safe. */
 bool View_IsExtendedActive(void);
+/** scale (screen pixels per game pixel) at which the current room fills the output, or 0 */
+float View_RoomFitScale(int outW, int outH);
 
 /* ---- game data (port/src/resources.c) ---- */
 void Port_LoadGameData(const char* packPath, char* romPath, size_t romPathSize, bool rebuild);

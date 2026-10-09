@@ -45,7 +45,7 @@ Two numbers decide it:
 You can change the zoom while playing with `+`/`-` or the mouse wheel, or by
 resizing the window. The game's own camera still follows Link as on the GBA.
 The larger view is centred on that picture and stays inside the current room.
-Rooms smaller than the view are centred with black borders. Menus, the title
+Rooms smaller than the view are zoomed in to fill the window (`auto_zoom`). Menus, the title
 screen and the map use the classic 240×160 picture.
 
 ## Example images at different scales
@@ -234,6 +234,7 @@ integer_scaling = 0
 vsync = 1
 audio = 1
 hud_corners = 1        ; move hearts, buttons and rupees to the corners of the view
+auto_zoom = 1          ; zoom in on rooms smaller than the view, so they fill the window
 save = tmc.sav
 data = tmc_data.pak    ; the resource pack
 rom = baserom.gba      ; only used to create the resource pack

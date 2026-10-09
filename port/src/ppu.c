@@ -387,9 +387,17 @@ static void RenderTextBg(RenderCtx* ctx, int bg, int line /* classic line */, in
         bool inside = s == 1 && lineInside;
         if (a >= b)
             continue;
-        if (inside || mode == PPU_BG_WRAP)
+        if (inside)
             TextSpanHw(out, a, b, a - ox + hofs, y + vofs, screenBase, size, charBase, bpp8);
-        else if (mode == PPU_BG_OVERRIDE && ovr->enabled)
+        else if (mode == PPU_BG_WRAP) {
+            /* repeating layers (sky, clouds, fog, darkness) only inside the room */
+            int vy = line + gPortViewOffsetY;
+            int ca = a < gPortClipLeft ? gPortClipLeft : a;
+            int cb = b > gPortClipRight ? gPortClipRight : b;
+            memset(out + a, 0, (b - a) * sizeof(uint16_t));
+            if (ca < cb && vy >= gPortClipTop && vy < gPortClipBottom)
+                TextSpanHw(out, ca, cb, ca - ox + hofs, y + vofs, screenBase, size, charBase, bpp8);
+        } else if (mode == PPU_BG_OVERRIDE && ovr->enabled)
             TextSpanRoom(out, a, b, a - ox + ovr->scrollX, y + ovr->scrollY, ovr, charBase, bpp8);
         else
             memset(out + a, 0, (b - a) * sizeof(uint16_t));
@@ -1059,6 +1067,8 @@ static void SnapshotLine(LineState* st, const int32_t affX[2], const int32_t aff
     st->affY[1] = affY[1];
 }
 
+static void MirrorLineScroll(int h);
+
 void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
     int32_t affX[2], affY[2];
     int vy, i;
@@ -1118,6 +1128,7 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
         return;
     /* (lines rendered right away in pass 1 can't look at the other lines) */
     SetupScaledWindows();
+    MirrorLineScroll(h);
 
     /* pass 2: the lines on all cores (on the main thread only with TMC_RENDER_THREADS=1) */
     sJobOut = out;
@@ -1128,6 +1139,33 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
     RenderJobs(sMainCtx);
     for (i = 0; i < sWorkerCount; i++)
         SDL_SemWait(sWorkDone);
+}
+
+/*
+ * Background scroll set line by line (waves like the light rays, by HBlank DMA)
+ * only exists for the 160 classic lines. Lines above and below continue it as
+ * a reflection, which keeps it continuous instead of repeating the edge line.
+ */
+static void MirrorLineScroll(int h) {
+    int reg, vy;
+    for (reg = 0x10 >> 1; reg < 0x20 >> 1; reg++) {
+        const LineState* first = &sLines[gPortViewOffsetY];
+        bool varies = false;
+        int row;
+        for (row = 1; row < GBA_HEIGHT && !varies; row++)
+            varies = sLines[gPortViewOffsetY + row].io[reg] != first->io[reg];
+        if (!varies)
+            continue;
+        for (vy = 0; vy < h; vy++) {
+            int cl = vy - gPortViewOffsetY, m;
+            if (cl >= 0 && cl < GBA_HEIGHT)
+                continue;
+            m = ((cl % (2 * GBA_HEIGHT)) + 2 * GBA_HEIGHT) % (2 * GBA_HEIGHT);
+            if (m >= GBA_HEIGHT)
+                m = 2 * GBA_HEIGHT - 1 - m;
+            sLines[vy].io[reg] = sLines[gPortViewOffsetY + m].io[reg];
+        }
+    }
 }
 
 /* A frame that is not displayed: only the per-line side effects (VCOUNT, HBlank DMA). */
