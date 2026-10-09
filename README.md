@@ -149,7 +149,9 @@ This gives you `tmc_pc.exe`. Keep `SDL2.dll` in the same folder.
 
 GitHub Actions (`.github/workflows/build.yml`) runs `make pc-dist-windows` on
 every push and keeps the zip as a build artifact. Pushing a tag such as
-`v0.1.0` also publishes the zip on the Releases page.
+`v0.1.0` also publishes the zip on the Releases page. So does running the
+workflow by hand (Actions → Build → Run workflow) with a tag name in the
+"release" field.
 
 ### Linux
 
