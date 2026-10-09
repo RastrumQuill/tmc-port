@@ -535,7 +535,14 @@ void TextDispEnquiry(TextRender* this) {
         default:
             break;
     }
+#ifdef PC
+    // The GBA's division routine returns 0 for a zero divisor; x86 traps.
+    choiceIdx = gMessageChoices.choiceCount == 0
+                    ? 0
+                    : (choiceIdx + gMessageChoices.choiceCount) % gMessageChoices.choiceCount;
+#else
     choiceIdx = (choiceIdx + gMessageChoices.choiceCount) % gMessageChoices.choiceCount;
+#endif
     lastChoice = gMessageChoices.currentChoice;
     if (choiceIdx != lastChoice) {
         gMessageChoices.currentChoice = choiceIdx;
