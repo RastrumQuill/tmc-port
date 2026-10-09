@@ -648,17 +648,134 @@ static void RenderObjects(RenderCtx* ctx, int line /* classic line */, bool mode
 /* ---- windows ---- */
 
 /*
- * Window range in view coordinates. On hardware, R > size or L > R means R = size.
- * An edge of the classic screen is extended to the edge of the view, so windows
- * that cover the screen (or a border of it) keep doing so in the extended view.
+ * Window range in view coordinates (lo == hi: empty). On hardware, R > size or
+ * L > R means R = size. An edge of the classic screen that a (non-empty) window
+ * covers is extended to the edge of the view, so windows that cover the screen
+ * or a border of it keep doing so in the extended view. Returns whether the
+ * window covers the whole classic size.
  */
-static void WindowRange(uint16_t reg, int classicSize, int viewOffset, int viewSize, int* lo, int* hi) {
+static bool WindowRange(uint16_t reg, int classicSize, int viewOffset, int viewSize, int* lo, int* hi) {
     int a = reg >> 8;
     int b = reg & 0xFF;
     if (b > classicSize || a > b)
         b = classicSize;
+    if (a >= b) {
+        *lo = *hi = 0;
+        return false;
+    }
     *lo = (a == 0) ? 0 : a + viewOffset;
     *hi = (b >= classicSize) ? viewSize : b + viewOffset;
+    return a == 0 && b >= classicSize;
+}
+
+/*
+ * A transition window whose shape is set line by line (an iris, by HBlank DMA)
+ * is scaled up around its center so the shape covers the whole extended view,
+ * instead of only the classic screen. Set up once per frame from the line
+ * snapshots.
+ */
+typedef struct {
+    bool active;
+    float cx, cy; /* center, classic coordinates */
+    float scale;
+} ScaledWindow;
+
+static ScaledWindow sScaledWin[2];
+
+/* normalized hardware range: lo..hi, empty when lo >= hi */
+static void HwRange(uint16_t reg, int size, int* lo, int* hi) {
+    int a = reg >> 8, b = reg & 0xFF;
+    if (b > size || a > b)
+        b = size;
+    *lo = a;
+    *hi = b;
+}
+
+static void SetupScaledWindows(void) {
+    int win, row;
+    for (win = 0; win < 2; win++) {
+        ScaledWindow* sw = &sScaledWin[win];
+        const LineState* first = &sLines[gPortViewOffsetY];
+        bool varies = false;
+        float sumX = 0, sumY = 0, sx, sy;
+        int n = 0;
+        sw->active = false;
+        if (sViewW == GBA_WIDTH && sViewH == GBA_HEIGHT)
+            continue;
+        for (row = 0; row < GBA_HEIGHT; row++) {
+            const LineState* st = &sLines[gPortViewOffsetY + row];
+            int a, b, va, vb;
+            if (st->io[(0x40 >> 1) + win] != first->io[(0x40 >> 1) + win])
+                varies = true;
+            HwRange(st->io[(0x40 >> 1) + win], GBA_WIDTH, &a, &b);
+            HwRange(st->io[(0x44 >> 1) + win], GBA_HEIGHT, &va, &vb);
+            if (a < b && row >= va && row < vb) {
+                sumX += (a + b) * 0.5f;
+                sumY += row + 0.5f;
+                n++;
+            }
+        }
+        /*
+         * Only transitions (an iris) are scaled: outside of them, the map layers
+         * (BG1, BG2) and sprites are hidden. A light circle in a dark room keeps
+         * the scene visible outside and stays at its place.
+         */
+        if (!varies || n == 0 || (first->io[0x4A >> 1] & 0x16) != 0)
+            continue;
+        sw->cx = sumX / n;
+        sw->cy = sumY / n;
+        /* large enough that the classic screen maps onto the whole view */
+        sx = (gPortViewOffsetX + sw->cx) / (sw->cx > 1 ? sw->cx : 1);
+        if ((sViewW - gPortViewOffsetX - sw->cx) / (GBA_WIDTH - sw->cx > 1 ? GBA_WIDTH - sw->cx : 1) > sx)
+            sx = (sViewW - gPortViewOffsetX - sw->cx) / (GBA_WIDTH - sw->cx > 1 ? GBA_WIDTH - sw->cx : 1);
+        sy = (gPortViewOffsetY + sw->cy) / (sw->cy > 1 ? sw->cy : 1);
+        if ((sViewH - gPortViewOffsetY - sw->cy) / (GBA_HEIGHT - sw->cy > 1 ? GBA_HEIGHT - sw->cy : 1) > sy)
+            sy = (sViewH - gPortViewOffsetY - sw->cy) / (GBA_HEIGHT - sw->cy > 1 ? GBA_HEIGHT - sw->cy : 1);
+        sw->scale = sx > sy ? sx : sy;
+        if (sw->scale < 1)
+            sw->scale = 1;
+        sw->active = true;
+    }
+}
+
+static bool ScaledWindowLine(const ScaledWindow* sw, int win, int vy, int* xlo, int* xhi) {
+    float cy = sw->cy + (vy - gPortViewOffsetY - sw->cy) / sw->scale;
+    int row = (int)(cy < 0 ? cy - 1 : cy);
+    const LineState* st;
+    int a, b, va, vb;
+    float lo, hi;
+    if (row < 0 || row >= GBA_HEIGHT)
+        return false;
+    st = &sLines[gPortViewOffsetY + row];
+    HwRange(st->io[(0x44 >> 1) + win], GBA_HEIGHT, &va, &vb);
+    HwRange(st->io[(0x40 >> 1) + win], GBA_WIDTH, &a, &b);
+    if (row < va || row >= vb || a >= b)
+        return false;
+    lo = gPortViewOffsetX + sw->cx + (a - sw->cx) * sw->scale;
+    hi = gPortViewOffsetX + sw->cx + (b - sw->cx) * sw->scale;
+    *xlo = lo < 0 ? 0 : (int)(lo + 0.5f);
+    *xhi = hi > sViewW ? sViewW : (int)(hi + 0.5f);
+    return *xlo < *xhi;
+}
+
+/* whether view line vy is inside a window, and its horizontal range on that line */
+static bool WindowLine(RenderCtx* ctx, int win, int vy, int* xlo, int* xhi) {
+    int lo, hi;
+    bool fullWidth;
+    if (sScaledWin[win].active)
+        return ScaledWindowLine(&sScaledWin[win], win, vy, xlo, xhi);
+    WindowRange(REG(0x44 + win * 2), GBA_HEIGHT, gPortViewOffsetY, sViewH, &lo, &hi);
+    fullWidth = WindowRange(REG(0x40 + win * 2), GBA_WIDTH, gPortViewOffsetX, sViewW, xlo, xhi);
+    if (vy < lo || vy >= hi)
+        return false;
+    /*
+     * Lines above and below the classic screen use the registers of its first or
+     * last line. Per line shapes (an iris, set by HBlank DMA) can't be continued
+     * there, so those lines are only inside when that edge line is fully open.
+     */
+    if (vy < gPortViewOffsetY || vy >= gPortViewOffsetY + GBA_HEIGHT)
+        return fullWidth;
+    return true;
 }
 
 static bool BuildWindowMask(RenderCtx* ctx, int vy) {
@@ -675,18 +792,10 @@ static bool BuildWindowMask(RenderCtx* ctx, int vy) {
         memset(mask, 0x3F, sViewW);
         return false;
     }
-    if (win0) {
-        int lo, hi;
-        WindowRange(REG(0x44), GBA_HEIGHT, gPortViewOffsetY, sViewH, &lo, &hi);
-        in0 = vy >= lo && vy < hi;
-        WindowRange(REG(0x40), GBA_WIDTH, gPortViewOffsetX, sViewW, &x0lo, &x0hi);
-    }
-    if (win1) {
-        int lo, hi;
-        WindowRange(REG(0x46), GBA_HEIGHT, gPortViewOffsetY, sViewH, &lo, &hi);
-        in1 = vy >= lo && vy < hi;
-        WindowRange(REG(0x42), GBA_WIDTH, gPortViewOffsetX, sViewW, &x1lo, &x1hi);
-    }
+    if (win0)
+        in0 = WindowLine(ctx, 0, vy, &x0lo, &x0hi);
+    if (win1)
+        in1 = WindowLine(ctx, 1, vy, &x1lo, &x1hi);
     for (x = 0; x < sViewW; x++) {
         if (in0 && x >= x0lo && x < x0hi)
             mask[x] = winin & 0x3F;
@@ -981,11 +1090,12 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
 
     /*
      * Pass 1, in order: the registers every line sees. HBlank DMA runs after each of
-     * the 160 real lines. The lines can be rendered afterwards and in parallel as long
+     * the 160 real lines. The lines can be rendered afterwards (and in parallel) as long
      * as the DMA only changes registers (it does in this game; otherwise each line is
      * rendered right away).
      */
-    parallel = sWorkerCount > 0 && Port_DmaHBlankOnlyIo();
+    parallel = Port_DmaHBlankOnlyIo();
+    sScaledWin[0].active = sScaledWin[1].active = false;
     for (vy = 0; vy < h; vy++) {
         int classicLine = vy - gPortViewOffsetY;
         SnapshotLine(&sLines[vy], affX, affY);
@@ -1006,8 +1116,10 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
     }
     if (!parallel)
         return;
+    /* (lines rendered right away in pass 1 can't look at the other lines) */
+    SetupScaledWindows();
 
-    /* pass 2: the lines on all cores */
+    /* pass 2: the lines on all cores (on the main thread only with TMC_RENDER_THREADS=1) */
     sJobOut = out;
     sJobPitch = pitch;
     SDL_AtomicSet(&sNextJob, 0);

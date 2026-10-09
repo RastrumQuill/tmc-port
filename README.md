@@ -286,9 +286,10 @@ Console commands (numbers can be decimal or `0x` hex):
 | `warp AREA ROOM [X Y]` | go to a room. The position is relative to the room; by default you land in its centre |
 | `room N` / `area N` | room N of the current area / room 0 of area N |
 | `next`, `prev`, `nextarea`, `prevarea` | step through rooms and areas |
-| `pos` | show the area, room and position |
+| `pos [X Y]` | show the area, room and position; with X Y, move Link there (room pixels) |
 | `items` | give all items |
 | `item ID [0-2]` | set one inventory entry (IDs are listed in `include/item.h`) |
+| `equip ID [A\|B]` | put an item on the A or B button |
 | `hearts N`, `heal`, `rupees N`, `bombs N`, `arrows N`, `shells N`, `keys N` | change stats |
 | `god` | toggle god mode |
 | `flag N [0/1]` | read, set or clear a story flag (see `include/flags.h`) |

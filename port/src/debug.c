@@ -299,7 +299,7 @@ static int Num(const char* s, int def) {
 
 static const char* const sHelp[] = {
     "warp AREA ROOM [X Y]  room N  area N  next/prev  nextarea/prevarea",
-    "items  item ID [0-2]  hearts N  heal  rupees N  bombs N  arrows N  shells N  keys N",
+    "items  item ID [0-2]  equip ID A|B  hearts N  heal  rupees N  bombs N  arrows N  shells N  keys N",
     "god  flag N [0/1]  savestate [N]  loadstate [N]  scale S  view (toggle) hud  info  pos",
 };
 
@@ -356,6 +356,11 @@ static void Execute(char* line) {
     } else if (IS("prevarea")) {
         CycleArea(-1);
     } else if (IS("pos")) {
+        if (argc >= 3) {
+            /* move Link inside the room (no reload) */
+            gPlayerEntity.base.x.HALF.HI = gRoomControls.origin_x + ARG(1, 0);
+            gPlayerEntity.base.y.HALF.HI = gRoomControls.origin_y + ARG(2, 0);
+        }
         DbgMessage("area 0x%02X room 0x%02X x %d y %d", gRoomControls.area, gRoomControls.room,
                 gPlayerEntity.base.x.HALF.HI - gRoomControls.origin_x,
                 gPlayerEntity.base.y.HALF.HI - gRoomControls.origin_y);
@@ -369,6 +374,18 @@ static void Execute(char* line) {
             SetInventoryValue(id, ARG(2, 1));
             LoadItemGfx();
             DbgMessage("item 0x%02X = %d", id, ARG(2, 1));
+        }
+    } else if (IS("equip")) {
+        int id = ARG(1, -1);
+        const char* slot = argc > 2 ? argv[2] : "A";
+        if (id <= 0 || id >= 0x88) {
+            DbgMessage("equip: bad id");
+        } else {
+            if (GetInventoryValue(id) == 0)
+                SetInventoryValue(id, 1);
+            ForceEquipItem(id, (slot[0] == 'B' || slot[0] == 'b') ? EQUIP_SLOT_B : EQUIP_SLOT_A);
+            LoadItemGfx();
+            DbgMessage("equip 0x%02X on %s", id, (slot[0] == 'B' || slot[0] == 'b') ? "B" : "A");
         }
     } else if (IS("hearts")) {
         int h = ARG(1, 20);
