@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,10 +37,21 @@ static const Region sRegions[] = {
 
 static bool sMapped;
 
-static void* MapAt(uintptr_t addr, size_t size) {
-    /* round up to whole pages */
-    size = (size + 0xFFFF) & ~(size_t)0xFFFF;
 #ifdef _WIN32
+#define RELAUNCH_ENV "TMC_GBA_MEMORY_RESERVED"
+/* set in a process whose GBA memory was reserved by its parent (see Relaunch) */
+static bool sReservedByParent;
+#endif
+
+static size_t RoundSize(size_t size) {
+    return (size + 0xFFFF) & ~(size_t)0xFFFF;
+}
+
+static void* MapAt(uintptr_t addr, size_t size) {
+    size = RoundSize(size);
+#ifdef _WIN32
+    if (sReservedByParent)
+        return VirtualAlloc((void*)addr, size, MEM_COMMIT, PAGE_READWRITE);
     return VirtualAlloc((void*)addr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 #else
     void* p = mmap((void*)addr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED_NOREPLACE, -1, 0);
@@ -47,13 +59,65 @@ static void* MapAt(uintptr_t addr, size_t size) {
 #endif
 }
 
+#ifdef _WIN32
+/*
+ * Something (a DLL, a heap, address space randomization) already uses one of the
+ * fixed GBA addresses in this process. Start the game again, suspended, reserve the
+ * GBA memory in the new process before any of its own code runs, and let it run.
+ */
+static int Relaunch(void) {
+    int attempt;
+    fprintf(stderr, "tmc: the GBA memory addresses are in use, restarting with them reserved\n");
+    SetEnvironmentVariableA(RELAUNCH_ENV, "1");
+    for (attempt = 0; attempt < 8; attempt++) {
+        STARTUPINFOW si;
+        PROCESS_INFORMATION pi;
+        DWORD code = 1;
+        size_t i;
+        bool ok = true;
+        memset(&si, 0, sizeof(si));
+        si.cb = sizeof(si);
+        if (!CreateProcessW(NULL, GetCommandLineW(), NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, &pi))
+            return 1;
+        for (i = 0; i < sizeof(sRegions) / sizeof(sRegions[0]) && ok; i++) {
+            if (VirtualAllocEx(pi.hProcess, (void*)sRegions[i].addr, RoundSize(sRegions[i].size), MEM_RESERVE,
+                               PAGE_READWRITE) != (void*)sRegions[i].addr)
+                ok = false;
+        }
+        if (!ok) {
+            TerminateProcess(pi.hProcess, 1);
+            CloseHandle(pi.hThread);
+            CloseHandle(pi.hProcess);
+            continue;
+        }
+        ResumeThread(pi.hThread);
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        GetExitCodeProcess(pi.hProcess, &code);
+        CloseHandle(pi.hThread);
+        CloseHandle(pi.hProcess);
+        return (int)code;
+    }
+    return 1;
+}
+#endif
+
 void Port_MapMemory(void) {
     size_t i;
     if (sMapped)
         return;
+#ifdef _WIN32
+    sReservedByParent = getenv(RELAUNCH_ENV) != NULL;
+    /* test hook: occupy EWRAM's address to exercise the relaunch */
+    if (!sReservedByParent && getenv("TMC_TEST_OCCUPY_EWRAM"))
+        VirtualAlloc((void*)0x02000000, 0x10000, MEM_RESERVE, PAGE_READWRITE);
+#endif
     for (i = 0; i < sizeof(sRegions) / sizeof(sRegions[0]); i++) {
         void* p = MapAt(sRegions[i].addr, sRegions[i].size);
         if (p != (void*)sRegions[i].addr) {
+#ifdef _WIN32
+            if (!sReservedByParent)
+                exit(Relaunch());
+#endif
             fprintf(stderr, "tmc: could not map %s at 0x%08lX (got %p).\n", sRegions[i].name,
                     (unsigned long)sRegions[i].addr, p);
             fprintf(stderr, "tmc: the port must be built as a 32-bit, non-PIE executable.\n");
