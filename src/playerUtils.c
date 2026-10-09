@@ -650,9 +650,18 @@ bool32 (*const gPlayerChargeActions[])(ChargeState*) = {
     sub_08078008, sub_08078124, sub_08078140, sub_08078070, sub_080780E0, sub_08078108,
 };
 
+#ifdef PC
+// The GBA reads interactType through the NULL entity pointer, which returns
+// (non-zero) BIOS memory; this dummy entity reproduces that.
+static const Entity sNoInteractionEntity = { .interactType = 1 };
+const InteractableObject gNoInteraction = {
+    0, INTERACTION_NULL, 0, 0, NULL, (Entity*)&sNoInteractionEntity,
+};
+#else
 const InteractableObject gNoInteraction = {
     0, INTERACTION_NULL, 0, 0, NULL, NULL,
 };
+#endif
 
 // for shifting the hitbox in which entities can be interacted with in Link's facing direction
 // from left to right: north, east, south and west in x, y pairs

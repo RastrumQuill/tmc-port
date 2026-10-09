@@ -23,6 +23,7 @@
 
 PpuBgOverride gPpuBgOverride[4];
 PpuBgMode gPpuBgMode[4];
+bool gPpuHudAnchor;
 int gPortViewOffsetX;
 int gPortViewOffsetY;
 
@@ -114,6 +115,53 @@ static inline uint16_t TextMapEntry(uint32_t screenBase, int size, int x, int y)
         ty -= 32;
     }
     return *(const uint16_t*)(VRAM8 + ((screenBase + block * 0x800 + (ty * 32 + tx) * 2) & 0xFFFF));
+}
+
+/* HUD tiles (hearts, charge bar, rupees, keys): palette 15, tiles below the message border tiles */
+static inline bool IsHudTile(uint16_t entry) {
+    uint16_t tile = entry & 0x3FF;
+    return (entry >> 12) == 0xF && tile >= 0x10 && tile < 0x7B;
+}
+
+/*
+ * BG0 with the HUD moved to the corners of the view: every HUD tile is drawn
+ * relative to the nearest corner of the view instead of the classic screen.
+ */
+static void RenderHudBg0(int vy) {
+    uint16_t cnt = REG(0x08);
+    uint32_t charBase = ((cnt >> 2) & 3) * 0x4000;
+    uint32_t screenBase = ((cnt >> 8) & 0x1F) * 0x800;
+    bool bpp8 = (cnt >> 7) & 1;
+    int size = cnt >> 14;
+    int hofs = REG(0x10) & 0x1FF;
+    int vofs = REG(0x12) & 0x1FF;
+    int shiftR = sViewW - GBA_WIDTH, shiftB = sViewH - GBA_HEIGHT;
+    uint16_t* out = sBgLine[0];
+    int vx, a;
+    for (vx = 0; vx < sViewW; vx++) {
+        uint16_t px = 0;
+        int cx = vx - gPortViewOffsetX, cy = vy - gPortViewOffsetY;
+        /* normal (non HUD) content of the classic screen */
+        if (cx >= 0 && cx < GBA_WIDTH && cy >= 0 && cy < GBA_HEIGHT) {
+            uint16_t e = TextMapEntry(screenBase, size, cx + hofs, cy + vofs);
+            if (!IsHudTile(e))
+                px = TextTilePixel(e, (cx + hofs) & 7, (cy + vofs) & 7, charBase, bpp8);
+        }
+        /* HUD tiles anchored to the four corners */
+        for (a = 0; a < 4 && !(px & OPAQUE); a++) {
+            int hx = vx - ((a & 1) ? shiftR : 0);
+            int hy = vy - ((a & 2) ? shiftB : 0);
+            uint16_t e;
+            if (hx < 0 || hx >= GBA_WIDTH || hy < 0 || hy >= GBA_HEIGHT)
+                continue;
+            if (((hx >= GBA_WIDTH / 2) != ((a & 1) != 0)) || ((hy >= GBA_HEIGHT / 2) != ((a & 2) != 0)))
+                continue;
+            e = TextMapEntry(screenBase, size, hx + hofs, hy + vofs);
+            if (IsHudTile(e))
+                px = TextTilePixel(e, (hx + hofs) & 7, (hy + vofs) & 7, charBase, bpp8);
+        }
+        out[vx] = px;
+    }
 }
 
 static void RenderTextBg(int bg, int line /* classic line */, int mosaicH, int mosaicV) {
@@ -243,6 +291,7 @@ static void RenderObjects(int line /* classic line */, bool mode345) {
         bool bpp8 = (a0 >> 13) & 1;
         bool mosaic = (a0 >> 12) & 1;
         int w, h, bw, bh, x, y, ly, vx;
+        int shiftX = gPortViewOffsetX, shiftY = gPortViewOffsetY;
         int16_t pa = 0x100, pb = 0, pc = 0, pd = 0x100;
         uint32_t tileBase = a2 & 0x3FF;
         int palBank = (a2 >> 12) & 0xF;
@@ -261,6 +310,10 @@ static void RenderObjects(int line /* classic line */, bool mode345) {
         if (ext->valid && ext->attr0 == a0 && ext->attr1 == a1) {
             x = ext->x;
             y = ext->y;
+            if ((ext->anchor & PORT_ANCHOR_HUD) && gPpuHudAnchor) {
+                shiftX = (ext->anchor & PORT_ANCHOR_RIGHT) ? sViewW - GBA_WIDTH : 0;
+                shiftY = (ext->anchor & PORT_ANCHOR_BOTTOM) ? sViewH - GBA_HEIGHT : 0;
+            }
         } else {
             x = a1 & 0x1FF;
             y = a0 & 0xFF;
@@ -269,7 +322,7 @@ static void RenderObjects(int line /* classic line */, bool mode345) {
             if (y + bh > 256)
                 y -= 256;
         }
-        ly = line - y;
+        ly = line + gPortViewOffsetY - shiftY - y;
         if (ly < 0 || ly >= bh)
             continue;
         if (mode345 && tileBase < 512)
@@ -286,7 +339,7 @@ static void RenderObjects(int line /* classic line */, bool mode345) {
         }
 
         for (vx = 0; vx < bw; vx++) {
-            int sx = x + vx + gPortViewOffsetX;
+            int sx = x + vx + shiftX;
             int tx, ty, lx = vx;
             uint32_t tileNum, addr;
             uint8_t idx;
@@ -571,7 +624,12 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
                 if (!bgOn[i])
                     continue;
                 if (mode == 0 || (mode == 1 && i < 2))
-                    RenderTextBg(i, classicLine, mosaicBgH, mosaicBgV);
+                {
+                    if (i == 0 && gPpuHudAnchor)
+                        RenderHudBg0(vy);
+                    else
+                        RenderTextBg(i, classicLine, mosaicBgH, mosaicBgV);
+                }
                 else
                     RenderAffineBg(i, mosaicBgH);
             }

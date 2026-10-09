@@ -379,6 +379,7 @@ void ram_MakeFadeBuff256(u16* src, u16* dest, u32 fadeStrength, u32 color) {
 /* ------------------------------------------------------------------------ */
 
 PortOamExt gPortOamExtWork[128];
+bool gPortHudSprites;
 PortOamExt gPortOamExtLive[128];
 
 extern u8* const gUnk_081326EC[];
@@ -462,6 +463,11 @@ static void EmitObjList(DrawState* s) {
             gPortOamExtWork[index].attr0 = (u16)attr01;
             gPortOamExtWork[index].attr1 = (u16)(attr01 >> 16);
             gPortOamExtWork[index].valid = 1;
+            gPortOamExtWork[index].anchor = 0;
+            if (gPortHudSprites) {
+                gPortOamExtWork[index].anchor = PORT_ANCHOR_HUD | (s->x >= GBA_WIDTH / 2 ? PORT_ANCHOR_RIGHT : 0) |
+                                                (s->y >= GBA_HEIGHT / 2 ? PORT_ANCHOR_BOTTOM : 0);
+            }
             index++;
             if (index >= 0x80) {
                 OAMC[3] = 0x80;

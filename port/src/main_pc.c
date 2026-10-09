@@ -13,6 +13,10 @@
 
 #include "global.h"
 #include "main.h"
+#include "game.h"
+#include "transitions.h"
+
+extern void DoExitTransition(const Transition* data);
 
 extern void AgbMain(void);
 extern void VBlankIntr(void);
@@ -27,6 +31,7 @@ PortConfig gPortConfig = {
     .integerScaling = false,
     .vsync = true,
     .audio = true,
+    .hudAnchor = true,
     .frameSkipLimit = 0,
     .headless = false,
     .savePath = "tmc.sav",
@@ -49,9 +54,9 @@ static const char* sConfigPath = "tmc_pc.ini";
 
 /* ---- testing helpers: scripted input and screenshots ---- */
 
-#define MAX_SCRIPT 64
+#define MAX_SCRIPT 256
 typedef struct {
-    uint32_t start, end;
+    uint32_t start, end, period;
     uint16_t keys;
 } ScriptedInput;
 static ScriptedInput sScript[MAX_SCRIPT];
@@ -89,6 +94,12 @@ static void ParseScript(const char* spec) {
             in->end = strtoul(p + 1, &end, 10);
             p = end;
         }
+        in->period = 0;
+        if (*p == '/') {
+            /* repeated tap: press for 4 frames every period frames */
+            in->period = strtoul(p + 1, &end, 10);
+            p = end;
+        }
         in->keys = 0;
         if (*p == ':') {
             p++;
@@ -111,7 +122,9 @@ static uint16_t ScriptKeys(uint64_t frame) {
     uint16_t keys = 0;
     int i;
     for (i = 0; i < sScriptCount; i++) {
-        if (frame >= sScript[i].start && frame <= sScript[i].end)
+        if (frame < sScript[i].start || frame > sScript[i].end)
+            continue;
+        if (sScript[i].period == 0 || (frame - sScript[i].start) % sScript[i].period < 4)
             keys |= sScript[i].keys;
     }
     return keys;
@@ -151,6 +164,36 @@ static void WriteBmp(const char* path, const uint32_t* pixels, int pitch, int w,
     }
     free(row);
     fclose(f);
+}
+
+/* --warp AREA,ROOM,X,Y: warp once gameplay is running (testing aid) */
+static bool sWarpPending;
+static Transition sWarp;
+
+static void ParseWarp(const char* spec) {
+    unsigned a, r, x, y;
+    if (sscanf(spec, "%i,%i,%i,%i", &a, &r, &x, &y) != 4) {
+        Port_Log("bad --warp '%s' (AREA,ROOM,X,Y)", spec);
+        return;
+    }
+    memset(&sWarp, 0, sizeof(sWarp));
+    sWarp.warp_type = 0;
+    sWarp.area = a;
+    sWarp.room = r;
+    sWarp.endX = x;
+    sWarp.endY = y;
+    sWarp.layer = 1;
+    sWarp.facing_direction = 4;
+    sWarpPending = true;
+}
+
+static void WarpTick(void) {
+    if (!sWarpPending || gMain.task != TASK_GAME || gMain.state != GAMETASK_MAIN ||
+        gMain.substate != GAMEMAIN_UPDATE)
+        return;
+    sWarpPending = false;
+    DoExitTransition(&sWarp);
+    Port_Log("warping to area %d room %d (%d, %d)", sWarp.area, sWarp.room, sWarp.endX, sWarp.endY);
 }
 
 static bool ShotThisFrame(uint64_t frame) {
@@ -209,6 +252,8 @@ static void SetOption(const char* key, const char* value) {
         gPortConfig.vsync = ParseBool(value);
     else if (strcmp(key, "audio") == 0)
         gPortConfig.audio = ParseBool(value);
+    else if (strcmp(key, "hud_corners") == 0)
+        gPortConfig.hudAnchor = ParseBool(value);
     else if (strcmp(key, "save") == 0)
         snprintf(gPortConfig.savePath, sizeof(gPortConfig.savePath), "%s", value);
     else
@@ -260,6 +305,8 @@ static void SaveConfig(const char* path) {
     fprintf(f, "integer_scaling = %d\n", gPortConfig.integerScaling);
     fprintf(f, "vsync = %d\n", gPortConfig.vsync);
     fprintf(f, "audio = %d\n", gPortConfig.audio);
+    fprintf(f, "# 1 = keep the HUD in the corners of the extended view\n");
+    fprintf(f, "hud_corners = %d\n", gPortConfig.hudAnchor);
     fprintf(f, "save = %s\n", gPortConfig.savePath);
     fclose(f);
 }
@@ -274,8 +321,9 @@ static void Usage(const char* argv0) {
            "  --save FILE              save file (default tmc.sav, emulator .sav files work)\n"
            "  --no-audio\n"
            "  --headless --frames N    run without a window for N frames (testing)\n"
-           "  --keys SPEC              scripted input, e.g. 100-110:START,200-260:RIGHT+B\n"
+           "  --keys SPEC              scripted input, e.g. 100-110:START,200-260:RIGHT+B,300-900/30:A\n"
            "  --shot FRAME             save shot_FRAME.bmp (repeatable)\n"
+           "  --warp AREA,ROOM,X,Y     warp once in game (testing)\n"
            "In game: F1 toggles the extended view, +/- (or mouse wheel) zoom,\n"
            "F11 fullscreen, Tab fast forward.\n",
            argv0);
@@ -313,6 +361,8 @@ static void ParseArgs(int argc, char** argv) {
             gPortConfig.headless = true;
         else if (strcmp(a, "--frames") == 0 && next)
             gPortConfig.frameSkipLimit = atoi(argv[++i]);
+        else if (strcmp(a, "--warp") == 0 && next)
+            ParseWarp(argv[++i]);
         else if (strcmp(a, "--keys") == 0 && next)
             ParseScript(argv[++i]);
         else if (strcmp(a, "--shot") == 0 && next) {
@@ -630,6 +680,7 @@ void Port_VBlankIntrWait(void) {
     if (IrqEnabled(INTR_FLAG_VBLANK))
         VBlankIntr();
     View_PrepareFrame();
+    WarpTick();
     PORT_IO16(0x006) = 0;
 
     sFrameCount++;
@@ -661,6 +712,7 @@ void Port_Shutdown(void) {
 
 int main(int argc, char** argv) {
     Port_MapMemory();
+    Port_InstallNullGuard();
     ParseArgs(argc, argv);
     sFrame = calloc(PORT_MAX_VIEW_WIDTH * PORT_MAX_VIEW_HEIGHT, sizeof(uint32_t));
     if (!gPortConfig.headless) {

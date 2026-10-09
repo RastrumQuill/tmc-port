@@ -69,11 +69,18 @@ void UpdateUIElements(void) {
     }
 }
 
+#ifdef PC
+extern bool8 gPortHudSprites;
+#endif
+
 void DrawUIElements(void) {
     u32 index;
     UIElement* element;
     UIElementDefinition* definition;
 
+#ifdef PC
+    gPortHudSprites = TRUE; // lets the PC port keep the HUD in the corners of a larger view
+#endif
     for (index = 0; index < MAX_UI_ELEMENTS; index++) {
         element = &gHUD.elements[index];
         if (element->used == 1 && element->unk_0_1 == 1) {
@@ -86,6 +93,9 @@ void DrawUIElements(void) {
             DrawDirect(definition->spriteIndex, element->frameIndex);
         }
     }
+#ifdef PC
+    gPortHudSprites = FALSE;
+#endif
 }
 
 void sub_0801C25C(void) {

@@ -31,6 +31,8 @@
  */
 #include "port.h"
 
+#include <stdlib.h>
+
 #include "global.h"
 #include "game.h"
 #include "main.h"
@@ -141,6 +143,7 @@ void View_PrepareFrame(void) {
 
     sActive = gPortConfig.extendedView && GameplayState();
     Port_UpdateViewSize();
+    gPpuHudAnchor = false;
 
     if (!sActive || (gPortViewWidth == GBA_WIDTH && gPortViewHeight == GBA_HEIGHT)) {
         gPortViewOffsetX = (gPortViewWidth - GBA_WIDTH) / 2;
@@ -167,6 +170,17 @@ void View_PrepareFrame(void) {
 
     SetupOverride(&gMapBottom, gMapDataBottomSpecial);
     SetupOverride(&gMapTop, gMapDataTopSpecial);
+    gPpuHudAnchor = gPortConfig.hudAnchor;
+    if (getenv("TMC_VIEW_LOG")) {
+        int i;
+        Port_Log("room origin %d,%d size %dx%d scroll %d,%d view %dx%d offset %d,%d", gRoomControls.origin_x,
+                 gRoomControls.origin_y, gRoomControls.width, gRoomControls.height, gRoomControls.scroll_x,
+                 gRoomControls.scroll_y, gPortViewWidth, gPortViewHeight, gPortViewOffsetX, gPortViewOffsetY);
+        for (i = 0; i < 4; i++)
+            if (gPpuBgOverride[i].enabled)
+                Port_Log("  bg%d override scroll %d,%d tiles %dx%d", i, gPpuBgOverride[i].scrollX,
+                         gPpuBgOverride[i].scrollY, gPpuBgOverride[i].widthTiles, gPpuBgOverride[i].heightTiles);
+    }
     /* BG3 is used for (repeating) backgrounds like clouds or the sky */
     if (gPpuBgMode[3] == PPU_BG_CLASSIC_ONLY)
         gPpuBgMode[3] = PPU_BG_WRAP;

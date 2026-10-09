@@ -57,6 +57,7 @@ typedef struct {
     bool integerScaling;  /**< snap scale to whole numbers when the window is resized */
     bool vsync;
     bool audio;
+    bool hudAnchor;       /**< move the HUD to the corners of the extended view */
     int frameSkipLimit;   /**< headless/testing: exit after this many frames (0 = never) */
     bool headless;        /**< no window, no audio (smoke tests) */
     char romPath[512];    /**< unused at runtime; assets are baked in at build time */
@@ -84,6 +85,8 @@ extern int gPortScreenHeight;
 
 /* ---- platform services ---- */
 void Port_MapMemory(void);
+/** Make NULL-pointer accesses behave like GBA BIOS-area accesses (port/src/nullguard.c). */
+void Port_InstallNullGuard(void);
 void Port_Init(int argc, char** argv);
 void Port_Shutdown(void);
 /** Called by the BIOS VBlankIntrWait: renders + presents a frame, polls input, runs IRQs. */
@@ -158,7 +161,18 @@ typedef struct {
     uint16_t attr0;
     uint16_t attr1;
     uint8_t valid;
+    /** HUD sprite: PORT_ANCHOR_* flags, anchored to the corners of the view */
+    uint8_t anchor;
 } PortOamExt;
+
+#define PORT_ANCHOR_HUD 0x80
+#define PORT_ANCHOR_RIGHT 0x01
+#define PORT_ANCHOR_BOTTOM 0x02
+
+/** Set while the game draws its UI elements (sprites get PORT_ANCHOR_HUD). */
+extern bool gPortHudSprites;
+/** Set by view.c when the HUD should be moved to the corners of the extended view. */
+extern bool gPpuHudAnchor;
 
 /** written by the sprite builder (mirrors gOAMControls.oam) */
 extern PortOamExt gPortOamExtWork[128];
