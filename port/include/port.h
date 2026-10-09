@@ -106,6 +106,9 @@ void Port_Log(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /* ---- DMA ---- */
 void Port_DmaOnHBlank(int line);
+/** Which affine reference point registers (bit 0: BG2X, 1: BG2Y, 2: BG3X, 3: BG3Y) DMA
+ *  wrote since the last call. Writing them reloads the PPU's internal reference point. */
+unsigned Port_DmaTakeAffineWrites(void);
 /** true when the active HBlank DMA transfers only write I/O registers */
 bool Port_DmaHBlankOnlyIo(void);
 void Port_DmaOnVBlank(void);

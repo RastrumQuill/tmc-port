@@ -26,6 +26,26 @@ typedef struct {
 } DmaChannel;
 
 static DmaChannel sDma[4];
+static unsigned sAffineWrites;
+
+/* note writes to BG2X/BG2Y/BG3X/BG3Y (they reload the PPU's internal reference point) */
+static void NoteIoWrite(u32 d, u32 bytes) {
+    static const u32 regs[4] = { 0x28, 0x2C, 0x38, 0x3C };
+    int i;
+    if (d + bytes <= PORT_IO_ADDR || d >= PORT_IO_ADDR + 0x40)
+        return;
+    for (i = 0; i < 4; i++) {
+        u32 r = PORT_IO_ADDR + regs[i];
+        if (d < r + 4 && d + bytes > r)
+            sAffineWrites |= 1u << i;
+    }
+}
+
+unsigned Port_DmaTakeAffineWrites(void) {
+    unsigned w = sAffineWrites;
+    sAffineWrites = 0;
+    return w;
+}
 
 static void StoreRegs(u32 n, const DmaChannel* ch) {
     PORT_IO32(DMA_REG_BASE + n * DMA_CHANNEL_SIZE + 0) = ch->src;
@@ -59,6 +79,8 @@ static void Transfer(u32 n, DmaChannel* ch) {
         count = (n == 3) ? 0x10000 : 0x4000;
     if (d == PORT_OAM_ADDR)
         Port_OnOamCopy((const void*)(uintptr_t)s, (void*)(uintptr_t)d, count * unit);
+    if (destStep >= 0)
+        NoteIoWrite(d & ~(unit - 1), destStep ? count * unit : unit);
     if (unit == 4) {
         s &= ~3u;
         d &= ~3u;

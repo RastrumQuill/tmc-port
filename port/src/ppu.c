@@ -1177,6 +1177,7 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
      * rendered right away).
      */
     parallel = Port_DmaHBlankOnlyIo();
+    Port_DmaTakeAffineWrites(); /* (writes before the frame are in the latched values) */
     sScaledWin[0].active = sScaledWin[1].active = false;
     for (vy = 0; vy < h; vy++) {
         int classicLine = vy - gPortViewOffsetY;
@@ -1192,8 +1193,17 @@ void Ppu_RenderFrame(uint32_t* out, int pitch, int w, int h) {
         }
         /* HBlank DMA and VCOUNT only exist for the 160 real lines */
         if (classicLine >= 0 && classicLine < GBA_HEIGHT) {
+            unsigned w;
             PORT_IO16(0x006) = (uint16_t)classicLine;
             Port_DmaOnHBlank(classicLine);
+            /* a written reference point applies from the next line on (rolling barrel) */
+            w = Port_DmaTakeAffineWrites();
+            for (i = 0; i < 2; i++) {
+                if (w & (1u << (i * 2)))
+                    affX[i] = Sext28(PORT_IO32(0x28 + i * 0x10));
+                if (w & (2u << (i * 2)))
+                    affY[i] = Sext28(PORT_IO32(0x2C + i * 0x10));
+            }
         }
     }
     if (!parallel)
