@@ -96,6 +96,38 @@ Gamepads work through SDL's game controller mapping.
 | F11 | fullscreen |
 | Tab (hold) | fast forward |
 
+## Debug tools
+
+| key | action |
+|---|---|
+| `` ` `` | open the command console (type a command, Enter runs it, Esc closes) |
+| F2 | info overlay (area, room, position, frame, view size) |
+| F4 | give all items (+20 hearts, full wallet, bombs, arrows) |
+| F5 / F9 | quick save / load state (slot 0, `tmc_state0.bin`) |
+| F6 / F7 | previous / next room in the area (with Shift: previous / next area) |
+| F8 | god mode (health stays full) |
+
+Console commands (numbers can be decimal or `0x` hex):
+
+| command | effect |
+|---|---|
+| `warp AREA ROOM [X Y]` | go to a room (position relative to the room, default: its center) |
+| `room N`, `area N` | room N of the current area / room 0 of area N |
+| `next`, `prev`, `nextarea`, `prevarea` | cycle through rooms / areas |
+| `pos` | print area, room and player position |
+| `items` | give all items |
+| `item ID [0-2]` | set one inventory entry (ids: `include/item.h`) |
+| `hearts N`, `heal`, `rupees N`, `bombs N`, `arrows N`, `shells N`, `keys N` | stats |
+| `god` | toggle god mode |
+| `flag N [0/1]` | read / set / clear a global story flag (`include/flags.h`) |
+| `savestate [N]`, `loadstate [N]` | savestates in `tmc_stateN.bin` |
+| `scale S`, `view`, `hud`, `info` | zoom, extended view on/off, HUD corners on/off, overlay |
+
+Savestates hold the whole game memory, so they only load in the same build
+of the game. Some rooms only make sense at a certain point of the story;
+warping there early can show missing or odd objects, as with any warp cheat.
+Commands can also be scripted: `--cmd 2000:items --cmd "2100:warp 3 1"`.
+
 ## Configuration (`tmc_pc.ini`)
 
 ```ini
@@ -129,8 +161,10 @@ Command line: `--width W --height H --scale S --classic --fullscreen
 ## Testing options
 
 `--headless --frames N --keys "100-105:START,200-900/30:A" --shot FRAME
---warp AREA,ROOM,X,Y --wav out.wav`; environment variables `TMC_VIEW_LOG`,
-`TMC_SOUND_LOG`, `TMC_NULL_LOG`.
+--warp AREA,ROOM,X,Y --cmd FRAME:COMMAND --wav out.wav`; environment variables
+`TMC_VIEW_LOG`, `TMC_SOUND_LOG`, `TMC_NULL_LOG`, `TMC_HASH_LOG` (per frame
+hash of the game RAM, ignoring native pointers, to compare two builds),
+`TMC_NO_NULLGUARD` (to run under a debugger).
 
 ## Limitations / known issues
 

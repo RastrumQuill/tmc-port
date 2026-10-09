@@ -739,3 +739,9 @@ void Port_OnOamCopy(const void* src, void* dest, uint32_t bytes) {
     if ((uintptr_t)dest == PORT_OAM_ADDR && src == (const void*)gOAMControls.oam && bytes >= PORT_OAM_SIZE)
         memcpy(gPortOamExtLive, gPortOamExtWork, sizeof(gPortOamExtLive));
 }
+
+/* savestates (port/src/debug.c) */
+void* Intr_StateData(size_t* size) {
+    *size = sizeof(sUpdateTables);
+    return sUpdateTables;
+}

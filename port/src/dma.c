@@ -138,3 +138,9 @@ void Port_DmaOnVBlank(void) {
             Transfer(n, &sDma[n]);
     }
 }
+
+/* savestates (port/src/debug.c) */
+void* Dma_StateData(size_t* size) {
+    *size = sizeof(sDma);
+    return sDma;
+}

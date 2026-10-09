@@ -179,7 +179,14 @@ void LoadResources(void) {
     }
 }
 
+#ifdef PC
+void Port_FrameBoundary(void);
+#endif
+
 void WaitForNextFrame(void) {
+#ifdef PC
+    Port_FrameBoundary();
+#endif
     gMain.interruptFlag = 0;
     VBlankIntrWait();
     do {

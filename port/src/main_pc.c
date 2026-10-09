@@ -188,12 +188,42 @@ static void ParseWarp(const char* spec) {
 }
 
 static void WarpTick(void) {
+    char cmd[64];
     if (!sWarpPending || gMain.task != TASK_GAME || gMain.state != GAMETASK_MAIN ||
         gMain.substate != GAMEMAIN_UPDATE)
         return;
     sWarpPending = false;
-    DoExitTransition(&sWarp);
-    Port_Log("warping to area %d room %d (%d, %d)", sWarp.area, sWarp.room, sWarp.endX, sWarp.endY);
+    /* executed at the next frame boundary, not inside the vblank handler */
+    snprintf(cmd, sizeof(cmd), "warp %d %d %d %d", sWarp.area, sWarp.room, sWarp.endX, sWarp.endY);
+    Debug_QueueCommand(cmd);
+}
+
+/* --cmd FRAME:COMMAND */
+#define MAX_CMDS 64
+static struct {
+    uint32_t frame;
+    char text[120];
+} sCmds[MAX_CMDS];
+static int sCmdCount;
+
+static void ParseCommand(const char* spec) {
+    char* end;
+    unsigned long frame = strtoul(spec, &end, 10);
+    if (*end != ':' || sCmdCount >= MAX_CMDS) {
+        Port_Log("bad --cmd '%s' (FRAME:COMMAND)", spec);
+        return;
+    }
+    sCmds[sCmdCount].frame = (uint32_t)frame;
+    snprintf(sCmds[sCmdCount].text, sizeof(sCmds[sCmdCount].text), "%s", end + 1);
+    sCmdCount++;
+}
+
+static void CommandTick(uint64_t frame) {
+    int i;
+    for (i = 0; i < sCmdCount; i++) {
+        if (sCmds[i].frame == frame)
+            Debug_QueueCommand(sCmds[i].text);
+    }
 }
 
 static bool ShotThisFrame(uint64_t frame) {
@@ -325,8 +355,11 @@ static void Usage(const char* argv0) {
            "  --shot FRAME             save shot_FRAME.bmp (repeatable)\n"
            "  --warp AREA,ROOM,X,Y     warp once in game (testing)\n"
            "  --wav FILE               record the audio (testing)\n"
+           "  --cmd FRAME:COMMAND      run a debug console command at a frame (repeatable)\n"
            "In game: F1 toggles the extended view, +/- (or mouse wheel) zoom,\n"
-           "F11 fullscreen, Tab fast forward.\n",
+           "F11 fullscreen, Tab fast forward.\n"
+           "Debug: ` console (type help), F2 info, F4 all items, F5/F9 save/load state,\n"
+           "F6/F7 previous/next room (Shift: area), F8 god mode.\n",
            argv0);
 }
 
@@ -374,6 +407,8 @@ static void ParseArgs(int argc, char** argv) {
                 sShots[sShotCount++] = strtoul(argv[++i], NULL, 10);
             else
                 i++;
+        } else if (strcmp(a, "--cmd") == 0 && next) {
+            ParseCommand(argv[++i]);
         } else if (strcmp(a, "--config") == 0 && next)
             i++;
         else if (strcmp(a, "--help") == 0 || strcmp(a, "-h") == 0) {
@@ -571,7 +606,36 @@ static void HandleEvents(void) {
             case SDL_QUIT:
                 Port_Shutdown();
                 exit(0);
-            case SDL_KEYDOWN:
+            case SDL_TEXTINPUT:
+                if (Debug_ConsoleOpen())
+                    Debug_ConsoleText(ev.text.text);
+                break;
+            case SDL_KEYDOWN: {
+                SDL_Scancode sc = ev.key.keysym.scancode;
+                if (sc == SDL_SCANCODE_GRAVE && ev.key.repeat == 0) {
+                    Debug_SetConsoleOpen(!Debug_ConsoleOpen());
+                    if (Debug_ConsoleOpen())
+                        SDL_StartTextInput();
+                    else
+                        SDL_StopTextInput();
+                    sKeyboardKeys = 0;
+                    break;
+                }
+                if (Debug_ConsoleOpen()) {
+                    if (sc == SDL_SCANCODE_RETURN || sc == SDL_SCANCODE_KP_ENTER) {
+                        Debug_ConsoleSubmit();
+                        SDL_StopTextInput();
+                    } else if (sc == SDL_SCANCODE_ESCAPE) {
+                        Debug_SetConsoleOpen(false);
+                        SDL_StopTextInput();
+                    } else if (sc == SDL_SCANCODE_BACKSPACE) {
+                        Debug_ConsoleBackspace();
+                    }
+                    break;
+                }
+                if (ev.key.repeat == 0 && sc >= SDL_SCANCODE_F2 && sc <= SDL_SCANCODE_F9 &&
+                    Debug_HotKey(2 + (sc - SDL_SCANCODE_F2), (ev.key.keysym.mod & KMOD_SHIFT) != 0))
+                    break;
                 if (ev.key.repeat == 0) {
                     switch (ev.key.keysym.scancode) {
                         case SDL_SCANCODE_F1:
@@ -598,6 +662,7 @@ static void HandleEvents(void) {
                 }
                 sKeyboardKeys |= KeyForScancode(ev.key.keysym.scancode);
                 break;
+            }
             case SDL_KEYUP:
                 if (ev.key.keysym.scancode == SDL_SCANCODE_TAB)
                     sFastForward = false;
@@ -665,6 +730,7 @@ void Port_VBlankIntrWait(void) {
     if (!gPortConfig.headless || ShotThisFrame(sFrameCount)) {
         /* the frame is displayed with the state latched at the previous vblank */
         Ppu_RenderFrame(sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
+        Debug_DrawOverlay(sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight, sFrameCount);
         if (ShotThisFrame(sFrameCount)) {
             char name[64];
             snprintf(name, sizeof(name), "shot_%u.bmp", (unsigned)sFrameCount);
@@ -685,6 +751,11 @@ void Port_VBlankIntrWait(void) {
         VBlankIntr();
     View_PrepareFrame();
     WarpTick();
+    CommandTick(sFrameCount);
+    {
+        extern void Debug_HashFrame(uint64_t);
+        Debug_HashFrame(sFrameCount);
+    }
     PORT_IO16(0x006) = 0;
 
     sFrameCount++;
@@ -718,7 +789,8 @@ void Port_Shutdown(void) {
 
 int main(int argc, char** argv) {
     Port_MapMemory();
-    Port_InstallNullGuard();
+    if (getenv("TMC_NO_NULLGUARD") == NULL) /* lets a debugger use SIGTRAP */
+        Port_InstallNullGuard();
     ParseArgs(argc, argv);
     sFrame = calloc(PORT_MAX_VIEW_WIDTH * PORT_MAX_VIEW_HEIGHT, sizeof(uint32_t));
     if (!gPortConfig.headless) {

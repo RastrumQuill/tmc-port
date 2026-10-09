@@ -201,4 +201,17 @@ void View_PrepareFrame(void);
 /** True while the game is in a state where showing more than 240x160 is safe. */
 bool View_IsExtendedActive(void);
 
+/* ---- debug tools (port/src/debug.c) ---- */
+extern bool gDebugOverlay;
+extern bool gDebugGodMode;
+void Port_FrameBoundary(void);
+void Debug_QueueCommand(const char* cmd);
+bool Debug_HotKey(int fkey, bool shift);
+bool Debug_ConsoleOpen(void);
+void Debug_SetConsoleOpen(bool open);
+void Debug_ConsoleText(const char* text);
+void Debug_ConsoleBackspace(void);
+void Debug_ConsoleSubmit(void);
+void Debug_DrawOverlay(uint32_t* frame, int pitch, int w, int h, uint64_t frameCount);
+
 #endif /* PORT_H */
