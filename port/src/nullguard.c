@@ -21,6 +21,9 @@
  * Accesses past the end of a GBA memory region (e.g. EWRAM + 0x4CF6C) hit a
  * mirror of that region on the GBA. Those are redirected the same way, to the
  * mirrored address (port/src/memory.c: Port_GbaAddress).
+ *
+ * The same handlers also serve the console's "break" command (break on
+ * write, see sBreak below).
  */
 #define _GNU_SOURCE
 #include "port.h"
@@ -62,6 +65,109 @@ typedef struct {
 } GuardState;
 
 static GuardState sGuard;
+
+/*
+ * Break on write: the pages around the watched range are made read-only.
+ * A write to them faults; the handler makes them writable, single steps the
+ * writing instruction and protects them again. Writes inside the range are
+ * recorded (the handler only stores them; Port_BreakTake hands them out at
+ * the frame boundary).
+ */
+static struct {
+    bool active, stepping;
+    uint32_t lo, len;        /* the watched range */
+    uint32_t pageLo, pageHi; /* the protected pages */
+    BreakHit hits[64];
+    int count, dropped;
+    int last; /* hit being stepped, -1 if the write was outside the range */
+    uint32_t headBefore; /* first bytes of the range before the step */
+} sBreak;
+
+static uint32_t ReadWord(uint32_t addr) {
+    return *(volatile uint32_t*)(uintptr_t)(addr & ~3u);
+}
+
+/* the first (up to 3) bytes of the range: all a write starting before it can reach */
+static uint32_t ReadHead(void) {
+    const volatile uint8_t* p = (const volatile uint8_t*)(uintptr_t)sBreak.lo;
+    uint32_t v = 0, i, n = sBreak.len < 3 ? sBreak.len : 3;
+    for (i = 0; i < n; i++)
+        v |= (uint32_t)p[i] << (i * 8);
+    return v;
+}
+
+static void ProtectPages(bool readOnly);
+
+/* a write fault at addr from eip: true if it was ours (then the caller single steps) */
+static bool BreakFault(uint32_t addr, uint32_t eip) {
+    if (!sBreak.active || addr < sBreak.pageLo || addr >= sBreak.pageHi)
+        return false;
+    sBreak.last = -1;
+    /* a write that starts up to 3 bytes before the range may still reach it:
+       keep it only if the first bytes of the range change (checked after the step) */
+    if (addr + 3 >= sBreak.lo && addr < sBreak.lo + sBreak.len) {
+        if (sBreak.count < (int)(sizeof(sBreak.hits) / sizeof(sBreak.hits[0]))) {
+            BreakHit* h = &sBreak.hits[sBreak.count];
+            h->addr = addr;
+            h->eip = eip;
+            h->before = ReadWord(addr);
+            h->after = h->before;
+            sBreak.headBefore = ReadHead();
+            sBreak.last = sBreak.count++;
+        } else {
+            sBreak.dropped++;
+        }
+    }
+    ProtectPages(false);
+    sBreak.stepping = true;
+    return true;
+}
+
+/* after the single step: true if it was ours */
+static bool BreakStep(void) {
+    if (!sBreak.stepping)
+        return false;
+    sBreak.stepping = false;
+    if (sBreak.last >= 0) {
+        BreakHit* h = &sBreak.hits[sBreak.last];
+        h->after = ReadWord(h->addr);
+        if (h->addr < sBreak.lo && ReadHead() == sBreak.headBefore)
+            sBreak.count--; /* wrote next to the range, not into it */
+    }
+    if (sBreak.active)
+        ProtectPages(true);
+    return true;
+}
+
+bool Port_BreakSet(uint32_t addr, uint32_t len) {
+    if (len == 0)
+        len = 1;
+    if (!Port_IsReadable((const void*)(uintptr_t)addr, len))
+        return false;
+    Port_BreakClear();
+    sBreak.lo = addr;
+    sBreak.len = len;
+    sBreak.pageLo = addr & ~0xFFFu;
+    sBreak.pageHi = (addr + len + 0xFFFu) & ~0xFFFu;
+    sBreak.active = true;
+    ProtectPages(true);
+    return true;
+}
+
+void Port_BreakClear(void) {
+    if (sBreak.active)
+        ProtectPages(false);
+    sBreak.active = false;
+}
+
+int Port_BreakTake(BreakHit* out, int max, int* dropped) {
+    int n = sBreak.count < max ? sBreak.count : max;
+    memcpy(out, sBreak.hits, sizeof(BreakHit) * (size_t)n);
+    *dropped = sBreak.dropped + (sBreak.count - n);
+    sBreak.count = 0;
+    sBreak.dropped = 0;
+    return n;
+}
 
 /* Find the base/index register used by the memory operand of the instruction at eip. */
 static int FindAddressRegister(const uint8_t* p, const uint32_t* regs, uint32_t faultAddr, bool mirror) {
@@ -156,7 +262,10 @@ static void ReportCrash(uint32_t addr, uint32_t eip, uint32_t esp) {
     uint32_t lo, hi;
     const uint32_t* sp = (const uint32_t*)(uintptr_t)esp;
     int i, n = 0;
+    char what[400];
+    size_t w;
     fprintf(stderr, "tmc: invalid memory access at 0x%08X (eip 0x%08X)\n", addr, eip);
+    w = (size_t)snprintf(what, sizeof(what), "crash: invalid memory access at 0x%08X, eip 0x%08X\nstack:", addr, eip);
     /* a rough backtrace: stack words that point into the program's code */
 #ifdef _WIN32
     lo = 0x10001000u; /* .text of the image (based at 0x10000000, see pc.mk) */
@@ -165,16 +274,21 @@ static void ReportCrash(uint32_t addr, uint32_t eip, uint32_t esp) {
     lo = (uint32_t)(uintptr_t)__executable_start;
     hi = (uint32_t)(uintptr_t)etext;
 #endif
-    if (sp == NULL || lo == 0)
-        return;
-    fprintf(stderr, "tmc: return addresses on the stack:");
-    for (i = 0; i < 512 && n < 24; i++) {
-        if (sp[i] >= lo && sp[i] < hi) {
-            fprintf(stderr, " %08X", sp[i]);
-            n++;
+    if (sp != NULL && lo != 0) {
+        fprintf(stderr, "tmc: return addresses on the stack:");
+        for (i = 0; i < 512 && n < 24; i++) {
+            if (sp[i] >= lo && sp[i] < hi) {
+                fprintf(stderr, " %08X", sp[i]);
+                if (w + 10 < sizeof(what))
+                    w += (size_t)snprintf(what + w, sizeof(what) - w, " %08X", sp[i]);
+                n++;
+            }
         }
+        fprintf(stderr, "\n");
     }
-    fprintf(stderr, "\n");
+    if (w + 2 < sizeof(what))
+        snprintf(what + w, sizeof(what) - w, "\n");
+    Report_Crash(what);
 }
 
 #if defined(__linux__) && defined(__i386__)
@@ -192,6 +306,10 @@ static void OnSegv(int sig, siginfo_t* info, void* ctx) {
     (void)sig;
     for (i = 0; i < 8; i++)
         regs[i] = (uint32_t)g[sGregIndex[i]];
+    if (!sBreak.stepping && BreakFault(addr, (uint32_t)g[REG_EIP])) {
+        g[REG_EFL] |= 0x100;
+        return;
+    }
     if (!sGuard.pending && PlanGuard((const uint8_t*)(uintptr_t)g[REG_EIP], regs, addr, &r, &sGuard.moved)) {
         sGuard.reg = r;
         sGuard.orig = regs[r];
@@ -211,6 +329,11 @@ static void OnTrap(int sig, siginfo_t* info, void* ctx) {
     greg_t* g = uc->uc_mcontext.gregs;
     (void)sig;
     (void)info;
+    if (BreakStep()) {
+        g[REG_EFL] &= ~0x100;
+        if (!sGuard.pending)
+            return;
+    }
     if (!sGuard.pending)
         return;
     if ((uint32_t)g[sGregIndex[sGuard.reg]] == sGuard.moved)
@@ -218,6 +341,13 @@ static void OnTrap(int sig, siginfo_t* info, void* ctx) {
     g[REG_EFL] &= ~0x100;
     sGuard.pending = false;
     FillFakeLow(); /* undo writes */
+}
+
+#include <sys/mman.h>
+
+static void ProtectPages(bool readOnly) {
+    mprotect((void*)(uintptr_t)sBreak.pageLo, sBreak.pageHi - sBreak.pageLo,
+             readOnly ? PROT_READ : PROT_READ | PROT_WRITE);
 }
 
 void Port_InstallNullGuard(void) {
@@ -264,6 +394,10 @@ static LONG CALLBACK OnException(EXCEPTION_POINTERS* ep) {
         int i, r;
         for (i = 0; i < 8; i++)
             regs[i] = *RegPtr(c, i);
+        if (!sBreak.stepping && ep->ExceptionRecord->ExceptionInformation[0] == 1 && BreakFault(addr, c->Eip)) {
+            c->EFlags |= 0x100;
+            return EXCEPTION_CONTINUE_EXECUTION;
+        }
         if (!sGuard.pending && PlanGuard((const uint8_t*)(uintptr_t)c->Eip, regs, addr, &r, &sGuard.moved)) {
             sGuard.reg = r;
             sGuard.orig = regs[r];
@@ -275,6 +409,8 @@ static LONG CALLBACK OnException(EXCEPTION_POINTERS* ep) {
         ReportCrash(addr, c->Eip, c->Esp);
         return EXCEPTION_CONTINUE_SEARCH;
     }
+    if (code == EXCEPTION_SINGLE_STEP && BreakStep() && !sGuard.pending)
+        return EXCEPTION_CONTINUE_EXECUTION;
     if (code == EXCEPTION_SINGLE_STEP && sGuard.pending) {
         if (*RegPtr(c, sGuard.reg) == sGuard.moved)
             *RegPtr(c, sGuard.reg) = sGuard.orig;
@@ -285,12 +421,22 @@ static LONG CALLBACK OnException(EXCEPTION_POINTERS* ep) {
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
+static void ProtectPages(bool readOnly) {
+    DWORD old;
+    VirtualProtect((void*)(uintptr_t)sBreak.pageLo, sBreak.pageHi - sBreak.pageLo,
+                   readOnly ? PAGE_READONLY : PAGE_READWRITE, &old);
+}
+
 void Port_InstallNullGuard(void) {
     FillFakeLow();
     AddVectoredExceptionHandler(1, OnException);
 }
 
 #else
+static void ProtectPages(bool readOnly) {
+    (void)readOnly; /* no break on write on this platform */
+}
+
 void Port_InstallNullGuard(void) {
     FillFakeLow();
 }

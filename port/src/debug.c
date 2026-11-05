@@ -32,11 +32,13 @@ void* Intr_StateData(size_t* size);
 
 bool gDebugOverlay;
 bool gDebugGodMode;
+/* marks what the port drew around the game's own 240x160 picture */
+static bool gDebugFills;
 
 /* ---- command queue ---- */
 
 #define MAX_QUEUE 32
-#define MAX_CMD 128
+#define MAX_CMD 3072 /* room for a pasted bookmark */
 static char sQueue[MAX_QUEUE][MAX_CMD];
 static int sQueueCount;
 
@@ -54,6 +56,15 @@ static char sMessage[96];
 static int sMessageTimer;
 
 static void DbgMessage(const char* fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(sMessage, sizeof(sMessage), fmt, ap);
+    va_end(ap);
+    sMessageTimer = 180;
+    Port_Log("%s", sMessage);
+}
+
+void Debug_Message(const char* fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(sMessage, sizeof(sMessage), fmt, ap);
@@ -230,60 +241,161 @@ static int GetBlobs(StateBlob* b) {
     return n;
 }
 
-static void StatePath(char* buf, size_t size, int slot) {
-    snprintf(buf, size, "tmc_state%d.bin", slot);
+static void StatePath(char* buf, size_t size, const char* arg) {
+    char* end;
+    long slot = arg ? strtol(arg, &end, 0) : 0;
+    if (arg != NULL && *end != 0)
+        snprintf(buf, size, "%s", arg); /* a file, e.g. state.bin of a report */
+    else
+        snprintf(buf, size, "tmc_state%ld.bin", slot);
 }
 
-static void DbgSaveState(int slot) {
+bool Debug_WriteState(const char* path) {
     StateBlob b[16];
     int i, n = GetBlobs(b);
     uint32_t hdr[2] = { STATE_MAGIC, 0 };
-    char path[64];
-    FILE* f;
-    StatePath(path, sizeof(path), slot);
-    f = fopen(path, "wb");
-    if (f == NULL) {
-        DbgMessage("cannot write %s", path);
-        return;
-    }
+    FILE* f = fopen(path, "wb");
+    if (f == NULL)
+        return false;
     for (i = 0; i < n; i++)
         hdr[1] += (uint32_t)b[i].size;
     fwrite(hdr, sizeof(hdr), 1, f);
     for (i = 0; i < n; i++)
         fwrite(b[i].ptr, 1, b[i].size, f);
     fclose(f);
-    DbgMessage("saved state %d", slot);
+    return true;
 }
 
-static void DbgLoadState(int slot) {
+static void DbgSaveState(const char* arg) {
+    char path[300];
+    StatePath(path, sizeof(path), arg);
+    if (Debug_WriteState(path))
+        DbgMessage("saved state %s", path);
+    else
+        DbgMessage("cannot write %s", path);
+}
+
+static void DbgLoadState(const char* arg) {
     StateBlob b[16];
     int i, n = GetBlobs(b);
     uint32_t hdr[2], total = 0;
-    char path[64];
+    char path[300];
     FILE* f;
-    StatePath(path, sizeof(path), slot);
+    StatePath(path, sizeof(path), arg);
     f = fopen(path, "rb");
     if (f == NULL) {
-        DbgMessage("no state %d", slot);
+        DbgMessage("no state %s", path);
         return;
     }
     for (i = 0; i < n; i++)
         total += (uint32_t)b[i].size;
     if (fread(hdr, sizeof(hdr), 1, f) != 1 || hdr[0] != STATE_MAGIC || hdr[1] != total) {
         fclose(f);
-        DbgMessage("state %d is from another version", slot);
+        DbgMessage("state %s is from another version", path);
         return;
     }
     for (i = 0; i < n; i++) {
         if (fread(b[i].ptr, 1, b[i].size, f) != b[i].size) {
-            DbgMessage("state %d is truncated", slot);
+            DbgMessage("state %s is truncated", path);
             break;
         }
     }
     fclose(f);
     /* the view is normally latched at vblank, latch it again for the loaded state */
     View_PrepareFrame();
-    DbgMessage("loaded state %d", slot);
+    DbgMessage("loaded state %s", path);
+}
+
+/* ---- bookmarks ---- */
+
+static bool ValidName(const char* name) {
+    const char* p;
+    if (name == NULL || !*name || strlen(name) > 48)
+        return false;
+    for (p = name; *p; p++)
+        if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || (*p >= '0' && *p <= '9') || *p == '-' ||
+              *p == '_' || *p == '.'))
+            return false;
+    return name[0] != '.';
+}
+
+static void DbgBookmark(const char* name) {
+    char text[2600], desc[96], path[96];
+    if (!Bookmark_Make(text, sizeof(text))) {
+        DbgMessage("bookmark: start a game first");
+        return;
+    }
+    Bookmark_Describe(text, desc, sizeof(desc));
+    Port_SetClipboard(text);
+    printf("bookmark %s\n", text);
+    fflush(stdout);
+    if (name != NULL) {
+        FILE* f;
+        if (!ValidName(name)) {
+            DbgMessage("bookmark: names use letters, digits, - _ .");
+            return;
+        }
+        Port_MakeDir("bookmarks");
+        snprintf(path, sizeof(path), "bookmarks/%s.txt", name);
+        f = fopen(path, "w");
+        if (f == NULL) {
+            DbgMessage("bookmark: cannot write %s", path);
+            return;
+        }
+        fprintf(f, "%s\n# %s\n", text, desc);
+        fclose(f);
+        DbgMessage("bookmark %s saved, %s (copied)", name, desc);
+    } else {
+        DbgMessage("bookmark copied: %s", desc);
+    }
+}
+
+/* the bookmark text from an argument: TMC1:..., a name in bookmarks/, a file, or the clipboard */
+static bool BookmarkText(const char* arg, char* out, size_t size) {
+    char path[600];
+    FILE* f = NULL;
+    out[0] = 0;
+    if (arg == NULL)
+        return Port_GetClipboard(out, size);
+    if (strncmp(arg, "TMC1:", 5) == 0) {
+        snprintf(out, size, "%s", arg);
+        return true;
+    }
+    if (ValidName(arg)) {
+        snprintf(path, sizeof(path), "bookmarks/%s.txt", arg);
+        f = fopen(path, "r");
+    }
+    if (f == NULL)
+        f = fopen(arg, "r");
+    if (f == NULL)
+        return false;
+    while (fgets(out, (int)size, f)) {
+        char* t = strstr(out, "TMC1:");
+        if (t != NULL) {
+            memmove(out, t, strlen(t) + 1);
+            fclose(f);
+            return true;
+        }
+    }
+    fclose(f);
+    out[0] = 0;
+    return false;
+}
+
+static void DbgGoto(const char* arg) {
+    char text[2600], desc[96];
+    const char* err;
+    if (!BookmarkText(arg, text, sizeof(text))) {
+        DbgMessage(arg ? "goto: no bookmark '%s'" : "goto: no bookmark in the clipboard%s", arg ? arg : "");
+        return;
+    }
+    err = Bookmark_Load(text);
+    if (err != NULL) {
+        DbgMessage("goto: %s", err);
+        return;
+    }
+    Bookmark_Describe(text, desc, sizeof(desc));
+    DbgMessage("goto %s", desc);
 }
 
 /* ---- commands ---- */
@@ -298,9 +410,13 @@ static int Num(const char* s, int def) {
 }
 
 static const char* const sHelp[] = {
+    "bookmark [NAME]  goto [NAME|TMC1:...] (no argument: clipboard)  report",
     "warp AREA ROOM [X Y]  room N  area N  next/prev  nextarea/prevarea",
     "items  item ID [0-2]  equip ID A|B  hearts N  heal  rupees N  bombs N  arrows N  shells N  keys N",
-    "god  flag N [0/1]  savestate [N]  loadstate [N]  scale S  view (toggle) hud  info  pos",
+    "feature NAME [0/1]  features  fills (overlay: classic area, room clip, layer modes)",
+    "god  flag N [0/1]  savestate [N|FILE]  loadstate [N|FILE]  scale S  view (toggle) hud  info  pos",
+    "viewer [palette|tiles|oam|io|mem|off] (F3 cycles)  tiles PAGE [PAL]  mem ADDR|NAME[+OFF]",
+    "watch ADDR|NAME [LEN] (log changes)  break ADDR|NAME [LEN] (log writes, with the code address)  unwatch  unbreak",
 };
 
 static void Execute(char* line) {
@@ -323,9 +439,9 @@ static void Execute(char* line) {
             Port_Log("%s", sHelp[i]);
         DbgMessage("commands: see console/stdout, or PC_PORT.md");
     } else if (IS("savestate") || IS("ss")) {
-        DbgSaveState(ARG(1, 0));
+        DbgSaveState(argc > 1 ? argv[1] : NULL);
     } else if (IS("loadstate") || IS("ls")) {
-        DbgLoadState(ARG(1, 0));
+        DbgLoadState(argc > 1 ? argv[1] : NULL);
     } else if (IS("scale")) {
         float s = argc > 1 ? (float)atof(argv[1]) : 3.0f;
         if (s >= 1.0f && s <= 8.0f)
@@ -339,8 +455,30 @@ static void Execute(char* line) {
         DbgMessage("hud corners %s", gPortConfig.hudAnchor ? "on" : "off");
     } else if (IS("info")) {
         gDebugOverlay = !gDebugOverlay;
+    } else if (IS("feature")) {
+        char list[200];
+        if (argc < 2 || !Port_FeatureSet(argv[1], ARG(2, -1))) {
+            Port_FeatureList(list, sizeof(list), true);
+            DbgMessage("feature NAME|all [0|1]: %s", list);
+        } else {
+            Port_FeatureList(list, sizeof(list), false);
+            DbgMessage("port features off: %s", list[0] ? list : "none");
+        }
+    } else if (IS("features")) {
+        char list[200];
+        Port_FeatureList(list, sizeof(list), true);
+        DbgMessage("%s", list);
+    } else if (IS("fills")) {
+        gDebugFills = !gDebugFills;
+        DbgMessage("fill overlay %s", gDebugFills ? "on" : "off");
+    } else if (IS("goto")) {
+        DbgGoto(argc > 1 ? argv[1] : NULL);
+    } else if (IS("report")) {
+        Report_Create(NULL);
     } else if (!InGame()) {
         DbgMessage("'%s' needs a running game", cmd);
+    } else if (IS("bookmark") || IS("bm")) {
+        DbgBookmark(argc > 1 ? argv[1] : NULL);
     } else if (IS("warp")) {
         Warp(ARG(1, 0), ARG(2, 0), ARG(3, -1), ARG(4, -1));
     } else if (IS("room")) {
@@ -431,7 +569,7 @@ static void Execute(char* line) {
         } else {
             DbgMessage("flag 0x%X = %d", flag, CheckGlobalFlag(flag) ? 1 : 0);
         }
-    } else {
+    } else if (!Viewer_Command(argc, argv)) {
         DbgMessage("unknown command '%s' (try help)", cmd);
     }
 #undef ARG
@@ -444,6 +582,8 @@ void Port_FrameBoundary(void) {
     for (i = 0; i < sQueueCount; i++)
         Execute(sQueue[i]);
     sQueueCount = 0;
+    Bookmark_Tick();
+    Viewer_Tick();
     if (gDebugGodMode && InGame())
         gSave.stats.health = gSave.stats.maxHealth;
     /* messages stay up for a fixed number of game frames */
@@ -458,6 +598,9 @@ bool Debug_HotKey(int fkey, bool shift) {
     switch (fkey) {
         case 2:
             gDebugOverlay = !gDebugOverlay;
+            return true;
+        case 3:
+            Viewer_HotKey();
             return true;
         case 4:
             Debug_QueueCommand("items");
@@ -529,8 +672,65 @@ static void FillRect(uint32_t* frame, int pitch, int w, int h, int x, int y, int
                 frame[j * pitch + i] = (frame[j * pitch + i] >> 2) & 0x3F3F3F;
 }
 
+static void Outline(uint32_t* frame, int pitch, int w, int h, int x0, int y0, int x1, int y1, uint32_t color) {
+    int x, y;
+    for (x = x0; x < x1; x++) {
+        if (x < 0 || x >= w || ((x - x0) & 4))
+            continue;
+        if (y0 >= 0 && y0 < h)
+            frame[y0 * pitch + x] = color;
+        if (y1 - 1 >= 0 && y1 - 1 < h)
+            frame[(y1 - 1) * pitch + x] = color;
+    }
+    for (y = y0; y < y1; y++) {
+        if (y < 0 || y >= h || ((y - y0) & 4))
+            continue;
+        if (x0 >= 0 && x0 < w)
+            frame[y * pitch + x0] = color;
+        if (x1 - 1 >= 0 && x1 - 1 < w)
+            frame[y * pitch + x1 - 1] = color;
+    }
+}
+
+/* outside the game's picture: tinted blue; yellow = the game's 240x160, cyan = the room clip */
+static void DrawFills(uint32_t* frame, int pitch, int w, int h) {
+    static const char* const modes[] = { "CLASSIC", "WRAP", "MAP", "STRETCH", "SINGLE" };
+    int cx = gPortViewOffsetX, cy = gPortViewOffsetY;
+    int x, y, bg, tx;
+    char buf[64];
+    if (w == GBA_WIDTH && h == GBA_HEIGHT)
+        return;
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            if (x >= cx && x < cx + GBA_WIDTH && y >= cy && y < cy + GBA_HEIGHT)
+                continue;
+            frame[y * pitch + x] = ((frame[y * pitch + x] >> 1) & 0x7F7F7F) + 0x101860;
+        }
+    }
+    Outline(frame, pitch, w, h, gPortClipLeft, gPortClipTop, gPortClipRight, gPortClipBottom, 0x00FFFF);
+    Outline(frame, pitch, w, h, cx, cy, cx + GBA_WIDTH, cy + GBA_HEIGHT, 0xFFFF00);
+    tx = w - 4 * 40;
+    for (bg = 1; bg < 4; bg++) {
+        int m = gPpuBgMode[bg];
+        bool on = (PORT_IO16(0) >> (8 + bg)) & 1;
+        snprintf(buf, sizeof(buf), "BG%d %s%s", bg, m >= 0 && m < 5 ? modes[m] : "?", on ? "" : " (OFF)");
+        FillRect(frame, pitch, w, h, tx - 2, 2 + (bg - 1) * 7 - 1, (int)strlen(buf) * 4 + 4, 7);
+        DrawText(frame, pitch, w, h, tx, 2 + (bg - 1) * 7, buf, on ? 0xFFFFFF : 0x909090);
+    }
+}
+
+void Debug_Text(uint32_t* frame, int pitch, int w, int h, int x, int y, const char* s, uint32_t color) {
+    DrawText(frame, pitch, w, h, x, y, s, color);
+}
+
+void Debug_Shade(uint32_t* frame, int pitch, int w, int h, int x, int y, int rw, int rh) {
+    FillRect(frame, pitch, w, h, x, y, rw, rh);
+}
+
 void Debug_DrawOverlay(uint32_t* frame, int pitch, int w, int h, uint64_t frameCount) {
-    char buf[96];
+    char buf[256];
+    if (gDebugFills)
+        DrawFills(frame, pitch, w, h);
     if (gDebugOverlay) {
         int y = 2;
         FillRect(frame, pitch, w, h, 0, 0, 4 * 30 + 4, 7 * 4 + 2);
@@ -549,9 +749,14 @@ void Debug_DrawOverlay(uint32_t* frame, int pitch, int w, int h, uint64_t frameC
             DrawText(frame, pitch, w, h, 2, y, buf, 0xFFFF80);
         }
     }
+    Viewer_Draw(frame, pitch, w, h);
     if (sConsoleOpen) {
         FillRect(frame, pitch, w, h, 0, h - 9, w, 9);
-        snprintf(buf, sizeof(buf), "> %s_", sConsoleLine);
+        {
+            /* a long line (a pasted bookmark) shows its end */
+            size_t len = strlen(sConsoleLine), fit = w > 16 ? (size_t)(w - 16) / 4 : 1;
+            snprintf(buf, sizeof(buf), "> %s_", len > fit ? sConsoleLine + len - fit : sConsoleLine);
+        }
         DrawText(frame, pitch, w, h, 2, h - 7, buf, 0x80FF80);
     } else if (sMessageTimer > 0) {
         FillRect(frame, pitch, w, h, 0, h - 9, (int)strlen(sMessage) * 4 + 4, 9);

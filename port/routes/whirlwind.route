@@ -1,0 +1,7 @@
+# Lon Lon Ranch: the two whirlwinds showed a fuchsia rectangle for single
+# frames. Cause: an entity keeps its graphics slot number in one byte, and
+# the PC build had more than 256 slots. Fixed by v0.2.3.
+#! --width 1804 --height 708 --scale 2
+bookmark TMC1:AQMFAQQAAToBogMAAQEBAQAEAQA4FAA-QQAHAwUEAAE6AaIDAQALyAeoCwAKGBgA_wC5AgA-QAAIgAD_AP8ACWEj
+0-880/8 shot whirlwind
+881 end

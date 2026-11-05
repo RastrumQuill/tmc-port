@@ -94,6 +94,34 @@ damaged one (a CRC mismatch), is recreated from the ROM.
 * The view is set up at vblank, when the hardware would latch the registers
   for the next frame (`port/src/view.c`).
 
+## Tools for finding and fixing problems
+
+* **Bookmarks** (`port/src/bookmark.c`). The text `TMC1:` + base64url of a
+  run-length coded payload with a check sum: a format byte, area, room,
+  layer, facing, position and the whole `SaveFile`.
+  Loading one copies the save in and enters the room through the game's own
+  load-a-save path, so the story state is exactly the bookmarked one. While a
+  bookmark is loaded, `eeprom_pc.c` does not write `tmc.sav`.
+* **Reports** (`port/src/report.c`). F10, the `report` command and the crash
+  handler (`nullguard.c`) write `reports/DATE_TIME/` with the location, a
+  bookmark, the settings, the last log lines (the user's home folder is
+  replaced by `~`), `screen.bmp` and `state.bin`.
+* **Feature switches** (`port/src/features.c`). Each presentation feature has
+  a switch (`TMC_OFF=...`, `feature NAME 0`). They only change drawing, so
+  RAM hashes are the same with any of them off. `fills` draws the original
+  240×160 area, the room clip and each layer's extension mode.
+* **Routes** (`port/src/route.c`, `port/routes/`). A bookmark plus timed
+  keys, shots and commands. Frames count from the first frame the bookmark is
+  playable, so a route does not depend on the boot. `port/tools/routes.sh`
+  runs them all and compares the shots with a baseline folder.
+* **Viewers and memory breakpoints** (`port/src/viewers.c`). F3 shows the
+  palettes, tile pages, OAM, IO registers or a memory dump. `watch` compares
+  a range once per frame. `break` makes the pages around a range read-only.
+  The write faults; the null-guard handler unprotects the pages, single steps
+  the instruction (trap flag), records the address, the old and new value and
+  the code address, and protects them again. Hits are logged at the next
+  frame boundary.
+
 ## Limitations / known issues
 
 * USA version only.

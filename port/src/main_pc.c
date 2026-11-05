@@ -6,6 +6,12 @@
 
 #include <SDL.h>
 #include <setjmp.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +41,7 @@ PortConfig gPortConfig = {
     .autoZoom = true,
     .frameSkipLimit = 0,
     .headless = false,
+    .crashReports = true,
     .savePath = "tmc.sav",
     .dataPath = "tmc_data.pak",
 };
@@ -59,6 +66,10 @@ static uint64_t sFrameCount;
 static uint64_t sNextFrameTime;
 static bool sFastForward;
 static uint16_t sKeys;
+static uint16_t sKeyboardKeys;
+static void ClearKeyboardKeys(void) {
+    sKeyboardKeys = 0;
+}
 static const char* sConfigPath = "tmc_pc.ini";
 
 /* ---- testing helpers: scripted input and screenshots ---- */
@@ -125,6 +136,24 @@ static void ParseScript(const char* spec) {
         if (*p == ',')
             p++;
     }
+}
+
+/* "RIGHT+B": the keys, or 0 if any name is unknown */
+uint16_t Port_ParseKeys(const char* s) {
+    uint16_t keys = 0;
+    while (*s) {
+        const char* name = s;
+        uint16_t k;
+        while (*s && *s != '+')
+            s++;
+        k = ParseKeyName(name, s - name);
+        if (k == 0)
+            return 0;
+        keys |= k;
+        if (*s == '+')
+            s++;
+    }
+    return keys;
 }
 
 static uint16_t ScriptKeys(uint64_t frame) {
@@ -211,7 +240,7 @@ static void WarpTick(void) {
 #define MAX_CMDS 2048
 static struct {
     uint32_t frame;
-    char text[120];
+    char* text;
 } sCmds[MAX_CMDS];
 static int sCmdCount;
 
@@ -223,7 +252,7 @@ static void ParseCommand(const char* spec) {
         return;
     }
     sCmds[sCmdCount].frame = (uint32_t)frame;
-    snprintf(sCmds[sCmdCount].text, sizeof(sCmds[sCmdCount].text), "%s", end + 1);
+    sCmds[sCmdCount].text = SDL_strdup(end + 1);
     sCmdCount++;
 }
 
@@ -246,13 +275,153 @@ static bool ShotThisFrame(uint64_t frame) {
 
 /* ---- logging ---- */
 
+/* the last log lines, for bug reports */
+#define LOG_LINES 200
+static char sLogRing[LOG_LINES][200];
+static int sLogNext;
+
 void Port_Log(const char* fmt, ...) {
     va_list ap;
+    char line[200];
     va_start(ap, fmt);
-    fprintf(stderr, "tmc: ");
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
+    vsnprintf(line, sizeof(line), fmt, ap);
     va_end(ap);
+    fprintf(stderr, "tmc: %s\n", line);
+    snprintf(sLogRing[sLogNext % LOG_LINES], sizeof(sLogRing[0]), "%u: %s", (unsigned)sFrameCount, line);
+    sLogNext++;
+}
+
+void Port_LogTail(char* out, size_t size) {
+    size_t n = 0;
+    int i = sLogNext > LOG_LINES ? sLogNext - LOG_LINES : 0;
+    out[0] = 0;
+    for (; i < sLogNext && n + 2 < size; i++) {
+        int k = snprintf(out + n, size - n, "%s\n", sLogRing[i % LOG_LINES]);
+        if (k < 0)
+            break;
+        n += (size_t)k;
+    }
+}
+
+/* ---- host helpers ---- */
+
+uint64_t Port_FrameCount(void) {
+    return sFrameCount;
+}
+
+void Port_SetClipboard(const char* text) {
+    if (!gPortConfig.headless)
+        SDL_SetClipboardText(text);
+}
+
+bool Port_GetClipboard(char* out, size_t size) {
+    char* t;
+    out[0] = 0;
+    if (gPortConfig.headless || !SDL_HasClipboardText())
+        return false;
+    t = SDL_GetClipboardText();
+    if (t == NULL)
+        return false;
+    snprintf(out, size, "%s", t);
+    SDL_free(t);
+    return out[0] != 0;
+}
+
+bool Port_MakeDir(const char* path) {
+#ifdef _WIN32
+    return _mkdir(path) == 0;
+#else
+    return mkdir(path, 0755) == 0;
+#endif
+}
+
+static uint32_t* sCapture;
+static int sCaptureW, sCaptureH;
+static bool sCaptured, sDrawnOnce;
+
+void Port_CaptureScreen(void) {
+    if (!sDrawnOnce)
+        return;
+    if (sCapture == NULL)
+        sCapture = malloc(PORT_MAX_VIEW_WIDTH * PORT_MAX_VIEW_HEIGHT * sizeof(uint32_t));
+    if (sCapture == NULL)
+        return;
+    memcpy(sCapture, sFrame, PORT_MAX_VIEW_WIDTH * gPortViewHeight * sizeof(uint32_t));
+    sCaptureW = gPortViewWidth;
+    sCaptureH = gPortViewHeight;
+    sCaptured = true;
+}
+
+bool Port_WriteLastFrame(const char* path) {
+    if (sCaptured) {
+        sCaptured = false;
+        WriteBmp(path, sCapture, PORT_MAX_VIEW_WIDTH, sCaptureW, sCaptureH);
+        return true;
+    }
+    if (!sDrawnOnce)
+        return false;
+    WriteBmp(path, sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
+    return true;
+}
+
+void Port_OpenUrl(const char* url) {
+    if (SDL_OpenURL(url) != 0)
+        Port_Log("could not open %s: %s", url, SDL_GetError());
+}
+
+void Port_OpenFolder(const char* dir) {
+    char url[1200];
+    char* cwd = SDL_GetBasePath();
+#ifdef _WIN32
+    char here[1024];
+    if (_getcwd(here, sizeof(here)) != NULL) {
+        size_t k;
+        snprintf(url, sizeof(url), "file:///%s/%s", here, dir);
+        for (k = 0; url[k]; k++)
+            if (url[k] == '\\')
+                url[k] = '/';
+    } else
+#else
+    char here[1024];
+    if (getcwd(here, sizeof(here)) != NULL)
+        snprintf(url, sizeof(url), "file://%s/%s", here, dir);
+    else
+#endif
+    {
+        snprintf(url, sizeof(url), "file://%s/%s", cwd ? cwd : ".", dir);
+    }
+    SDL_free(cwd);
+    Port_OpenUrl(url);
+}
+
+int Port_ReportDialog(const char* dir) {
+    char text[400];
+    int button = 0;
+    const SDL_MessageBoxButtonData buttons[] = {
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Open a GitHub issue" },
+        { 0, 2, "Open the folder" },
+        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Close" },
+    };
+    SDL_MessageBoxData box = { SDL_MESSAGEBOX_INFORMATION, NULL, "Bug report", text, 3, buttons, NULL };
+    box.window = sWindow;
+    snprintf(text, sizeof(text),
+             "Saved to %s\n\nThe report text is copied to the clipboard: paste it where you report the bug "
+             "(GitHub, Discord, email) and say what happened. Attach the files in the folder if you can.\n\n"
+             "GitHub needs an account and opens with the text filled in.",
+             dir);
+    ClearKeyboardKeys();
+    if (SDL_ShowMessageBox(&box, &button) != 0)
+        return 0;
+    return button;
+}
+
+void Port_CrashDialog(const char* dir) {
+    char text[300];
+    snprintf(text, sizeof(text),
+             "The game crashed. A report was saved to %s (the game's folder).\nPlease send it with what you were "
+             "doing. Turn this off with crash_reports = 0 in tmc_pc.ini.",
+             dir);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "The Minish Cap", text, sWindow);
 }
 
 void Port_Fatal(const char* fmt, ...) {
@@ -295,6 +464,8 @@ static void SetOption(const char* key, const char* value) {
         gPortConfig.hudAnchor = ParseBool(value);
     else if (strcmp(key, "auto_zoom") == 0)
         gPortConfig.autoZoom = ParseBool(value);
+    else if (strcmp(key, "crash_reports") == 0)
+        gPortConfig.crashReports = ParseBool(value);
     else if (strcmp(key, "save") == 0)
         snprintf(gPortConfig.savePath, sizeof(gPortConfig.savePath), "%s", value);
     else if (strcmp(key, "rom") == 0)
@@ -354,6 +525,8 @@ static void SaveConfig(const char* path) {
     fprintf(f, "hud_corners = %d\n", gPortConfig.hudAnchor);
     fprintf(f, "# 1 = zoom in on rooms smaller than the view, so they fill the window\n");
     fprintf(f, "auto_zoom = %d\n", gPortConfig.autoZoom);
+    fprintf(f, "# 1 = save a report folder (reports/) when the game crashes\n");
+    fprintf(f, "crash_reports = %d\n", gPortConfig.crashReports);
     fprintf(f, "save = %s\n", gPortConfig.savePath);
     fprintf(f, "data = %s\n", gPortConfig.dataPath);
     if (gPortConfig.romPath[0])
@@ -380,10 +553,12 @@ static void Usage(const char* argv0) {
            "  --warp AREA,ROOM,X,Y     warp once in game (testing)\n"
            "  --wav FILE               record the audio (testing)\n"
            "  --cmd FRAME:COMMAND      run a debug console command at a frame (repeatable)\n"
+           "  --bookmark TEXT|NAME     start at a bookmark (TMC1:..., or bookmarks/NAME.txt)\n"
+           "  --route FILE             play a test route (see port/routes/README.md)\n"
            "In game: F1 toggles the extended view, +/- (or mouse wheel) zoom,\n"
-           "F11 fullscreen, Tab fast forward.\n"
-           "Debug: ` console (type help), F2 info, F4 all items, F5/F9 save/load state,\n"
-           "F6/F7 previous/next room (Shift: area), F8 god mode.\n",
+           "F11 fullscreen, Tab fast forward, F10 bug report.\n"
+           "Debug: ` console (type help), F2 info, F3 viewers, F4 all items,\n"
+           "F5/F9 save/load state, F6/F7 previous/next room (Shift: area), F8 god mode.\n",
            argv0);
 }
 
@@ -441,6 +616,12 @@ static void ParseArgs(int argc, char** argv) {
                 i++;
         } else if (strcmp(a, "--cmd") == 0 && next) {
             ParseCommand(argv[++i]);
+        } else if (strcmp(a, "--bookmark") == 0 && next) {
+            char cmd[3000];
+            snprintf(cmd, sizeof(cmd), "goto %s", argv[++i]);
+            Debug_QueueCommand(cmd);
+        } else if (strcmp(a, "--route") == 0 && next) {
+            Route_Load(argv[++i]);
         } else if (strcmp(a, "--config") == 0 && next)
             i++;
         else if (strcmp(a, "--help") == 0 || strcmp(a, "-h") == 0) {
@@ -513,9 +694,11 @@ void Port_UpdateViewSize(void) {
 
 static void InitVideo(void) {
     Uint32 flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    char title[160];
     if (gPortConfig.fullscreen)
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-    sWindow = SDL_CreateWindow("The Legend of Zelda: The Minish Cap", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    snprintf(title, sizeof(title), "The Legend of Zelda: The Minish Cap - PC port %s", Port_VersionText());
+    sWindow = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                gPortConfig.windowWidth, gPortConfig.windowHeight, flags);
     if (sWindow == NULL)
         Port_Fatal("SDL_CreateWindow: %s", SDL_GetError());
@@ -580,7 +763,6 @@ static void PresentFrame(void) {
 
 /* ---- input ---- */
 
-static uint16_t sKeyboardKeys;
 static uint16_t sPadKeys;
 
 static uint16_t KeyForScancode(SDL_Scancode sc) {
@@ -703,6 +885,16 @@ static void HandleEvents(void) {
                         SDL_StopTextInput();
                     } else if (sc == SDL_SCANCODE_BACKSPACE) {
                         Debug_ConsoleBackspace();
+                    } else if (sc == SDL_SCANCODE_V && (ev.key.keysym.mod & KMOD_CTRL)) {
+                        char* clip = SDL_GetClipboardText();
+                        if (clip != NULL) {
+                            char* c;
+                            for (c = clip; *c; c++)
+                                if (*c == '\n' || *c == '\r' || *c == '\t')
+                                    *c = ' ';
+                            Debug_ConsoleText(clip);
+                            SDL_free(clip);
+                        }
                     }
                     break;
                 }
@@ -713,6 +905,11 @@ static void HandleEvents(void) {
                     switch (ev.key.keysym.scancode) {
                         case SDL_SCANCODE_F1:
                             gPortConfig.extendedView = !gPortConfig.extendedView;
+                            break;
+                        case SDL_SCANCODE_F10:
+                            /* the picture now, the rest at the next frame boundary */
+                            Port_CaptureScreen();
+                            Debug_QueueCommand("report");
                             break;
                         case SDL_SCANCODE_F11:
                             gPortConfig.fullscreen = !gPortConfig.fullscreen;
@@ -803,7 +1000,7 @@ void Port_VBlankIntrWait(void) {
 
     /* fast forward only shows every 4th frame; frames nobody sees are not rendered */
     present = !gPortConfig.headless && (!sFastForward || (sFrameCount & 3) == 0);
-    if (present || (gPortConfig.headless && (sBench || ShotThisFrame(sFrameCount)))) {
+    if (present || (gPortConfig.headless && (sBench || ShotThisFrame(sFrameCount) || Route_ShotDue()))) {
         /* the frame is displayed with the state latched at the previous vblank */
         uint64_t t0 = sBench ? SDL_GetPerformanceCounter() : 0;
         static int benchW, benchH;
@@ -819,10 +1016,16 @@ void Port_VBlankIntrWait(void) {
             sBenchSeconds += (double)(SDL_GetPerformanceCounter() - t0) / SDL_GetPerformanceFrequency();
             sBenchFrames++;
         }
+        sDrawnOnce = true;
         Debug_DrawOverlay(sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight, sFrameCount);
         if (ShotThisFrame(sFrameCount)) {
             char name[64];
             snprintf(name, sizeof(name), "shot_%u.bmp", (unsigned)sFrameCount);
+            WriteBmp(name, sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
+        }
+        if (Route_ShotDue()) {
+            char name[140];
+            snprintf(name, sizeof(name), "%s.bmp", Route_ShotDue());
             WriteBmp(name, sFrame, PORT_MAX_VIEW_WIDTH, gPortViewWidth, gPortViewHeight);
         }
     } else {
@@ -834,7 +1037,7 @@ void Port_VBlankIntrWait(void) {
             PresentFrame();
         HandleEvents();
     }
-    PORT_IO16(0x130) = (uint16_t)(~(sKeys | ScriptKeys(sFrameCount)) & 0x3FF);
+    PORT_IO16(0x130) = (uint16_t)(~(sKeys | ScriptKeys(sFrameCount) | Route_Keys()) & 0x3FF);
 
     /* vblank */
     PORT_IO16(0x006) = 160;
@@ -844,6 +1047,7 @@ void Port_VBlankIntrWait(void) {
     View_PrepareFrame();
     WarpTick();
     CommandTick(sFrameCount);
+    Route_Tick();
     {
         extern void Debug_HashFrame(uint64_t);
         Debug_HashFrame(sFrameCount);
@@ -886,6 +1090,7 @@ int main(int argc, char** argv) {
     Port_MapMemory();
     if (getenv("TMC_NO_NULLGUARD") == NULL) /* lets a debugger use SIGTRAP */
         Port_InstallNullGuard();
+    Port_FeatureInit();
     ParseArgs(argc, argv);
     Port_LoadGameData(gPortConfig.dataPath, gPortConfig.romPath, sizeof(gPortConfig.romPath), gPortConfig.rebuildData);
     sFrame = calloc(PORT_MAX_VIEW_WIDTH * PORT_MAX_VIEW_HEIGHT, sizeof(uint32_t));

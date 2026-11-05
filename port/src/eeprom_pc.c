@@ -91,7 +91,7 @@ void Save_Load(void) {
 
 void Save_Flush(void) {
     FILE* f;
-    if (!sDirty || gPortConfig.headless)
+    if (!sDirty || gPortConfig.headless || gPortSaveLocked)
         return;
     f = fopen(gPortConfig.savePath, "wb");
     if (f == NULL) {

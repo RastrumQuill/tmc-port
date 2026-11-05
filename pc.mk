@@ -83,6 +83,16 @@ all: $(EXE)
 clean:
 	rm -rf $(BUILD_DIR) $(EXE)
 
+# ---- version (shown in bug reports and the window title) ----
+# PORT_VERSION: the release tag when CI publishes one (make PORT_VERSION=v1.2.3), else "dev"
+PORT_VERSION ?= dev
+PORT_COMMIT := $(shell git rev-parse --short=10 HEAD 2>/dev/null || echo unknown)$(shell git diff --quiet HEAD -- 2>/dev/null || echo -modified)
+VERSION_H := $(BUILD_DIR)/port_version.h
+VERSION_TEXT := \#define PORT_VERSION "$(PORT_VERSION)"\n\#define PORT_COMMIT "$(PORT_COMMIT)"
+# rewritten only when the text changes, so builds stay incremental
+$(shell mkdir -p $(BUILD_DIR); printf '$(VERSION_TEXT)\n' > $(VERSION_H).new; cmp -s $(VERSION_H).new $(VERSION_H) || cp $(VERSION_H).new $(VERSION_H); rm -f $(VERSION_H).new)
+$(BUILD_DIR)/port/src/report.o: CPPFLAGS += -I $(BUILD_DIR)
+
 # ---- compile ----
 $(BUILD_DIR)/src/%.o: src/%.c
 	@mkdir -p $(dir $@)

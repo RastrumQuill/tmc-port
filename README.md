@@ -272,11 +272,13 @@ view matters.
 |---|---|
 | `` ` `` | open the command console: type a command, Enter runs it, Esc closes it |
 | F2 | info overlay: frame, view size, area, room, Link's position |
+| F3 | viewers: palette, tiles, sprites (OAM), IO registers, memory (press again for the next one) |
 | F4 | give all items, plus 20 hearts, the biggest wallet, bomb bag and quiver |
 | F5 / F9 | quick save / load state (slot 0) |
 | F6 / F7 | previous / next room in the current area |
 | Shift+F6 / Shift+F7 | previous / next area |
 | F8 | god mode (health stays full) |
+| F10 | bug report (see below) |
 
 ![Info overlay at 426×240](docs/pc_port/debug_overlay_426x240.png)
 
@@ -296,6 +298,14 @@ Console commands (numbers can be decimal or `0x` hex):
 | `flag N [0/1]` | read, set or clear a story flag (see `include/flags.h`) |
 | `savestate [N]`, `loadstate [N]` | savestates, stored in `tmc_stateN.bin` |
 | `scale S`, `view`, `hud`, `info` | zoom; toggle the extended view, the HUD corners and the overlay |
+| `bookmark [NAME]` | save the current spot as a bookmark text (copied to the clipboard, and to `bookmarks/NAME.txt`) |
+| `goto [NAME\|TMC1:...]` | load a bookmark; with no argument, from the clipboard |
+| `report` | write a bug report, like F10 |
+| `feature NAME [0/1]`, `features` | turn one of the port's own picture features off or on; list them |
+| `fills` | overlay: the original 240×160 area, the room edge, and how each layer is extended |
+| `viewer NAME`, `tiles PAGE [PAL]`, `mem ADDR\|NAME[+OFF]` | pick a viewer, a tile page, or a memory address |
+| `watch ADDR\|NAME [LEN]`, `unwatch` | log every change to that memory, once per frame |
+| `break ADDR\|NAME [LEN]`, `unbreak` | log every write to that memory with the code address that made it |
 | `help` | list the commands |
 
 Examples:
@@ -303,8 +313,35 @@ Examples:
 - `warp 2 0` takes you to Hyrule Town (early in the story the game swaps it for Festival Town).
 - `items`, `hearts 10`.
 
+Ctrl+V pastes into the console. Names for `mem`, `watch` and `break` are
+`gSave`, `gPlayerEntity`, `gPlayerState`, `gRoomControls`, `gRoomTransition`,
+`gMain`, `gScreen` and `gArea`, e.g. `break gSave+0xC0 2` (rupees). For a
+`break` hit, `addr2line -f -e tmc_pc.exe ADDRESS` names the function.
+
 Savestates only load in the same build. Warping to a place the story hasn't
 reached yet can show missing or odd objects, as with any warp cheat.
+
+**Bug reports.** F10 writes `reports/DATE_TIME/` with `report.txt` (version,
+settings, the spot as a bookmark, the recent log), `screen.bmp`, `state.bin`
+(all game memory; `loadstate reports/FOLDER/state.bin`) and `log.txt`, then
+offers to open a GitHub issue with the text filled in. A crash writes the same
+report; `crash_reports = 0` in `tmc_pc.ini` turns that off.
+
+**Bookmarks** are a text (`TMC1:...`) holding the save data and the spot. A
+bookmark enters the room the way loading a save does, so anyone can see the
+same place with `goto`, or `tmc_pc --bookmark TMC1:...`. Saving is off after
+loading one, so your own save is safe.
+
+**Feature switches.** Each thing the port adds outside the original picture
+can be turned off on its own: `room_map`, `wrap`, `bg_hints`, `clip`,
+`edge_fade`, `tile_swap`, `extra_sprites`. Use `feature NAME 0` or
+`TMC_OFF=wrap,clip`. None of them changes the game, so two screenshots with
+one feature on and off show what that feature draws.
+
+**Routes** (`--route FILE`) are a bookmark plus timed keys, screenshots and
+commands, one per fixed issue, re-run before releases with
+`port/tools/routes.sh`. See [port/routes/README.md](port/routes/README.md)
+and [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 **Scripted test runs:**
 - `--headless --frames N` runs without a window and exits after N frames.
@@ -312,6 +349,7 @@ reached yet can show missing or odd objects, as with any warp cheat.
 - `--shot FRAME` saves `shot_FRAME.bmp`.
 - `--cmd FRAME:COMMAND` runs a console command at that frame.
 - `--warp AREA,ROOM,X,Y` warps once the game is running.
+- `--bookmark TEXT|NAME` starts at a bookmark; `--route FILE` plays a route.
 - `--wav FILE` records the audio.
 - `--bench` prints the average time to render a frame when the game exits.
 
@@ -335,7 +373,9 @@ Environment variables:
   large views, some objects appear as they come within that range, just as on
   the GBA (they fade in at the edge of the view).
 
-More technical details are in [PC_PORT.md](PC_PORT.md).
+Open problems, each with a bookmark to see it, are listed in
+[KNOWN_ISSUES.md](KNOWN_ISSUES.md). More technical details are in
+[PC_PORT.md](PC_PORT.md).
 
 This project is not affiliated with Nintendo. Please use your own legally
 obtained copy of the game.

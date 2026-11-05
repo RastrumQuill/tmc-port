@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 /* ---- GBA memory regions (mapped at their native addresses) ---- */
 #define PORT_EWRAM_ADDR 0x02000000u
@@ -66,6 +67,7 @@ typedef struct {
     char romPath[1024];   /**< the player's ROM, used once to create the resource pack */
     char dataPath[1024];  /**< resource pack with the game data (default: tmc_data.pak) */
     bool rebuildData;     /**< create the resource pack again from the ROM */
+    bool crashReports;    /**< write a report folder when the game crashes */
 } PortConfig;
 
 extern PortConfig gPortConfig;
@@ -290,6 +292,76 @@ void Debug_SetConsoleOpen(bool open);
 void Debug_ConsoleText(const char* text);
 void Debug_ConsoleBackspace(void);
 void Debug_ConsoleSubmit(void);
+/* bookmarks (port/src/bookmark.c) */
+extern bool gPortSaveLocked; /**< a bookmark was loaded: the save file is not written */
+bool Bookmark_Make(char* out, size_t size);
+const char* Bookmark_Load(const char* text); /**< NULL or an error text */
+bool Bookmark_Describe(const char* text, char* out, size_t size);
+bool Bookmark_Tick(void);
+bool Bookmark_Busy(void);
+
+/* break on write (nullguard.c): the game-thread writes to one range */
+typedef struct {
+    uint32_t addr, eip, before, after;
+} BreakHit;
+bool Port_BreakSet(uint32_t addr, uint32_t len);
+void Port_BreakClear(void);
+int Port_BreakTake(BreakHit* out, int max, int* dropped);
+
+/* viewers (viewers.c) */
+bool Viewer_Command(int argc, char** argv);
+void Viewer_Draw(uint32_t* frame, int pitch, int w, int h);
+void Viewer_Tick(void);
+void Viewer_HotKey(void);
+void Debug_Message(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+void Debug_Text(uint32_t* frame, int pitch, int w, int h, int x, int y, const char* s, uint32_t color);
+void Debug_Shade(uint32_t* frame, int pitch, int w, int h, int x, int y, int rw, int rh);
+
+/* test routes (route.c) */
+bool Route_Load(const char* path);
+bool Route_Active(void);
+void Route_Tick(void);
+uint16_t Route_Keys(void);
+const char* Route_ShotDue(void);
+uint16_t Port_ParseKeys(const char* s);
+
+/* host helpers (port/src/main_pc.c) */
+void Port_SetClipboard(const char* text);
+bool Port_GetClipboard(char* out, size_t size);
+bool Port_MakeDir(const char* path); /**< true if it was created */
+uint64_t Port_FrameCount(void);
+void Port_CaptureScreen(void);            /**< keep the current picture for the next report */
+bool Port_WriteLastFrame(const char* path); /**< the captured or last drawn picture as .bmp */
+void Port_LogTail(char* out, size_t size); /**< the last logged lines */
+int Port_ReportDialog(const char* dir);   /**< 1 = open an issue, 2 = open the folder, 0 = close */
+void Port_CrashDialog(const char* dir);
+void Port_OpenUrl(const char* url);
+void Port_OpenFolder(const char* dir);
+
+/* bug and crash reports (port/src/report.c) */
+const char* Port_VersionText(void);
+void Report_Create(const char* note);
+void Report_Crash(const char* what);
+size_t Report_Location(char* out, size_t size, bool withBookmark);
+void Report_Mask(char* s, size_t size);
+bool Debug_WriteState(const char* path);
+
+/* port-only presentation features, each can be turned off (port/src/features.c) */
+typedef enum {
+    FEAT_ROOM_MAP,  /**< map layers drawn from the whole room's tile map */
+    FEAT_WRAP,      /**< other layers (sky, fog, rays) repeat over the extended view */
+    FEAT_BG_HINTS,  /**< game code picks how its effect layers extend (scaled rays, one Vaati) */
+    FEAT_ROOM_CLIP, /**< the extended view is cut to the room */
+    FEAT_EDGE_FADE, /**< sprites fade in at the edge of the extended view */
+    FEAT_TILE_SWAP, /**< Hyrule Town / Minish Village tiles of other regions */
+    FEAT_EXTRA_SPRITES, /**< sprites beyond the GBA's 128 */
+    FEAT_COUNT
+} PortFeature;
+extern bool gPortFeature[FEAT_COUNT];
+void Port_FeatureInit(void); /**< TMC_OFF=name,name... */
+bool Port_FeatureSet(const char* name, int on); /**< on < 0: toggle */
+void Port_FeatureList(char* out, size_t size, bool all);
+
 void Debug_DrawOverlay(uint32_t* frame, int pitch, int w, int h, uint64_t frameCount);
 
 #endif /* PORT_H */

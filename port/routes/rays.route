@@ -1,0 +1,8 @@
+# Minish Woods: the light rays had rectangular seams and drew outside the
+# map (fixed by v0.2.3). When they faded they went back to being tiled
+# (fixed after v0.2.3). The route moves Link to where the rays are.
+#! --width 1920 --height 1280 --scale 2
+bookmark TMC1:AQACAQQAAWQAASwBAAEBAQEABAEAOAQBAD1BAAkEAAFkAAEsAQEAC8gHqAsAChgYAP8AuQIAPkAA_wD_ABLBjA
+5 pos 700 500
+0-120/15 shot rays
+121 end

@@ -41,16 +41,30 @@ Controls
 
   F1   extended / classic view      F11  fullscreen
   + -  zoom (also the mouse wheel)  Tab  fast forward (hold)
+  F10  bug report
+
+Found a problem? Press F10 where it happens. It saves a folder in
+reports\ (the spot, a picture, the game memory) and offers to open a GitHub
+issue with the text filled in. Crashes write a report too (turn that off
+with crash_reports = 0 in tmc_pc.ini).
 
 Debug tools
 -----------
   `      command console (type help)    F2  info overlay
   F4     all items                      F8  god mode
   F5/F9  quick save / load state        F6/F7  previous / next room (Shift: area)
+  F3     viewers (palette, tiles, sprites, IO, memory)
 
 Console commands: warp AREA ROOM [X Y], room N, area N, next, prev, items,
 item ID [0-2], hearts N, heal, rupees N, bombs N, arrows N, shells N, keys N,
-god, flag N [0/1], savestate [N], loadstate [N], scale S, view, hud, info, pos
+god, flag N [0/1], savestate [N], loadstate [N], scale S, view, hud, info, pos,
+bookmark [NAME], goto [NAME or TMC1:...], report, feature NAME [0/1], fills,
+viewer NAME, mem ADDR, watch ADDR [LEN], break ADDR [LEN]
+
+Bookmarks: "bookmark" copies a text (TMC1:...) that takes anyone to the same
+spot. Paste it into the console with Ctrl+V after "goto ", or start with
+tmc_pc.exe --bookmark TMC1:... . Saving is off after loading a bookmark, so
+your own save is safe.
 
 Saves go to tmc.sav (the same format as GBA emulators).
 

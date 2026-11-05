@@ -1,0 +1,7 @@
+# Hyrule Castle garden, Vaati's teleport (purple circle) after the sword
+# ceremony: it showed rectangular seams. Fixed by v0.2.3.
+#! --width 1804 --height 708 --scale 2
+bookmark TMC1:AQcAAQEGAAHzAUoAAgEBAQAEAQA3gAQAPkEABwcAAQQAAfgBSAABAQALyAeoCwAKGBgA_wC5AgACEAA7QAD_AP8AEkTA
+0-6500/30 A
+6600-6900/10 shot vaati
+6901 end

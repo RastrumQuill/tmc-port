@@ -535,7 +535,8 @@ static int sObjCount;
 static void PrepareObjects(void) {
     int i;
     sObjCount = 0;
-    for (i = 0; i < 128 + gPortOamExtraLiveCount; i++) {
+    int count = 128 + (gPortFeature[FEAT_EXTRA_SPRITES] ? gPortOamExtraLiveCount : 0);
+    for (i = 0; i < count; i++) {
         /* the 128 OAM entries, then the extra sprites of the extended view */
         bool extra = i >= 128;
         const PortOamExtra* x = extra ? &gPortOamExtraLive[i - 128] : NULL;

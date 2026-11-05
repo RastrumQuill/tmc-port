@@ -116,7 +116,7 @@ static void SetupOverride(MapLayer* layer, const u16* specialMap) {
     PpuBgOverride* o;
     BgSettings* settings = layer->bgSettings;
     int dx, dy;
-    if (settings == NULL)
+    if (settings == NULL || !gPortFeature[FEAT_ROOM_MAP])
         return;
     bg = BgIndex(settings);
     if (bg < 0 || bg > 3)
@@ -210,7 +210,13 @@ void View_PrepareFrame(void) {
                                gPortViewWidth);
         gPortClipBottom = Clamp(gRoomControls.origin_y + gRoomControls.height - viewY,
                                 gPortViewOffsetY + GBA_HEIGHT, gPortViewHeight);
-        gPortSpriteEdgeFade = true;
+        gPortSpriteEdgeFade = gPortFeature[FEAT_EDGE_FADE];
+        if (!gPortFeature[FEAT_ROOM_CLIP]) {
+            gPortClipLeft = 0;
+            gPortClipTop = 0;
+            gPortClipRight = gPortViewWidth;
+            gPortClipBottom = gPortViewHeight;
+        }
     }
     gPortScreenLeft = -gPortViewOffsetX;
     gPortScreenTop = -gPortViewOffsetY;
@@ -240,9 +246,10 @@ void View_PrepareFrame(void) {
         for (bg = 1; bg < 4; bg++) {
             if (gPpuBgMode[bg] != PPU_BG_CLASSIC_ONLY)
                 continue;
-            gPpuBgMode[bg] = PPU_BG_WRAP;
+            if (gPortFeature[FEAT_WRAP])
+                gPpuBgMode[bg] = PPU_BG_WRAP;
             /* asked for in this frame's game update or the one before */
-            if (sViewFrame - sBgHint[bg].frame <= 1) {
+            if (sViewFrame - sBgHint[bg].frame <= 1 && gPortFeature[FEAT_BG_HINTS]) {
                 gPpuBgMode[bg] = sBgHint[bg].mode;
                 gPpuBgParallax[bg][0] = sBgHint[bg].parallax[0];
                 gPpuBgParallax[bg][1] = sBgHint[bg].parallax[1];

@@ -148,7 +148,7 @@ static void FindVramGroups(void) {
 
 void Port_TileSwapPrepareFrame(void) {
     int i, g;
-    sActive = sArea == gRoomControls.area && sRoom == gRoomControls.room;
+    sActive = sArea == gRoomControls.area && sRoom == gRoomControls.room && gPortFeature[FEAT_TILE_SWAP];
     if (!sActive)
         return;
     FindVramGroups();

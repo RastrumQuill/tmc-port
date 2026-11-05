@@ -1,0 +1,7 @@
+# Deepwood Shrine, inside the rolling barrel: the walkways were misaligned in
+# the extended view. Fixed by v0.2.3.
+#! --width 1280 --height 960 --scale 2
+bookmark TMC1:AUggAQQAAXgAAVgAAgEBAQAEAQA4BAA-QQAHSCAEAAF4AAFkAAEBAAvIB6gLAAoYGAD_ALkCAD5AAP8A_wAS71w
+0-140 UP
+0-140/35 shot barrel
+141 end
